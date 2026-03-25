@@ -1,0 +1,444 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+import Sidebar from '../components/Sidebar.jsx'
+import BottomNav from '../components/BottomNav.jsx'
+
+const ALL_DISTRICTS = [
+  'Koraput','Malkangiri','Rayagada','Kalahandi','Kandhamal','Nabarangpur','Mayurbhanj',
+  'Angul','Balasore','Bargarh','Bhadrak','Bolangir','Boudh','Cuttack','Deogarh',
+  'Dhenkanal','Gajapati','Ganjam','Jagatsinghpur','Jajpur','Jharsuguda','Kendrapara',
+  'Kendujhar','Khordha','Nayagarh','Nuapada','Puri','Sambalpur','Subarnapur','Sundargarh',
+]
+
+const SEVERITY_ORDER = { red: 0, yellow: 1, green: 2 }
+const TEAL = '#1A6E5C'   // eSanjeevani teal-green
+const BLUE_BG = '#E8F4F8' // eSanjeevani light blue background
+
+function timeAgo(iso) {
+  const diff = Date.now() - new Date(iso).getTime()
+  const mins = Math.floor(diff / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  const hrs = Math.floor(mins / 60)
+  if (hrs < 24) return `${hrs}h ago`
+  return `${Math.floor(hrs / 24)}d ago`
+}
+
+function todayStart() {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  return d.toISOString()
+}
+
+export default function HomePage() {
+  const navigate = useNavigate()
+
+  const [activeTab, setActiveTab]       = useState('ALL')
+  const [sortMode, setSortMode]         = useState('latest')
+  const [query, setQuery]               = useState('')
+  const [districtFilter, setDistrictFilter] = useState('')
+  const debounceRef = useRef(null)
+  const [isOnline, setIsOnline]         = useState(navigator.onLine)
+
+  // State declarations — all must be before any useEffect that references them
+  const [patientResults, setPatientResults] = useState([])
+  const [loading, setLoading]           = useState(false)
+  const [totalCount, setTotalCount]     = useState(0)
+  const [showCount, setShowCount]       = useState(6)
+  const [dashError, setDashError]       = useState(null)
+
+  // Today's counts per severity
+  const [todayCounts, setTodayCounts]   = useState({ red: 0, yellow: 0, green: 0 })
+
+  // Online/offline listener
+  useEffect(() => {
+    const on = () => setIsOnline(true)
+    const off = () => setIsOnline(false)
+    window.addEventListener('online', on)
+    window.addEventListener('offline', off)
+    return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off) }
+  }, [])
+
+  // Fetch today's counts (runs after patientResults changes)
+  useEffect(() => {
+    async function fetchCounts() {
+      try {
+        const since = todayStart()
+        const counts = { red: 0, yellow: 0, green: 0 }
+        for (const sev of ['red', 'yellow', 'green']) {
+          const { count } = await supabase
+            .from('triage_records')
+            .select('id', { count: 'exact', head: true })
+            .eq('severity', sev)
+            .gte('created_at', since)
+          counts[sev] = count || 0
+        }
+        setTodayCounts(counts)
+      } catch { /* non-critical, ignore */ }
+    }
+    fetchCounts()
+  }, [patientResults])
+
+  const fetchRecords = useCallback(async () => {
+    setLoading(true)
+    try {
+      // Try patients table first (grouped view)
+      let q = supabase
+        .from('patients')
+        .select('*, triage_records(id, severity, brief, created_at, district)')
+        .order('created_at', { ascending: false })
+
+      if (query.trim().length >= 2) q = q.ilike('name', `%${query.trim()}%`)
+      if (districtFilter) q = q.eq('district', districtFilter)
+
+      const { data, error } = await q
+
+      if (!error && data && data.length > 0) {
+        // Patients table exists and has data — use grouped view
+        let patients = data.map(p => {
+          const sorted = [...(p.triage_records || [])].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          return { ...p, triage_records: sorted, latestSeverity: sorted[0]?.severity || null }
+        }).filter(p => p.triage_records.length > 0)
+
+        if (activeTab !== 'ALL') {
+          patients = patients.filter(p => p.latestSeverity === activeTab.toLowerCase())
+        }
+        if (sortMode === 'critical') {
+          patients.sort((a, b) => (SEVERITY_ORDER[a.latestSeverity] ?? 3) - (SEVERITY_ORDER[b.latestSeverity] ?? 3))
+        }
+
+        setPatientResults(patients)
+        setTotalCount(patients.length)
+        setShowCount(6)
+        setLoading(false)
+        return
+      }
+
+      // Fallback: patients table empty or doesn't exist — query triage_records directly
+      // and group them by patient_name+age+district
+      let tq = supabase
+        .from('triage_records')
+        .select('id, patient_id, patient_name, age, gender, district, severity, created_at, symptom_text, brief')
+        .order('created_at', { ascending: false })
+
+      if (activeTab !== 'ALL') tq = tq.eq('severity', activeTab.toLowerCase())
+      if (query.trim().length >= 2) tq = tq.ilike('patient_name', `%${query.trim()}%`)
+      if (districtFilter) tq = tq.eq('district', districtFilter)
+
+      const { data: records } = await tq
+      const rows = records || []
+
+      // Group by patient key (name+age+district)
+      const grouped = new Map()
+      for (const r of rows) {
+        const key = `${(r.patient_name || '').toLowerCase()}_${r.age}_${r.district}`
+        if (!grouped.has(key)) {
+          grouped.set(key, {
+            id: r.patient_id || key,
+            name: r.patient_name,
+            age: r.age,
+            gender: r.gender,
+            district: r.district,
+            triage_records: [],
+          })
+        }
+        grouped.get(key).triage_records.push({ id: r.id, severity: r.severity, brief: r.brief, created_at: r.created_at, district: r.district })
+      }
+
+      let patients = Array.from(grouped.values()).map(p => {
+        p.triage_records.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+        p.latestSeverity = p.triage_records[0]?.severity || null
+        return p
+      })
+
+      if (sortMode === 'critical') {
+        patients.sort((a, b) => (SEVERITY_ORDER[a.latestSeverity] ?? 3) - (SEVERITY_ORDER[b.latestSeverity] ?? 3))
+      }
+
+      setPatientResults(patients)
+      setTotalCount(patients.length)
+      setShowCount(6)
+    } catch (err) {
+      console.error('fetchRecords error:', err)
+      setDashError(err?.message || 'Unknown error')
+      setPatientResults([])
+      setTotalCount(0)
+    } finally {
+      setLoading(false)
+    }
+  }, [activeTab, query, districtFilter, sortMode])
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      fetchRecords()
+    }, query ? 400 : 0)
+    return () => clearTimeout(debounceRef.current)
+  }, [activeTab, query, districtFilter, sortMode, fetchRecords])
+
+  function handlePatientCardClick(p) {
+    navigate('/patient', { state: { prefill: { name: p.name, age: p.age, gender: p.gender, district: p.district }, patientId: p.id } })
+  }
+
+  async function handleDeletePatient(e, patientId) {
+    e.stopPropagation()
+    if (!window.confirm('Delete ALL records for this patient? This cannot be undone.')) return
+    // delete triage records first, then patient
+    await supabase.from('triage_records').delete().eq('patient_id', patientId)
+    await supabase.from('patients').delete().eq('id', patientId)
+    setPatientResults(prev => prev.filter(p => p.id !== patientId))
+    setTotalCount(prev => prev - 1)
+  }
+
+  const visiblePatients = patientResults.slice(0, showCount)
+
+  return (
+    <div style={{ minHeight: '100dvh', background: BLUE_BG, display: 'flex', flexDirection: 'column', paddingBottom: 60 }}>
+      <Sidebar />
+
+      {/* Header */}
+      <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '0.875rem 1.25rem 0.875rem 4rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: '1.0625rem', color: '#111' }}>ଡ୍ୟାଶବୋର୍ଡ</div>
+            <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>Dashboard</div>
+          </div>
+          {/* Online indicator */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 8 }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: isOnline ? '#22c55e' : '#9ca3af' }} />
+            <span style={{ fontSize: '0.6875rem', color: isOnline ? '#16a34a' : '#6b7280' }}>{isOnline ? 'Online' : 'Offline'}</span>
+          </div>
+        </div>
+        <button
+          onClick={() => navigate('/patient')}
+          style={{ minHeight: 48, padding: '0 1.25rem', background: TEAL, color: '#fff', border: 'none', borderRadius: 10, fontSize: '0.9375rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+        >
+          ➕ <span>ନୂତନ ରୋଗୀ</span>
+        </button>
+      </header>
+
+      <main style={{ flex: 1, padding: '1rem 1.25rem 1.5rem', maxWidth: 1100, width: '100%', margin: '0 auto' }}>
+
+        {/* Today's summary bar */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
+          {[
+            { sev: 'red',    label: 'ଜରୁରୀ',   sub: 'Emergency',  accent: '#C0392B', count: todayCounts.red },
+            { sev: 'yellow', label: 'ମଧ୍ୟମ',   sub: 'Moderate',   accent: '#B7791F', count: todayCounts.yellow },
+            { sev: 'green',  label: 'ସ୍ଥିର',    sub: 'Stable',     accent: '#1A6E5C', count: todayCounts.green },
+          ].map(item => (
+            <button key={item.sev}
+              onClick={() => setActiveTab(item.sev.toUpperCase())}
+              style={{
+                background: activeTab === item.sev.toUpperCase() ? item.accent : '#fff',
+                border: `1.5px solid ${activeTab === item.sev.toUpperCase() ? item.accent : '#e5e7eb'}`,
+                borderRadius: 10, padding: '0.875rem 0.5rem', textAlign: 'center',
+                cursor: 'pointer', minHeight: 72, transition: 'all 0.15s',
+              }}
+            >
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, lineHeight: 1, color: activeTab === item.sev.toUpperCase() ? '#fff' : item.accent }}>{item.count}</div>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginTop: 3, color: activeTab === item.sev.toUpperCase() ? 'rgba(255,255,255,0.9)' : '#374151', fontFamily: "'Noto Sans Oriya', sans-serif" }}>{item.label}</div>
+              <div style={{ fontSize: '0.6875rem', color: activeTab === item.sev.toUpperCase() ? 'rgba(255,255,255,0.65)' : '#9ca3af', marginTop: 1 }}>{item.sub}</div>
+            </button>
+          ))}
+        </div>
+
+        {/* Filter bar */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.625rem', marginBottom: '1rem', alignItems: 'center' }}>
+          {/* Severity tabs */}
+          <div style={{ display: 'flex', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
+            {['ALL', 'RED', 'YELLOW', 'GREEN'].map(tab => (
+              <button key={tab} onClick={() => setActiveTab(tab)}
+                style={{
+                  minHeight: 40, padding: '0 0.875rem', border: 'none',
+                  borderRight: tab !== 'GREEN' ? '1px solid #e5e7eb' : 'none',
+                  background: activeTab === tab ? TEAL : 'transparent',
+                  color: activeTab === tab ? '#fff' : '#374151',
+                  fontWeight: activeTab === tab ? 700 : 500,
+                  fontSize: '0.875rem', cursor: 'pointer',
+                }}
+              >{tab}</button>
+            ))}
+          </div>
+
+          {/* Sort */}
+          <div style={{ display: 'flex', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
+            {[{ key: 'latest', label: 'Latest' }, { key: 'critical', label: 'Critical first' }].map(s => (
+              <button key={s.key} onClick={() => setSortMode(s.key)}
+                style={{
+                  minHeight: 40, padding: '0 0.875rem', border: 'none',
+                  borderRight: s.key === 'latest' ? '1px solid #e5e7eb' : 'none',
+                  background: sortMode === s.key ? TEAL : 'transparent',
+                  color: sortMode === s.key ? '#fff' : '#374151',
+                  fontWeight: sortMode === s.key ? 700 : 500,
+                  fontSize: '0.875rem', cursor: 'pointer',
+                }}
+              >{s.label}</button>
+            ))}
+          </div>
+
+          <div style={{ flex: 1 }} />
+
+          {/* District */}
+          <select value={districtFilter} onChange={e => setDistrictFilter(e.target.value)}
+            style={{ minHeight: 40, padding: '0 2rem 0 0.75rem', fontSize: '0.875rem', border: '1px solid #e5e7eb', borderRadius: 10, background: '#fff', color: '#374151' }}>
+            <option value="">All Districts</option>
+            {ALL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+
+          {/* Search */}
+          <div style={{ position: 'relative' }}>
+            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', pointerEvents: 'none' }}>🔍</span>
+            <input type="text"
+              style={{ minHeight: 40, paddingLeft: '2rem', paddingRight: '0.75rem', width: 180, fontSize: '0.875rem', border: '1px solid #e5e7eb', borderRadius: 10, background: '#fff', color: '#374151', outline: 'none' }}
+              placeholder="Search by name…"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              autoComplete="off"
+            />
+          </div>
+        </div>
+
+        {/* Patient count */}
+        <div style={{ fontSize: '0.8125rem', color: '#6b7280', marginBottom: '0.75rem' }}>
+          {loading ? 'Loading…' : `${totalCount} patient${totalCount !== 1 ? 's' : ''} found`}
+        </div>
+
+        {/* Error state */}
+        {dashError && (
+          <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+            <div style={{ fontSize: '1rem', marginBottom: '0.75rem', fontFamily: "'Noto Sans Oriya', sans-serif" }}>ତ୍ରୁଟି ଘଟିଛି / Something went wrong</div>
+            <div style={{ fontSize: '0.8125rem', color: '#9ca3af', marginBottom: '1rem' }}>{dashError}</div>
+            <button onClick={() => { setDashError(null); fetchRecords() }}
+              style={{ minHeight: 44, padding: '0 1.5rem', background: TEAL, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>
+              ପୁନଃ ଚେଷ୍ଟା / Retry
+            </button>
+          </div>
+        )}
+
+        {/* Skeleton */}
+        {loading && patientResults.length === 0 && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '0.75rem' }}>
+            {[1,2,3,4,5,6].map(i => (
+              <div key={i} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '1rem', opacity: 0.5 }}>
+                <div style={{ height: 16, background: '#e5e7eb', borderRadius: 4, marginBottom: 8, width: '60%' }} />
+                <div style={{ height: 12, background: '#e5e7eb', borderRadius: 4, marginBottom: 8, width: '40%' }} />
+                <div style={{ height: 12, background: '#e5e7eb', borderRadius: 4, width: '80%' }} />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!loading && patientResults.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280', fontSize: '1rem' }}>
+            କୋଣସି ରୋଗୀ ମିଳିଲା ନାହିଁ<br/><span style={{ fontSize: '0.875rem' }}>No patients found.</span>
+          </div>
+        )}
+
+        {/* ── Patient cards (grouped by patient) ───────────────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '0.75rem' }}>
+          {visiblePatients.map(p => {
+            const last = p.triage_records?.[0]
+            const sev = last?.severity
+            const sevColor = sev === 'red' ? '#C0392B' : sev === 'yellow' ? '#B7791F' : '#1A6E5C'
+            const sevLabel = sev === 'red' ? 'EMERGENCY' : sev === 'yellow' ? 'MODERATE' : sev ? 'STABLE' : null
+            const visits = p.triage_records || []
+            // Severity trend: last 3 visits (oldest → newest for left-to-right reading)
+            const trendDots = visits.slice(0, 3).reverse()
+            return (
+              <div key={p.id}
+                style={{ background: '#fff', border: '1px solid #d1e8e2', borderLeft: `5px solid ${sevColor}`, borderRadius: 10, padding: '1rem', transition: 'box-shadow 0.15s', boxShadow: '0 1px 3px rgba(26,110,92,0.06)' }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(26,110,92,0.12)' }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(26,110,92,0.06)' }}
+              >
+                {/* Top row: name + delete */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.375rem' }}>
+                  <button onClick={() => handlePatientCardClick(p)}
+                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', flex: 1 }}
+                  >
+                    <div style={{ width: 9, height: 9, borderRadius: '50%', background: sevColor, flexShrink: 0 }} />
+                    <span style={{ fontWeight: 700, fontSize: '1rem', color: '#111' }}>{p.name}</span>
+                  </button>
+                  <button onClick={(e) => handleDeletePatient(e, p.id)}
+                    title="Delete patient"
+                    style={{ background: 'transparent', border: '1px solid #e5e7eb', borderRadius: 6, padding: '0.2rem 0.5rem', cursor: 'pointer', color: '#9ca3af', fontSize: '0.75rem', flexShrink: 0, marginLeft: '0.5rem', display: 'flex', alignItems: 'center', gap: 3, transition: 'all 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = '#FEF2F2'; e.currentTarget.style.color = '#DC2626'; e.currentTarget.style.borderColor = '#FCA5A5' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = '#e5e7eb' }}
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+                    </svg>
+                    Delete
+                  </button>
+                </div>
+
+                {/* Clickable body */}
+                <button onClick={() => handlePatientCardClick(p)}
+                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', width: '100%' }}
+                >
+                  {/* Severity pill + meta + visit count */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>
+                    {sevLabel && (
+                      <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: sevColor, background: `${sevColor}15`, border: `1px solid ${sevColor}40`, borderRadius: 4, padding: '0.1rem 0.4rem', letterSpacing: '0.04em' }}>
+                        {sevLabel}
+                      </span>
+                    )}
+                    <span style={{ fontSize: '0.8125rem', color: '#6b7280' }}>
+                      {[p.age && `${p.age} yrs`, p.gender, p.district].filter(Boolean).join(' · ')}
+                    </span>
+                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: TEAL, background: `${TEAL}12`, border: `1px solid ${TEAL}30`, borderRadius: 4, padding: '0.1rem 0.4rem' }}>
+                      {visits.length} visit{visits.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+
+                  {/* Severity trend dots (if >1 visit) */}
+                  {trendDots.length > 1 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.375rem' }}>
+                      <span style={{ fontSize: '0.6875rem', color: '#9ca3af', marginRight: '0.25rem' }}>Trend:</span>
+                      {trendDots.map((t, i) => {
+                        const dotColor = t.severity === 'red' ? '#C0392B' : t.severity === 'yellow' ? '#B7791F' : '#1A6E5C'
+                        return (
+                          <React.Fragment key={t.id}>
+                            <div style={{ width: 10, height: 10, borderRadius: '50%', background: dotColor, border: `1.5px solid ${dotColor}` }} title={`${t.severity} — ${new Date(t.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`} />
+                            {i < trendDots.length - 1 && <span style={{ fontSize: '0.6rem', color: '#d1d5db' }}>→</span>}
+                          </React.Fragment>
+                        )
+                      })}
+                    </div>
+                  )}
+
+                  {/* Brief */}
+                  {last?.brief && (
+                    <div style={{ fontSize: '0.8125rem', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '0.375rem' }}>
+                      {last.brief}
+                    </div>
+                  )}
+
+                  {/* Time */}
+                  {last && (
+                    <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                      Last visit: {timeAgo(last.created_at)}
+                    </div>
+                  )}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Show more */}
+        {patientResults.length > showCount && (
+          <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
+            <button onClick={() => setShowCount(c => c + 6)}
+              style={{ minHeight: 48, padding: '0 2rem', background: '#fff', border: `1.5px solid ${TEAL}`, color: TEAL, borderRadius: 10, fontSize: '0.9375rem', fontWeight: 700, cursor: 'pointer' }}>
+              ଆହୁରି ଦେଖନ୍ତୁ / Show more ({patientResults.length - showCount} remaining)
+            </button>
+          </div>
+        )}
+      </main>
+
+      <BottomNav />
+    </div>
+  )
+}
