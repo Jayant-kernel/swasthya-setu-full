@@ -93,13 +93,13 @@ export default function LoginPage() {
             </h1>
             <div
               style={{
-                fontFamily: "'Noto Sans Oriya', sans-serif",
+                fontFamily: "'Noto Sans Devanagari', sans-serif",
                 color: 'rgba(255,255,255,0.85)',
                 fontSize: '1.125rem',
                 fontWeight: 500,
               }}
             >
-              ସ୍ୱାସ୍ଥ୍ୟ ସେତୁ
+              आरोग्य सेतू
             </div>
           </div>
           <div style={{ textAlign: 'center' }}>
@@ -108,13 +108,13 @@ export default function LoginPage() {
             </p>
             <p
               style={{
-                fontFamily: "'Noto Sans Oriya', sans-serif",
+                fontFamily: "'Noto Sans Devanagari', sans-serif",
                 color: 'rgba(255,255,255,0.75)',
                 fontSize: '0.875rem',
                 marginTop: '0.25rem',
               }}
             >
-              ଗ୍ରାମୀଣ ଓଡ଼ିଶା ପାଇଁ ସ୍ୱାସ୍ଥ୍ୟ ସେତୁ
+              ଗ୍ରାମୀଣ ଓଡ଼ିଶା ପାଇଁ आरोग्य सेतू
             </p>
           </div>
         </div>
@@ -183,7 +183,7 @@ export default function LoginPage() {
             <div className="form-group">
               <label className="form-label" htmlFor="email">
                 Email Address
-                <span className="odia-label">ଇମେଲ ଠିକଣା</span>
+                <span className="odia-label">ईमेल पत्ता</span>
               </label>
               <input
                 id="email"
@@ -200,7 +200,7 @@ export default function LoginPage() {
             <div className="form-group">
               <label className="form-label" htmlFor="password">
                 Password
-                <span className="odia-label">ପାସୱାର୍ଡ</span>
+                <span className="odia-label">पासवर्ड</span>
               </label>
               <input
                 id="password"
@@ -223,9 +223,9 @@ export default function LoginPage() {
               {loading ? (
                 <><span className="spinner" />{isSignUp ? 'Creating account…' : 'Signing in…'}</>
               ) : isSignUp ? (
-                <>Create Account <span style={{ fontFamily: "'Noto Sans Oriya', sans-serif", fontSize: '0.9375rem' }}>/ ଖାତା ତୈରି କରନ୍ତୁ</span></>
+                <>Create Account <span style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", fontSize: '0.9375rem' }}>/ खाते तयार करा</span></>
               ) : (
-                <>Sign In <span style={{ fontFamily: "'Noto Sans Oriya', sans-serif", fontSize: '0.9375rem' }}>/ ସାଇନ ଇନ</span></>
+                <>Sign In <span style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", fontSize: '0.9375rem' }}>/ लॉग इन करा</span></>
               )}
             </button>
 
@@ -250,8 +250,8 @@ export default function LoginPage() {
           >
             For ASHA Workers &amp; Healthcare Volunteers
             <br />
-            <span style={{ fontFamily: "'Noto Sans Oriya', sans-serif" }}>
-              ଆଶା କର୍ମୀ ଏବଂ ସ୍ୱାସ୍ଥ୍ୟ ସ୍ୱୟଂସେବକଙ୍କ ପାଇଁ
+            <span style={{ fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+              आशा आणि आरोग्य स्वयंसेवकांसाठी
             </span>
           </p>
 

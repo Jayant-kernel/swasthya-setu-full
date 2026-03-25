@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { openai, getChatSystemPrompt } from '../lib/openai'
 import { usePatient } from '../context/PatientContext.jsx'
 import ChatBubble from '../components/ChatBubble.jsx'
-import Sidebar from '../components/Sidebar.jsx'
+import TopNav from '../components/TopNav.jsx'
+import GlobalHeader from '../components/GlobalHeader.jsx'
 
 const SEVERITY_BADGE = {
   green:  { label: 'Safe / ସୁରକ୍ଷିତ',       cls: 'badge-green' },
@@ -12,9 +13,9 @@ const SEVERITY_BADGE = {
 }
 
 const QUICK_REPLIES = [
-  { odia: 'କ\'ଣ ଔଷଧ ଦେବି?', english: 'What medicine should I give?' },
-  { odia: 'କେତେ ଗୁରୁତର?',   english: 'How serious is this case?' },
-  { odia: 'ଡାକ୍ତରଙ୍କ ପାଖକୁ ପଠାଇବି?', english: 'Should I refer to a doctor?' },
+  { marathi: 'କ\'ଣ ଔଷଧ ଦେବି?', english: 'What medicine should I give?' },
+  { marathi: 'କେତେ ଗୁରୁତର?',   english: 'How serious is this case?' },
+  { marathi: 'ଡାକ୍ତରଙ୍କ ପାଖକୁ ପଠାଇବି?', english: 'Should I refer to a doctor?' },
 ]
 
 function buildGreeting(patient, triage) {
@@ -148,35 +149,19 @@ export default function ChatPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--color-bg)' }}>
-      <Sidebar />
       {/* Top header bar */}
-      <header style={{
-        background: 'var(--color-surface)',
-        borderBottom: '1px solid var(--color-border)',
-        padding: '0.875rem 1.5rem 0.875rem 4rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem',
-        flexShrink: 0,
-        boxShadow: 'var(--shadow)',
-      }}>
-
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '1rem', minWidth: 0 }}>
-          <div>
-            <span style={{ fontWeight: 700, fontSize: '1rem' }}>{patientData.name}</span>
-            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginLeft: '0.5rem' }}>
-              {patientData.age}y · {patientData.gender} · {patientData.district}
-            </span>
-          </div>
-          <span className={`badge ${badge.cls}`}>{badge.label}</span>
+      <GlobalHeader>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingLeft: '1rem', borderLeft: '2px solid #e5e7eb', marginLeft: '0.5rem' }}>
+          <span style={{ fontWeight: 700, fontSize: '0.9375rem' }}>{patientData.name}</span>
+          <span className={`badge ${badge.cls}`} style={{ margin: 0 }}>{badge.label}</span>
+          {triageResult.sickle_cell_risk && (
+            <div style={{ background: 'var(--color-red)', color: '#fff', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600 }}>
+              🔴 High Risk
+            </div>
+          )}
         </div>
-
-        {triageResult.sickle_cell_risk && (
-          <div style={{ background: 'var(--color-red)', color: '#fff', padding: '0.375rem 0.875rem', borderRadius: 'var(--radius-full)', fontSize: '0.8125rem', fontWeight: 600, flexShrink: 0 }}>
-            🔴 Sickle Cell Risk
-          </div>
-        )}
-      </header>
+      </GlobalHeader>
+      <TopNav />
 
       {/* Main body: sidebar + chat */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
@@ -304,12 +289,12 @@ export default function ChatPage() {
                 type="button"
                 onClick={() => sendMessage(chip.english)}
                 disabled={loading}
-                style={{ padding: '0.3rem 0.75rem', borderRadius: 99, border: '1.5px solid var(--color-primary)', background: 'transparent', color: 'var(--color-primary)', fontSize: '0.8125rem', fontWeight: 600, cursor: loading ? 'default' : 'pointer', fontFamily: "'Noto Sans Oriya', sans-serif", whiteSpace: 'nowrap' }}
+                style={{ padding: '0.3rem 0.75rem', borderRadius: 99, border: '1.5px solid var(--color-primary)', background: 'transparent', color: 'var(--color-primary)', fontSize: '0.8125rem', fontWeight: 600, cursor: loading ? 'default' : 'pointer', fontFamily: "'Noto Sans Devanagari', sans-serif", whiteSpace: 'nowrap' }}
               >
                 {chip.odia}
               </button>
             ))}
-            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', alignSelf: 'center', fontFamily: "'Noto Sans Oriya', sans-serif" }}>ଓଡ଼ିଆ ବା ଇଂରାଜୀରେ ଲେଖନ୍ତୁ</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', alignSelf: 'center', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>मराठी ବା ଇଂରାଜୀରେ ଲେଖନ୍ତୁ</span>
           </div>
 
           {/* Input */}

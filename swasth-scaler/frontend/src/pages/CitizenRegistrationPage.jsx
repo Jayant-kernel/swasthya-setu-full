@@ -90,7 +90,7 @@ export default function CitizenRegistrationPage() {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password / ପାସୱାର୍ଡ</label>
+            <label className="form-label">Password / पासवर्ड</label>
             <input name="password" type="password" className="form-input" value={formData.password} onChange={handleChange} required />
           </div>
 

@@ -38,7 +38,8 @@ import { supabase } from '../lib/supabase'
 import { usePatient } from '../context/PatientContext.jsx'
 import { useTriage } from '../hooks/useTriage'
 import { translateToEnglish, openai } from '../lib/openai'
-import Sidebar from '../components/Sidebar.jsx'
+import TopNav from '../components/TopNav.jsx'
+import GlobalHeader from '../components/GlobalHeader.jsx'
 
 // ─── Duplicate-patient modal ──────────────────────────────────────────────────
 const SEV_STYLE = {
@@ -74,7 +75,7 @@ function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: '#111' }}>{p.name}</div>
                   <div style={{ fontSize: '0.8125rem', color: '#374151', marginTop: 4, fontFamily: "'Noto Sans Oriya', sans-serif" }}>
-                    ନାମ: {p.name} | ବୟସ: {p.age} | ଜିଲ୍ଲା: {p.district}
+                    ନାମ: {p.name} | वय: {p.age} | जिल्हा: {p.district}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: 2 }}>
                     {p.gender && `${p.gender} · `}{p.triage_records?.length || 0} visit{p.triage_records?.length !== 1 ? 's' : ''}
@@ -107,45 +108,45 @@ function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
 }
 
 const ALL_DISTRICTS = [
-  // High-risk (sickle cell priority) — listed first
-  'Koraput',
-  'Malkangiri',
-  'Rayagada',
-  'Kalahandi',
-  'Kandhamal',
-  'Nabarangpur',
-  'Mayurbhanj',
-  // Other Odisha districts
-  'Angul',
-  'Balasore',
-  'Bargarh',
-  'Bhadrak',
-  'Berhampur',
-  'Bhubaneswar',
-  'Boudh',
-  'Cuttack',
-  'Deogarh',
-  'Dhenkanal',
-  'Gajapati',
-  'Ganjam',
-  'Jagatsinghpur',
-  'Jajpur',
-  'Jharsuguda',
-  'Kendrapara',
-  'Kendujhar',
-  'Khordha',
-  'Nayagarh',
-  'Nuapada',
-  'Puri',
-  'Sambalpur',
-  'Sonepur',
-  'Sundargarh',
+  "Ahilyanagar",
+  "Akola",
+  "Amravati",
+  "Beed",
+  "Bhandara",
+  "Buldhana",
+  "Chandrapur",
+  "Chhatrapati Sambhajinagar",
+  "Dharashiv",
+  "Dhule",
+  "Gadchiroli",
+  "Gondia",
+  "Hingoli",
+  "Jalgaon",
+  "Jalna",
+  "Kolhapur",
+  "Latur",
+  "Mumbai City",
+  "Mumbai Suburban",
+  "Nagpur",
+  "Nanded",
+  "Nandurbar",
+  "Nashik",
+  "Palghar",
+  "Parbhani",
+  "Pune",
+  "Raigad",
+  "Ratnagiri",
+  "Sangli",
+  "Satara",
+  "Sindhudurg",
+  "Solapur",
+  "Thane",
+  "Wardha",
+  "Washim",
+  "Yavatmal"
 ]
 
-const HIGH_RISK = new Set([
-  'Koraput', 'Malkangiri', 'Rayagada', 'Kalahandi',
-  'Kandhamal', 'Nabarangpur', 'Mayurbhanj',
-])
+const HIGH_RISK = new Set(["Gadchiroli","Chandrapur","Nagpur","Wardha","Bhandara","Gondia","Amravati","Yavatmal","Akola","Washim","Buldhana","Nandurbar","Dhule"])
 
 export default function PatientFormPage() {
   const navigate = useNavigate()
@@ -233,7 +234,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
   }
 
   const LANG_LABELS = {
-    'or-IN': { speak: 'ଲକ୍ଷଣ କୁହନ୍ତୁ', recording: 'ଶୁଣୁଛି… କହନ୍ତୁ', translating: 'ଅନୁବାଦ ହେଉଛି…' },
+    'or-IN': { speak: 'लक्षणे କୁହନ୍ତୁ', recording: 'ଶୁଣୁଛି… କହନ୍ତୁ', translating: 'ଅନୁବାଦ ହେଉଛି…' },
     'hi-IN': { speak: 'लक्षण बताएं', recording: 'सुन रहा हूँ… बोलिए', translating: 'अनुवाद हो रहा है…' },
     'en-IN': { speak: 'Speak symptoms', recording: 'Listening… speak now', translating: null },
   }
@@ -441,7 +442,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--color-bg)', display: 'flex', flexDirection: 'column' }}>
-      <Sidebar />
+      
 
       {duplicateMatches && (
         <DuplicateModal
@@ -453,12 +454,8 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
       )}
 
       {/* Header */}
-      <header className="page-header" style={{ maxWidth: '100%', paddingLeft: '4rem' }}>
-        <div className="page-header-title">
-          <h2>New Patient</h2>
-          <span className="odia-label">ନୂତନ ରୋଗୀ</span>
-        </div>
-      </header>
+      <GlobalHeader />
+      <TopNav />
 
       {/* Form */}
       <main style={{ flex: 1, padding: '2rem 1.5rem', maxWidth: 820, width: '100%', margin: '0 auto' }}>
@@ -467,7 +464,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           <div className="form-group">
             <label className="form-label" htmlFor="name">
               Patient Name
-              <span className="odia-label">ରୋଗୀର ନାମ</span>
+              <span className="odia-label">रुग्णाचे नाव</span>
             </label>
             <input
               id="name"
@@ -487,7 +484,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             <div className="form-group">
               <label className="form-label" htmlFor="age">
                 Age
-                <span className="odia-label">ବୟସ</span>
+                <span className="odia-label">वय</span>
               </label>
               <input
                 id="age"
@@ -506,7 +503,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             <div className="form-group">
               <label className="form-label" htmlFor="gender">
                 Gender
-                <span className="odia-label">ଲିଙ୍ଗ</span>
+                <span className="odia-label">लिंग</span>
               </label>
               <select
                 id="gender"
@@ -516,9 +513,9 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                 onChange={handleChange}
               >
                 <option value="">Select</option>
-                <option value="Male">Male / ପୁରୁଷ</option>
-                <option value="Female">Female / ମହିଳା</option>
-                <option value="Other">Other / ଅନ୍ୟ</option>
+                <option value="Male">Male / पुरुष</option>
+                <option value="Female">Female / महिला</option>
+                <option value="Other">Other / इतर</option>
               </select>
             </div>
           </div>
@@ -527,7 +524,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           <div className="form-group">
             <label className="form-label" htmlFor="district">
               District
-              <span className="odia-label">ଜିଲ୍ଲା</span>
+              <span className="odia-label">जिल्हा</span>
             </label>
             <select
               id="district"
@@ -537,12 +534,12 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
               onChange={handleChange}
             >
               <option value="">Select district</option>
-              <optgroup label="High-Risk Districts / ଉଚ୍ଚ-ଝୁଁକି ଜିଲ୍ଲା">
+              <optgroup label="High-Risk Districts / ଉଚ୍ଚ-ଝୁଁକି जिल्हा">
                 {ALL_DISTRICTS.filter((d) => HIGH_RISK.has(d)).map((d) => (
                   <option key={d} value={d}>{d} ⚠</option>
                 ))}
               </optgroup>
-              <optgroup label="Other Districts / ଅନ୍ୟ ଜିଲ୍ଲା">
+              <optgroup label="Other Districts / इतर जिल्हा">
                 {ALL_DISTRICTS.filter((d) => !HIGH_RISK.has(d)).map((d) => (
                   <option key={d} value={d}>{d}</option>
                 ))}
@@ -562,7 +559,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           <div className="form-group">
             <label className="form-label" htmlFor="symptomText">
               Describe Symptoms
-              <span className="odia-label">ଲକ୍ଷଣ ବର୍ଣ୍ଣନା କରନ୍ତୁ</span>
+              <span className="odia-label">लक्षणे ବର୍ଣ୍ଣନା କରନ୍ତୁ</span>
             </label>
             <textarea
               id="symptomText"
@@ -859,7 +856,7 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
         {result.symptoms?.length > 0 && (
           <div style={{ marginBottom: '0.875rem' }}>
             <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: sevColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.375rem', fontFamily: "'Noto Sans Oriya', sans-serif" }}>
-              Identified Symptoms / ଚିହ୍ନଟ ଲକ୍ଷଣ
+              Identified Symptoms / ଚିହ୍ନଟ लक्षणे
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
               {result.symptoms.map((s, i) => (

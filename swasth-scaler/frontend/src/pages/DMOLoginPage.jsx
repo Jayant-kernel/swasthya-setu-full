@@ -38,7 +38,7 @@ export default function DMOLoginPage() {
           <h1 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>
             District Medical Officer Login
           </h1>
-          <div style={{ fontFamily: "'Noto Sans Oriya', sans-serif", opacity: 0.9 }}>
+          <div style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", opacity: 0.9 }}>
             ଜିଲ୍ଲା ଚିକିତ୍ସା ଅଧିକାରୀ ଲଗଇନ୍
           </div>
         </div>
@@ -49,7 +49,7 @@ export default function DMOLoginPage() {
           <div className="form-group">
             <label className="form-label">
               Email Address
-              <span className="odia-label">ଇମେଲ ଠିକଣା</span>
+              <span className="odia-label">ईमेल पत्ता</span>
             </label>
             <input
               type="email"
@@ -64,7 +64,7 @@ export default function DMOLoginPage() {
           <div className="form-group">
             <label className="form-label">
               Password
-              <span className="odia-label">ପାସୱାର୍ଡ</span>
+              <span className="odia-label">पासवर्ड</span>
             </label>
             <input
               type="password"
@@ -77,7 +77,7 @@ export default function DMOLoginPage() {
           </div>
 
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In / ସାଇନ ଇନ'}
+            {loading ? 'Signing in...' : 'Sign In / लॉग इन करा'}
           </button>
         </form>
 

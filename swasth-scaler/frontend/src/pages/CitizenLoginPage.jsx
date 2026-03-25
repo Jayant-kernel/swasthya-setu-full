@@ -60,7 +60,7 @@ export default function CitizenLoginPage() {
           <div className="form-group">
             <label className="form-label">
               Password
-              <span className="odia-label">ପାସୱାର୍ଡ</span>
+              <span className="odia-label">पासवर्ड</span>
             </label>
             <input
               type="password"
@@ -73,7 +73,7 @@ export default function CitizenLoginPage() {
           </div>
 
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Please wait...' : 'Sign In / ସାଇନ ଇନ'}
+            {loading ? 'Please wait...' : 'Sign In / लॉग इन करा'}
           </button>
         </form>
 

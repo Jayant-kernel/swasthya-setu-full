@@ -8,7 +8,7 @@ const SEVERITY_CONFIG = {
     border: '#a9dfbf',
     labelColor: '#1e8449',
     english: 'Safe',
-    odia: 'ସୁରକ୍ଷିତ',
+    marathi: 'सुरक्षित',
     badgeClass: 'badge-green',
     headingColor: '#1e8449',
   },
@@ -19,7 +19,7 @@ const SEVERITY_CONFIG = {
     border: '#f8d7a0',
     labelColor: '#b7770d',
     english: 'Moderate',
-    odia: 'ମଧ୍ୟମ',
+    marathi: 'मध्यम',
     badgeClass: 'badge-yellow',
     headingColor: '#b7770d',
   },
@@ -30,7 +30,7 @@ const SEVERITY_CONFIG = {
     border: '#f5b7b1',
     labelColor: '#c0392b',
     english: 'Emergency',
-    odia: 'ଜରୁରୀ',
+    marathi: 'तातडीने',
     badgeClass: 'badge-red',
     headingColor: '#c0392b',
   },
@@ -86,7 +86,7 @@ export default function TriageCard({ severity, symptoms, sickle_cell_risk, brief
             </div>
             <div
               style={{
-                fontFamily: "'Noto Sans Oriya', sans-serif",
+                fontFamily: "'Noto Sans Devanagari', sans-serif",
                 fontSize: '1rem',
                 color: config.labelColor,
                 opacity: 0.85,
@@ -118,7 +118,7 @@ export default function TriageCard({ severity, symptoms, sickle_cell_risk, brief
           <span style={{ fontSize: '1.125rem' }} aria-hidden="true">🔴</span>
           <div>
             <div>Sickle Cell Risk</div>
-            <div style={{ fontFamily: "'Noto Sans Oriya', sans-serif", fontSize: '0.875rem', opacity: 0.9 }}>
+            <div style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", fontSize: '0.875rem', opacity: 0.9 }}>
               ସିକଲ ସେଲ ଆଶଙ୍କା
             </div>
           </div>

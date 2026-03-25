@@ -139,7 +139,7 @@ export default function ChildbirthPage() {
         </div>
         <div>
           <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-text)' }}>Childbirth Assistant</div>
-          <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)', fontFamily: "'Noto Sans Oriya', sans-serif" }}>
+          <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
             ପ୍ରସବ ସହାୟକ · Maternal & Newborn Care
           </div>
         </div>

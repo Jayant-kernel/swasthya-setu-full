@@ -1,13 +1,46 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import Sidebar from '../components/Sidebar.jsx'
+import TopNav from '../components/TopNav.jsx'
+import GlobalHeader from '../components/GlobalHeader.jsx'
 
 const ALL_DISTRICTS = [
-  'Koraput','Malkangiri','Rayagada','Kalahandi','Kandhamal','Nabarangpur','Mayurbhanj',
-  'Angul','Balasore','Bargarh','Bhadrak','Bolangir','Boudh','Cuttack','Deogarh',
-  'Dhenkanal','Gajapati','Ganjam','Jagatsinghpur','Jajpur','Jharsuguda','Kendrapara',
-  'Kendujhar','Khordha','Nayagarh','Nuapada','Puri','Sambalpur','Subarnapur','Sundargarh',
+  "Ahilyanagar",
+  "Akola",
+  "Amravati",
+  "Beed",
+  "Bhandara",
+  "Buldhana",
+  "Chandrapur",
+  "Chhatrapati Sambhajinagar",
+  "Dharashiv",
+  "Dhule",
+  "Gadchiroli",
+  "Gondia",
+  "Hingoli",
+  "Jalgaon",
+  "Jalna",
+  "Kolhapur",
+  "Latur",
+  "Mumbai City",
+  "Mumbai Suburban",
+  "Nagpur",
+  "Nanded",
+  "Nandurbar",
+  "Nashik",
+  "Palghar",
+  "Parbhani",
+  "Pune",
+  "Raigad",
+  "Ratnagiri",
+  "Sangli",
+  "Satara",
+  "Sindhudurg",
+  "Solapur",
+  "Thane",
+  "Wardha",
+  "Washim",
+  "Yavatmal"
 ]
 
 const SEVERITY_ORDER = { red: 0, yellow: 1, green: 2 }
@@ -33,22 +66,22 @@ function todayStart() {
 export default function HomePage() {
   const navigate = useNavigate()
 
-  const [activeTab, setActiveTab]       = useState('ALL')
-  const [sortMode, setSortMode]         = useState('latest')
-  const [query, setQuery]               = useState('')
+  const [activeTab, setActiveTab] = useState('ALL')
+  const [sortMode, setSortMode] = useState('latest')
+  const [query, setQuery] = useState('')
   const [districtFilter, setDistrictFilter] = useState('')
   const debounceRef = useRef(null)
-  const [isOnline, setIsOnline]         = useState(navigator.onLine)
+  const [isOnline, setIsOnline] = useState(navigator.onLine)
 
   // State declarations — all must be before any useEffect that references them
   const [patientResults, setPatientResults] = useState([])
-  const [loading, setLoading]           = useState(false)
-  const [totalCount, setTotalCount]     = useState(0)
-  const [showCount, setShowCount]       = useState(6)
-  const [dashError, setDashError]       = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [totalCount, setTotalCount] = useState(0)
+  const [showCount, setShowCount] = useState(6)
+  const [dashError, setDashError] = useState(null)
 
   // Today's counts per severity
-  const [todayCounts, setTodayCounts]   = useState({ red: 0, yellow: 0, green: 0 })
+  const [todayCounts, setTodayCounts] = useState({ red: 0, yellow: 0, green: 0 })
 
   // Online/offline listener
   useEffect(() => {
@@ -194,40 +227,22 @@ export default function HomePage() {
 
   return (
     <div style={{ minHeight: '100dvh', background: BLUE_BG, display: 'flex', flexDirection: 'column' }}>
-      <Sidebar />
-
       {/* Header */}
-      <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '0.875rem 1.25rem 0.875rem 4rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-          <div>
-            <div style={{ fontWeight: 700, fontSize: '1.0625rem', color: '#111' }}>ଡ୍ୟାଶବୋର୍ଡ</div>
-            <div style={{ fontSize: '0.75rem', color: '#6b7280' }}>Dashboard</div>
-          </div>
-          {/* Online indicator */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 8 }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: isOnline ? '#22c55e' : '#9ca3af' }} />
-            <span style={{ fontSize: '0.6875rem', color: isOnline ? '#16a34a' : '#6b7280' }}>{isOnline ? 'Online' : 'Offline'}</span>
-          </div>
-        </div>
-        <button
-          onClick={() => navigate('/patient')}
-          style={{ minHeight: 48, padding: '0 1.25rem', background: TEAL, color: '#fff', border: 'none', borderRadius: 10, fontSize: '0.9375rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-        >
-          ➕ <span>ନୂତନ ରୋଗୀ</span>
-        </button>
-      </header>
+      <GlobalHeader />
+
+      <TopNav />
 
       <main style={{ flex: 1, padding: '1rem 1.25rem 1.5rem', maxWidth: 1100, width: '100%', margin: '0 auto' }}>
 
         {/* Today's summary bar */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
           {[
-            { sev: 'red',    label: 'ଜରୁରୀ',   sub: 'Emergency',  accent: '#C0392B', count: todayCounts.red },
-            { sev: 'yellow', label: 'ମଧ୍ୟମ',   sub: 'Moderate',   accent: '#B7791F', count: todayCounts.yellow },
-            { sev: 'green',  label: 'ସ୍ଥିର',    sub: 'Stable',     accent: '#1A6E5C', count: todayCounts.green },
+            { sev: 'red', label: 'तातडीने', sub: 'Emergency', accent: '#C0392B', count: todayCounts.red },
+            { sev: 'yellow', label: 'मध्यम', sub: 'Moderate', accent: '#B7791F', count: todayCounts.yellow },
+            { sev: 'green', label: 'स्थिर', sub: 'Stable', accent: '#1A6E5C', count: todayCounts.green },
           ].map(item => (
             <button key={item.sev}
-              onClick={() => setActiveTab(item.sev.toUpperCase())}
+              onClick={() => setActiveTab(activeTab === item.sev.toUpperCase() ? 'ALL' : item.sev.toUpperCase())}
               style={{
                 background: activeTab === item.sev.toUpperCase() ? item.accent : '#fff',
                 border: `1.5px solid ${activeTab === item.sev.toUpperCase() ? item.accent : '#e5e7eb'}`,
@@ -236,7 +251,7 @@ export default function HomePage() {
               }}
             >
               <div style={{ fontSize: '1.75rem', fontWeight: 800, lineHeight: 1, color: activeTab === item.sev.toUpperCase() ? '#fff' : item.accent }}>{item.count}</div>
-              <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginTop: 3, color: activeTab === item.sev.toUpperCase() ? 'rgba(255,255,255,0.9)' : '#374151', fontFamily: "'Noto Sans Oriya', sans-serif" }}>{item.label}</div>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginTop: 3, color: activeTab === item.sev.toUpperCase() ? 'rgba(255,255,255,0.9)' : '#374151', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>{item.label}</div>
               <div style={{ fontSize: '0.6875rem', color: activeTab === item.sev.toUpperCase() ? 'rgba(255,255,255,0.65)' : '#9ca3af', marginTop: 1 }}>{item.sub}</div>
             </button>
           ))}
@@ -244,21 +259,7 @@ export default function HomePage() {
 
         {/* Filter bar */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.625rem', marginBottom: '1rem', alignItems: 'center' }}>
-          {/* Severity tabs */}
-          <div style={{ display: 'flex', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
-            {['ALL', 'RED', 'YELLOW', 'GREEN'].map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)}
-                style={{
-                  minHeight: 40, padding: '0 0.875rem', border: 'none',
-                  borderRight: tab !== 'GREEN' ? '1px solid #e5e7eb' : 'none',
-                  background: activeTab === tab ? TEAL : 'transparent',
-                  color: activeTab === tab ? '#fff' : '#374151',
-                  fontWeight: activeTab === tab ? 700 : 500,
-                  fontSize: '0.875rem', cursor: 'pointer',
-                }}
-              >{tab}</button>
-            ))}
-          </div>
+
 
           {/* Sort */}
           <div style={{ display: 'flex', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
@@ -306,11 +307,11 @@ export default function HomePage() {
         {/* Error state */}
         {dashError && (
           <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
-            <div style={{ fontSize: '1rem', marginBottom: '0.75rem', fontFamily: "'Noto Sans Oriya', sans-serif" }}>ତ୍ରୁଟି ଘଟିଛି / Something went wrong</div>
+            <div style={{ fontSize: '1rem', marginBottom: '0.75rem', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>काहीतरी चूक झाली / Something went wrong</div>
             <div style={{ fontSize: '0.8125rem', color: '#9ca3af', marginBottom: '1rem' }}>{dashError}</div>
             <button onClick={() => { setDashError(null); fetchRecords() }}
               style={{ minHeight: 44, padding: '0 1.5rem', background: TEAL, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>
-              ପୁନଃ ଚେଷ୍ଟା / Retry
+              पुन्हा प्रयत्न करा / Retry
             </button>
           </div>
         )}
@@ -318,7 +319,7 @@ export default function HomePage() {
         {/* Skeleton */}
         {loading && patientResults.length === 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '0.75rem' }}>
-            {[1,2,3,4,5,6].map(i => (
+            {[1, 2, 3, 4, 5, 6].map(i => (
               <div key={i} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '1rem', opacity: 0.5 }}>
                 <div style={{ height: 16, background: '#e5e7eb', borderRadius: 4, marginBottom: 8, width: '60%' }} />
                 <div style={{ height: 12, background: '#e5e7eb', borderRadius: 4, marginBottom: 8, width: '40%' }} />
@@ -331,7 +332,7 @@ export default function HomePage() {
         {/* Empty state */}
         {!loading && patientResults.length === 0 && (
           <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280', fontSize: '1rem' }}>
-            କୋଣସି ରୋଗୀ ମିଳିଲା ନାହିଁ<br/><span style={{ fontSize: '0.875rem' }}>No patients found.</span>
+            कोणतेही रुग्ण आढळले नाहीत<br /><span style={{ fontSize: '0.875rem' }}>No patients found.</span>
           </div>
         )}
 
@@ -366,7 +367,7 @@ export default function HomePage() {
                     onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = '#e5e7eb' }}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+                      <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" />
                     </svg>
                     Delete
                   </button>
@@ -431,7 +432,7 @@ export default function HomePage() {
           <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
             <button onClick={() => setShowCount(c => c + 6)}
               style={{ minHeight: 48, padding: '0 2rem', background: '#fff', border: `1.5px solid ${TEAL}`, color: TEAL, borderRadius: 10, fontSize: '0.9375rem', fontWeight: 700, cursor: 'pointer' }}>
-              ଆହୁରି ଦେଖନ୍ତୁ / Show more ({patientResults.length - showCount} remaining)
+              आणखी पहा / Show more ({patientResults.length - showCount} remaining)
             </button>
           </div>
         )}

@@ -2,7 +2,8 @@ import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Hands } from '@mediapipe/hands'
 import { Camera } from '@mediapipe/camera_utils'
-import Sidebar from '../components/Sidebar.jsx'
+import TopNav from '../components/TopNav.jsx'
+import GlobalHeader from '../components/GlobalHeader.jsx'
 
 const TEAL = '#0F6E56'
 const API_URL = 'http://localhost:5000'
@@ -212,19 +213,8 @@ export default function ISLPage() {
 
   return (
     <div style={{ minHeight: '100dvh', background: '#f7f9f8', display: 'flex', flexDirection: 'column' }}>
-      <Sidebar />
-      <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '0.875rem 1.25rem 0.875rem 4rem', display: 'flex', alignItems: 'center', gap: '0.875rem', position: 'sticky', top: 0, zIndex: 10 }}>
-        <button onClick={() => { stopCamera(); navigate('/patient') }}
-          style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.25rem', display: 'flex', alignItems: 'center', color: TEAL }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6" />
-          </svg>
-        </button>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: '1.0625rem', color: '#111' }}>ISL Sign Language / ସ୍ୱାସ୍ଥ୍ୟ ସେତୁ</div>
-          <div style={{ fontSize: '0.8125rem', color: '#6b7280' }}>Powered by Machine Learning</div>
-        </div>
-      </header>
+      <GlobalHeader />
+      <TopNav />
 
       <main style={{ flex: 1, padding: '1.25rem', maxWidth: 760, width: '100%', margin: '0 auto' }}>
 
