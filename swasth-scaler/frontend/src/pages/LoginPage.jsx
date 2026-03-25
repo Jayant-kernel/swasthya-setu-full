@@ -1,11 +1,13 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 import { supabase } from '../lib/supabase'
 
 import LogoIcon from '../components/LogoIcon.jsx'
 
 export default function LoginPage() {
   const navigate = useNavigate()
+  const auth = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isSignUp, setIsSignUp] = useState(false)
@@ -17,6 +19,7 @@ export default function LoginPage() {
   async function handleGoogleLogin() {
     setGoogleLoading(true)
     setError('')
+    localStorage.setItem('userRole', 'asha')
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${window.location.origin}/home` },
@@ -50,9 +53,7 @@ export default function LoginPage() {
         setInfo('Account created! Check your email to confirm, then sign in.')
         setIsSignUp(false)
       } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
-        localStorage.setItem('userRole', 'asha')
+        await auth.login(email, password, 'asha')
         navigate('/home')
       }
     } catch (err) {
@@ -104,7 +105,7 @@ export default function LoginPage() {
           </div>
           <div style={{ textAlign: 'center' }}>
             <p style={{ color: 'rgba(255,255,255,0.9)', fontSize: '0.9375rem', lineHeight: 1.5 }}>
-              Healthcare Bridge for Rural Odisha
+              Healthcare Bridge for Rural Maharashtra
             </p>
             <p
               style={{
@@ -114,7 +115,7 @@ export default function LoginPage() {
                 marginTop: '0.25rem',
               }}
             >
-              ଗ୍ରାମୀଣ ଓଡ଼ିଶା ପାଇଁ आरोग्य सेतू
+              ग्रामीण महाराष्ट्रासाठी आरोग्य सेतू
             </p>
           </div>
         </div>
@@ -255,7 +256,18 @@ export default function LoginPage() {
             </span>
           </p>
 
-          <div style={{ textAlign: 'center', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)' }}>
+          <div style={{ textAlign: 'center', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <Link
+              to="/login/dmo"
+              style={{
+                color: 'var(--color-primary)',
+                fontSize: '0.875rem',
+                fontWeight: 600,
+                textDecoration: 'none',
+              }}
+            >
+              Are you a District Medical Officer? Login here →
+            </Link>
             <Link
               to="/"
               style={{

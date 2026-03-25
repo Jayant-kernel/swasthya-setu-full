@@ -31,7 +31,7 @@ export default function CitizenLoginPage() {
       <div className="card" style={{ width: '100%', maxWidth: '400px' }}>
         <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
           <h1 style={{ color: 'var(--color-primary)', fontSize: '1.5rem', marginBottom: '0.5rem' }}>
-            Citizen Portal / ନାଗରିକ ପୋର୍ଟାଲ
+            Citizen Portal / नागरिक पोर्टल
           </h1>
           <p className="text-muted">Sign in to access your health records</p>
         </div>
@@ -42,7 +42,7 @@ export default function CitizenLoginPage() {
           <div className="form-group">
             <label className="form-label">
               Mobile Number
-              <span className="odia-label">ମୋବାଇଲ ନଂ</span>
+              <span className="marathi-label">मोबाईल नंबर</span>
             </label>
             <div className="input-prefix-group">
               <span className="input-prefix">+91</span>
@@ -60,7 +60,7 @@ export default function CitizenLoginPage() {
           <div className="form-group">
             <label className="form-label">
               Password
-              <span className="odia-label">पासवर्ड</span>
+              <span className="marathi-label">पासवर्ड</span>
             </label>
             <input
               type="password"

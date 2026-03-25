@@ -39,7 +39,7 @@ export default function DMOLoginPage() {
             District Medical Officer Login
           </h1>
           <div style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", opacity: 0.9 }}>
-            ଜିଲ୍ଲା ଚିକିତ୍ସା ଅଧିକାରୀ ଲଗଇନ୍
+            जिल्हा वैद्यकीय अधिकारी लॉगिन
           </div>
         </div>
 
@@ -49,7 +49,7 @@ export default function DMOLoginPage() {
           <div className="form-group">
             <label className="form-label">
               Email Address
-              <span className="odia-label">ईमेल पत्ता</span>
+              <span className="marathi-label">ईमेल पत्ता</span>
             </label>
             <input
               type="email"
@@ -64,7 +64,7 @@ export default function DMOLoginPage() {
           <div className="form-group">
             <label className="form-label">
               Password
-              <span className="odia-label">पासवर्ड</span>
+              <span className="marathi-label">पासवर्ड</span>
             </label>
             <input
               type="password"
@@ -81,8 +81,11 @@ export default function DMOLoginPage() {
           </button>
         </form>
 
-        <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-          <Link to="/" style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+        <div style={{ marginTop: '1.5rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <Link to="/login/asha" style={{ fontSize: '0.875rem', color: 'var(--color-primary)', fontWeight: 600, textDecoration: 'none' }}>
+            Are you an ASHA Worker? Login here →
+          </Link>
+          <Link to="/" style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', textDecoration: 'none' }}>
             ← Back to role selection
           </Link>
         </div>

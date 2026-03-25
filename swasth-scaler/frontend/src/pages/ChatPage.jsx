@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 import { openai, getChatSystemPrompt } from '../lib/openai'
 import { usePatient } from '../context/PatientContext.jsx'
 import ChatBubble from '../components/ChatBubble.jsx'
@@ -7,34 +8,38 @@ import TopNav from '../components/TopNav.jsx'
 import GlobalHeader from '../components/GlobalHeader.jsx'
 
 const SEVERITY_BADGE = {
-  green:  { label: 'Safe / ସୁରକ୍ଷିତ',       cls: 'badge-green' },
-  yellow: { label: 'Moderate / ମଧ୍ୟମ',        cls: 'badge-yellow' },
-  red:    { label: 'Emergency / ଜରୁରୀ',       cls: 'badge-red' },
+  green:  { label: 'Stable / स्थिर',       cls: 'badge-green' },
+  yellow: { label: 'Moderate / मध्यम',        cls: 'badge-yellow' },
+  red:    { label: 'Emergency / तातडीने',       cls: 'badge-red' },
 }
 
 const QUICK_REPLIES = [
-  { marathi: 'କ\'ଣ ଔଷଧ ଦେବି?', english: 'What medicine should I give?' },
-  { marathi: 'କେତେ ଗୁରୁତର?',   english: 'How serious is this case?' },
-  { marathi: 'ଡାକ୍ତରଙ୍କ ପାଖକୁ ପଠାଇବି?', english: 'Should I refer to a doctor?' },
+  { marathi: 'औषध काय द्यावे?', english: 'What medicine should I give?' },
+  { marathi: 'हे किती गंभीर आहे?',   english: 'How serious is this case?' },
+  { marathi: 'डॉक्टरांकडे पाठवू का?', english: 'Should I refer to a doctor?' },
 ]
 
 function buildGreeting(patient, triage) {
   const sickleNote = triage.sickle_cell_risk
-    ? '\n\n🔴 ସତର୍କତା: ଏହି ରୋଗୀଙ୍କୁ ଜିଲ୍ଲା ଡାକ୍ତରଖାନାକୁ ତୁରନ୍ତ ପଠାନ୍ତୁ।'
+    ? '\n\n🔴 सतर्कता: या रुग्णाला त्वरित जिल्हा रुग्णालयात पाठवा.'
     : ''
 
-  return `ନମସ୍କାର! ମୁଁ ଆପଣଙ୍କ AI ସ୍ୱାସ୍ଥ୍ୟ ସହାୟକ।
-ରୋଗୀ **${patient.name}** ବିଷୟରେ ଆପଣଙ୍କର ପ୍ରଶ୍ନ କ'ଣ?
+  const historyNote = (patient.history && patient.history.length > 1)
+    ? `\n\nया रुग्णाकडे पूर्वीच्या **${patient.history.length}** भेटींचा इतिहास आहे.`
+    : ''
 
-**ତ୍ରିଆଜ ଫଳ: ${triage.severity.toUpperCase()}**
+  return `नमस्कार! मी तुमचा AI आरोग्य सहाय्यक आहे.
+रुग्ण **${patient.name}** बद्दल तुमचे काय प्रश्न आहेत?
+
+**ट्रायज निकाल: ${triage.severity.toUpperCase()}**
 ${triage.brief}
 
-ଲକ୍ଷଣ: ${triage.symptoms.join(', ')}${sickleNote}`
+लक्षणे: ${triage.symptoms.join(', ')}${sickleNote}${historyNote}`
 }
 
 export default function ChatPage() {
   const navigate = useNavigate()
-  const { patientData, triageResult } = usePatient()
+  const { patientData, setPatientData, triageResult, setTriageResult } = usePatient()
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -42,14 +47,91 @@ export default function ChatPage() {
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
 
-  // If no patient data, redirect back
+  // Selector state
+  const [availablePatients, setAvailablePatients] = useState([])
+  const [loadingPatients, setLoadingPatients] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // Fetch all patients if none selected
   useEffect(() => {
     if (!patientData?.name || !triageResult) {
-      navigate('/patient')
+      fetchAvailablePatients()
     }
-  }, [patientData, triageResult, navigate])
+  }, [patientData, triageResult])
 
-  // Pre-load greeting
+  async function fetchAvailablePatients() {
+    setLoadingPatients(true)
+    try {
+      // Robust fetch: try patients table with join first
+      let { data, error } = await supabase
+        .from('patients')
+        .select('*, triage_records(*)')
+        .order('created_at', { ascending: false })
+      
+      let patients = []
+
+      if (!error && data && data.length > 0) {
+        patients = data.map(p => {
+          const sorted = [...(p.triage_records || [])].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+          return { ...p, records: sorted, latestSeverity: sorted[0]?.severity || 'green' }
+        }).filter(p => p.records.length > 0)
+      } else {
+        // Fallback: direct triage_records
+        const { data: recs, error: err2 } = await supabase
+          .from('triage_records')
+          .select('*')
+          .order('created_at', { ascending: false })
+        
+        if (err2) throw err2
+        
+        const grouped = new Map()
+        recs.forEach(r => {
+          const key = `${(r.patient_name || '').toLowerCase()}_${r.age}_${r.district}`
+          if (!grouped.has(key)) {
+            grouped.set(key, {
+              id: r.patient_id || key,
+              name: r.patient_name,
+              age: r.age,
+              gender: r.gender,
+              district: r.district,
+              records: []
+            })
+          }
+          grouped.get(key).records.push(r)
+        })
+        patients = Array.from(grouped.values()).map(p => ({
+          ...p,
+          latestSeverity: p.records[0]?.severity || 'green'
+        }))
+      }
+      
+      setAvailablePatients(patients)
+    } catch (err) {
+      console.error('Fetch patients error:', err)
+    } finally {
+      setLoadingPatients(false)
+    }
+  }
+
+  function handleSelectPatient(p) {
+    const latest = p.records[0]
+    setPatientData({
+      name: p.name,
+      age: p.age,
+      gender: p.gender,
+      district: p.district,
+      symptomText: latest.symptom_text || '',
+      history: p.records // Pass full history
+    })
+    setTriageResult({
+      severity: latest.severity,
+      brief: latest.brief,
+      symptoms: latest.symptoms || [],
+      sickle_cell_risk: latest.sickle_cell_risk
+    })
+  }
+
+  // Pre-load greeting when patient is selected
   useEffect(() => {
     if (patientData?.name && triageResult) {
       setMessages([
@@ -59,7 +141,7 @@ export default function ChatPage() {
         },
       ])
     }
-  }, []) // Only on mount
+  }, [patientData, triageResult])
 
   // Auto-scroll
   useEffect(() => {
@@ -141,7 +223,74 @@ export default function ChatPage() {
     }
   }
 
-  if (!patientData?.name || !triageResult) return null
+   if (!patientData?.name || !triageResult) {
+    const filtered = availablePatients.filter(p => 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      p.district.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--color-bg)' }}>
+        <GlobalHeader />
+        <TopNav />
+        <main style={{ flex: 1, padding: '2rem 1.25rem', maxWidth: 1000, width: '100%', margin: '0 auto', overflowY: 'auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--color-primary)', letterSpacing: '-0.03em', marginBottom: '1rem' }}>AI चॅट: रुग्ण निवडा<br /><span style={{ fontSize: '1.25rem', opacity: 0.7 }}>AI Chat: Select a Patient</span></h1>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '1.125rem' }}>कोणाबद्दल बोलायचे आहे? / Who would you like to talk about?</p>
+          </div>
+
+          {/* Search bar */}
+          <div style={{ position: 'relative', maxWidth: 500, margin: '0 auto 3rem' }}>
+            <input 
+              type="text" 
+              placeholder="रुग्णाचे नाव शोधा... / Search patient..." 
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              style={{ width: '100%', padding: '1.25rem 3rem', borderRadius: 99, border: '2px solid var(--color-border)', background: 'var(--color-surface)', fontSize: '1rem', outline: 'none', transition: 'all 0.2s' }}
+              onFocus={e => e.target.style.borderColor = 'var(--color-primary)'}
+              onBlur={e => e.target.style.borderColor = 'var(--color-border)'}
+            />
+            <span style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>🔍</span>
+          </div>
+
+          {loadingPatients ? (
+            <div style={{ textAlign: 'center', padding: '4rem' }}>Loading patients...</div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
+              {filtered.map(p => {
+                const sevColor = p.latestSeverity === 'red' ? 'var(--color-red)' : p.latestSeverity === 'yellow' ? 'var(--color-yellow)' : 'var(--color-green)'
+                return (
+                  <button 
+                    key={p.id} 
+                    onClick={() => handleSelectPatient(p)}
+                    style={{ background: 'var(--color-surface)', border: '1.5px solid var(--color-border)', borderLeft: `6px solid ${sevColor}`, borderRadius: 16, padding: '1.5rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative', overflow: 'hidden' }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.08)'; e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--color-border)'; }}
+                  >
+                    <div style={{ fontWeight: 800, fontSize: '1.125rem', color: 'var(--color-text)', marginBottom: '0.25rem' }}>{p.name}</div>
+                    <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '1rem' }}>{p.age} yrs · {p.gender} · {p.district}</div>
+                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                      <div style={{ display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: 6, background: `${sevColor}15`, color: sevColor, fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        {p.latestSeverity}
+                      </div>
+                      <span style={{ fontSize: '0.6875rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                         {p.records.length} भेटी / {p.records.length} visits
+                      </span>
+                    </div>
+                  </button>
+                )
+              })}
+              {filtered.length === 0 && (
+                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', color: 'var(--color-text-muted)' }}>
+                  रुग्ण आढळले नाहीत / No patients found.
+                </div>
+              )}
+            </div>
+          )}
+        </main>
+      </div>
+    )
+  }
 
   const badge = SEVERITY_BADGE[triageResult.severity?.toLowerCase()] || SEVERITY_BADGE.green
 
@@ -285,16 +434,16 @@ export default function ChatPage() {
           <div style={{ padding: '0.5rem 2rem 0', background: 'var(--color-surface)', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', borderTop: '1px solid var(--color-border)' }}>
             {QUICK_REPLIES.map((chip) => (
               <button
-                key={chip.odia}
+                key={chip.marathi}
                 type="button"
                 onClick={() => sendMessage(chip.english)}
                 disabled={loading}
                 style={{ padding: '0.3rem 0.75rem', borderRadius: 99, border: '1.5px solid var(--color-primary)', background: 'transparent', color: 'var(--color-primary)', fontSize: '0.8125rem', fontWeight: 600, cursor: loading ? 'default' : 'pointer', fontFamily: "'Noto Sans Devanagari', sans-serif", whiteSpace: 'nowrap' }}
               >
-                {chip.odia}
+                {chip.marathi}
               </button>
             ))}
-            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', alignSelf: 'center', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>मराठी ବା ଇଂରାଜୀରେ ଲେଖନ୍ତୁ</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', alignSelf: 'center', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>मराठी किंवा इंग्रजीमध्ये लिहा</span>
           </div>
 
           {/* Input */}
@@ -313,7 +462,7 @@ export default function ChatPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask a question… / ପ୍ରଶ୍ନ କରନ୍ତୁ…"
+              placeholder="Ask a question… / प्रश्न विचारा…"
               disabled={loading}
               rows={1}
               style={{

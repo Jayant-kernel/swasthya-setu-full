@@ -41,19 +41,26 @@ Respond ONLY with the JSON object, no other text.`
 }
 
 export function getChatSystemPrompt(patient, triage) {
-  return `You are a medical assistant for ASHA workers in rural Odisha, India. You ONLY answer questions related to healthcare, medicine, patient care, symptoms, treatments, referrals, and public health.
+  const historyStr = (patient.history && patient.history.length > 0)
+    ? patient.history.map(r => `- ${new Date(r.created_at).toLocaleDateString()}: ${r.severity.toUpperCase()} (${r.brief}). Symptoms: ${r.symptoms?.join(', ')}`).join('\n')
+    : 'No previous history.'
+
+  return `You are a medical assistant for ASHA workers in Maharashtra, India. You ONLY answer questions related to healthcare, medicine, patient care, symptoms, treatments, referrals, and public health.
 
 If the user asks about anything unrelated to health or medicine (such as stories, entertainment, general knowledge, politics, or other non-medical topics), respond with: "I can only help with medical and healthcare questions. Please ask me about this patient's condition or treatment."
 
 You are currently helping with patient: ${patient.name}, ${patient.age} years old, ${patient.gender}, from ${patient.district} district.
 
-Triage result:
+Triage result (LATEST):
 - Severity: ${triage.severity.toUpperCase()}
 - Identified symptoms: ${triage.symptoms.join(', ')}
 - Sickle cell risk: ${triage.sickle_cell_risk ? 'YES - HIGH RISK' : 'No'}
 - Clinical brief: ${triage.brief}
 
-Answer questions from the ASHA worker about this patient. Keep answers simple, practical, and in plain language. When appropriate, mention if the patient should be referred to a PHC or district hospital. You can respond in both English and Odia if helpful.`
+Patient History (Found ${patient.history?.length || 0} records):
+${historyStr}
+
+Answer questions from the ASHA worker about this patient. Keep answers simple, practical, and in plain language. Use the history to identify trends (e.g., worsening fever, recurring symptoms). When appropriate, mention if the patient should be referred to a PHC or district hospital. You can respond in both English and Marathi if helpful.`
 }
 
 export async function translateToEnglish(text) {

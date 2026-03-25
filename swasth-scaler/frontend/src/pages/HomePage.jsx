@@ -57,11 +57,7 @@ function timeAgo(iso) {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
-function todayStart() {
-  const d = new Date()
-  d.setHours(0, 0, 0, 0)
-  return d.toISOString()
-}
+// Utility removed as Triage counts now reflect the full patient list, not just today's.
 
 export default function HomePage() {
   const navigate = useNavigate()
@@ -80,8 +76,8 @@ export default function HomePage() {
   const [showCount, setShowCount] = useState(6)
   const [dashError, setDashError] = useState(null)
 
-  // Today's counts per severity
-  const [todayCounts, setTodayCounts] = useState({ red: 0, yellow: 0, green: 0 })
+  // Summary counts per severity
+  const [summaryCounts, setSummaryCounts] = useState({ red: 0, yellow: 0, green: 0 })
 
   // Online/offline listener
   useEffect(() => {
@@ -92,24 +88,16 @@ export default function HomePage() {
     return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off) }
   }, [])
 
-  // Fetch today's counts (runs after patientResults changes)
+  // Update summary counts whenever patient list changes
   useEffect(() => {
-    async function fetchCounts() {
-      try {
-        const since = todayStart()
-        const counts = { red: 0, yellow: 0, green: 0 }
-        for (const sev of ['red', 'yellow', 'green']) {
-          const { count } = await supabase
-            .from('triage_records')
-            .select('id', { count: 'exact', head: true })
-            .eq('severity', sev)
-            .gte('created_at', since)
-          counts[sev] = count || 0
-        }
-        setTodayCounts(counts)
-      } catch { /* non-critical, ignore */ }
-    }
-    fetchCounts()
+    const counts = { red: 0, yellow: 0, green: 0 }
+    patientResults.forEach(p => {
+      // Use latestSeverity which is pre-calculated in fetchRecords
+      if (p.latestSeverity && counts[p.latestSeverity] !== undefined) {
+        counts[p.latestSeverity]++
+      }
+    })
+    setSummaryCounts(counts)
   }, [patientResults])
 
   const fetchRecords = useCallback(async () => {
@@ -237,9 +225,9 @@ export default function HomePage() {
         {/* Today's summary bar */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
           {[
-            { sev: 'red', label: 'तातडीने', sub: 'Emergency', accent: '#C0392B', count: todayCounts.red },
-            { sev: 'yellow', label: 'मध्यम', sub: 'Moderate', accent: '#B7791F', count: todayCounts.yellow },
-            { sev: 'green', label: 'स्थिर', sub: 'Stable', accent: 'var(--primary)', count: todayCounts.green },
+             { sev: 'red', label: 'तातडीने', sub: 'Emergency', accent: '#C0392B', count: summaryCounts.red },
+            { sev: 'yellow', label: 'मध्यम', sub: 'Moderate', accent: '#B7791F', count: summaryCounts.yellow },
+            { sev: 'green', label: 'स्थिर', sub: 'Stable', accent: 'var(--primary)', count: summaryCounts.green },
           ].map(item => (
             <button key={item.sev}
               onClick={() => setActiveTab(activeTab === item.sev.toUpperCase() ? 'ALL' : item.sev.toUpperCase())}
