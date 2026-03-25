@@ -26,7 +26,7 @@ export default function DMODashboardPage() {
         justifyContent: 'space-between', 
         alignItems: 'center', 
         marginBottom: '2rem',
-        background: '#fff',
+        background: 'var(--surface)',
         padding: '1rem 1.5rem',
         borderRadius: '12px',
         boxShadow: 'var(--shadow)'

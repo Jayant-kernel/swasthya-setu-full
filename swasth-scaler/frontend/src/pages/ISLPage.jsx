@@ -212,19 +212,19 @@ export default function ISLPage() {
   }
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#f7f9f8', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
       <GlobalHeader />
       <TopNav />
 
       <main style={{ flex: 1, padding: '1.25rem', maxWidth: 760, width: '100%', margin: '0 auto' }}>
 
-        <div style={{ background: isConnected ? '#f0fdf4' : '#fef2f2', border: `1px solid ${isConnected ? '#bbf7d0' : '#fecaca'}`, borderRadius: 10, padding: '0.625rem 0.875rem', marginBottom: '1.25rem', fontSize: '0.8125rem', color: isConnected ? '#166534' : '#991b1b', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ height: 10, width: 10, borderRadius: '50%', background: isConnected ? '#22c55e' : '#ef4444' }}></span>
+        <div style={{ background: isConnected ? 'var(--success-bg)' : 'var(--error-bg)', border: `1px solid ${isConnected ? 'var(--success-text)' : 'var(--error-text)'}`, borderRadius: 10, padding: '0.625rem 0.875rem', marginBottom: '1.25rem', fontSize: '0.8125rem', color: isConnected ? 'var(--success-text)' : 'var(--error-text)', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ height: 10, width: 10, borderRadius: '50%', background: isConnected ? 'var(--primary)' : 'var(--error-text)' }}></span>
           {isConnected ? 'API Connected and ready.' : 'API not running. Please start the ML backend on port 5000.'}
         </div>
 
-        <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #e5e7eb', overflow: 'hidden', marginBottom: '1rem' }}>
-          <div style={{ background: '#111', minHeight: cameraOn ? 'auto' : 180, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ background: 'var(--surface)', borderRadius: 16, border: '1px solid var(--border)', overflow: 'hidden', marginBottom: '1rem' }}>
+          <div style={{ background: 'var(--text-main)', minHeight: cameraOn ? 'auto' : 180, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             {cameraOn ? (
               <div style={{ position: 'relative', width: '100%', maxWidth: '640px', margin: '0 auto' }}>
                 <video
@@ -236,14 +236,14 @@ export default function ISLPage() {
                 />
 
                 {activeLabel && (
-                  <div style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', background: activeConfidence > 0.75 ? '#1a472a' : '#4a3000', color: '#fff', borderRadius: 99, padding: '0.4rem 1.2rem', fontSize: '1rem', fontWeight: 700, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', background: activeConfidence > 0.75 ? '#1a472a' : '#4a3000', color: 'var(--surface)', borderRadius: 99, padding: '0.4rem 1.2rem', fontSize: '1rem', fontWeight: 700, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span>{activeLabel.replace('_', ' ').toUpperCase()}</span>
                     <span style={{ fontSize: '0.8rem', opacity: 0.85 }}>{(activeConfidence * 100).toFixed(1)}%</span>
                   </div>
                 )}
               </div>
             ) : (
-              <div style={{ textAlign: 'center', color: '#9ca3af', padding: '2rem' }}>
+              <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ marginBottom: 8, opacity: 0.4 }}>
                   <path d="M23 7l-7 5 7 5V7z" /><rect x="1" y="5" width="15" height="14" rx="2" />
                 </svg>
@@ -255,26 +255,26 @@ export default function ISLPage() {
           <div style={{ padding: '1rem' }}>
             {!cameraOn ? (
               <button onClick={startCamera} disabled={!isConnected}
-                style={{ width: '100%', padding: '0.875rem', background: isConnected ? TEAL : '#9ca3af', color: '#fff', border: 'none', borderRadius: 10, fontSize: '1rem', fontWeight: 700, cursor: isConnected ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                style={{ width: '100%', padding: '0.875rem', background: isConnected ? TEAL : '#9ca3af', color: 'var(--surface)', border: 'none', borderRadius: 10, fontSize: '1rem', fontWeight: 700, cursor: isConnected ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                 Start Camera
               </button>
             ) : (
               <button onClick={stopCamera}
-                style={{ width: '100%', padding: '0.75rem', background: '#fee2e2', color: '#dc2626', border: '1.5px solid #fecaca', borderRadius: 10, fontSize: '0.9375rem', fontWeight: 700, cursor: 'pointer' }}>
+                style={{ width: '100%', padding: '0.75rem', background: 'var(--error-bg)', color: 'var(--error-text)', border: '1.5px solid var(--error-text)', borderRadius: 10, fontSize: '0.9375rem', fontWeight: 700, cursor: 'pointer' }}>
                 Stop Camera
               </button>
             )}
           </div>
         </div>
 
-        <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #e5e7eb', padding: '1.125rem', marginBottom: '1rem' }}>
+        <div style={{ background: 'var(--surface)', borderRadius: 16, border: '1px solid var(--border)', padding: '1.125rem', marginBottom: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
-            <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: '#111' }}>
+            <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-main)' }}>
               Detected Symptoms
             </div>
             {detections.length > 0 && (
               <button onClick={handleReset}
-                style={{ background: 'transparent', border: '1px solid #e5e7eb', borderRadius: 8, padding: '0.25rem 0.625rem', fontSize: '0.75rem', color: '#6b7280', cursor: 'pointer' }}>
+                style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, padding: '0.25rem 0.625rem', fontSize: '0.75rem', color: 'var(--text-muted)', cursor: 'pointer' }}>
                 Reset Session
               </button>
             )}
@@ -287,8 +287,8 @@ export default function ISLPage() {
           ) : (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
               {detections.map((d, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: '#f0fdf4', border: '1.5px solid #bbf7d0', borderRadius: 99, padding: '0.3rem 0.75rem' }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.875rem', color: '#15803d' }}>
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'var(--success-bg)', border: '1.5px solid var(--success-text)', borderRadius: 99, padding: '0.3rem 0.75rem' }}>
+                  <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--success-text)' }}>
                     #{d.index}: {d.label.replace('_', ' ').toUpperCase()}
                   </span>
                   <span style={{ fontSize: '0.625rem', color: '#16a34a' }}>{(d.confidence * 100).toFixed(1)}%</span>
@@ -302,7 +302,7 @@ export default function ISLPage() {
               const text = detections.map(d => d.label.replace('_', ' ')).join(', ')
               navigate('/patient', { state: { prefill: { symptomText: text } } })
             }}
-              style={{ marginTop: '1rem', width: '100%', padding: '0.875rem', background: TEAL, color: '#fff', border: 'none', borderRadius: 10, fontSize: '1rem', fontWeight: 700, cursor: 'pointer' }}>
+              style={{ marginTop: '1rem', width: '100%', padding: '0.875rem', background: TEAL, color: 'var(--surface)', border: 'none', borderRadius: 10, fontSize: '1rem', fontWeight: 700, cursor: 'pointer' }}>
               Add to Patient Form →
             </button>
           )}

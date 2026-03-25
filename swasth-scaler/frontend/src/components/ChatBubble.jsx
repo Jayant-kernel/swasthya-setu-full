@@ -43,7 +43,7 @@ export default function ChatBubble({ role, content }) {
           justifyContent: 'center',
           flexShrink: 0,
           background: isUser ? 'var(--color-primary)' : 'var(--color-bg)',
-          color: isUser ? '#fff' : 'var(--color-text-muted)',
+          color: isUser ? 'var(--surface)' : 'var(--color-text-muted)',
           border: isUser ? 'none' : '1.5px solid var(--color-border)',
         }}
         aria-hidden="true"
@@ -60,7 +60,7 @@ export default function ChatBubble({ role, content }) {
             ? 'var(--radius) var(--radius-sm) var(--radius-sm) var(--radius)'
             : 'var(--radius-sm) var(--radius) var(--radius) var(--radius-sm)',
           background: isUser ? 'var(--color-primary)' : 'var(--color-white)',
-          color: isUser ? '#fff' : 'var(--color-text)',
+          color: isUser ? 'var(--surface)' : 'var(--color-text)',
           border: isUser ? 'none' : '1.5px solid var(--color-border)',
           boxShadow: 'var(--shadow)',
           fontSize: '0.9375rem',

@@ -6,7 +6,7 @@ export default function LogoIcon() {
       <rect width="52" height="52" rx="14" fill="var(--color-primary)" />
       <path
         d="M10 26h6l4-8 6 16 4-12 3 6h9"
-        stroke="#fff"
+        stroke='var(--surface)'
         strokeWidth="2.5"
         strokeLinecap="round"
         strokeLinejoin="round"

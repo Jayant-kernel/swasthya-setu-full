@@ -43,20 +43,20 @@ import GlobalHeader from '../components/GlobalHeader.jsx'
 
 // ─── Duplicate-patient modal ──────────────────────────────────────────────────
 const SEV_STYLE = {
-  red:    { bg: '#FEF2F2', border: '#FCA5A5', text: '#C0392B' },
+  red:    { bg: 'var(--error-bg)', border: '#FCA5A5', text: '#C0392B' },
   yellow: { bg: '#FFFBEB', border: '#FCD34D', text: '#B7791F' },
-  green:  { bg: '#ECFDF5', border: '#6EE7B7', text: '#1A6E5C' },
+  green:  { bg: 'var(--success-bg)', border: '#6EE7B7', text: '#1A6E5C' },
 }
 
 function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-      <div style={{ background: '#fff', borderRadius: 16, maxWidth: 480, width: '100%', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
-        <div style={{ padding: '1.25rem 1.25rem 0.75rem', borderBottom: '1px solid #e5e7eb' }}>
-          <div style={{ fontWeight: 700, fontSize: '1rem', color: '#111', fontFamily: "'Noto Sans Oriya', sans-serif" }}>
+      <div style={{ background: 'var(--surface)', borderRadius: 16, maxWidth: 480, width: '100%', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
+        <div style={{ padding: '1.25rem 1.25rem 0.75rem', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-main)', fontFamily: "'Noto Sans Oriya', sans-serif" }}>
             ଏହି ରୋଗୀ ଆଗରୁ ଅଛନ୍ତି
           </div>
-          <div style={{ fontSize: '0.875rem', color: '#6b7280', marginTop: 2 }}>Patient already exists — select or add new</div>
+          <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: 2 }}>Patient already exists — select or add new</div>
         </div>
         <div style={{ maxHeight: 320, overflowY: 'auto' }}>
           {matches.map(p => {
@@ -69,15 +69,15 @@ function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
             return (
               <button key={p.id} onClick={() => onSelect(p)}
                 style={{ width: '100%', padding: '0.875rem 1.25rem', border: 'none', borderBottom: '1px solid #f3f4f6', background: 'transparent', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
-                onMouseEnter={e => e.currentTarget.style.background = '#f9fafb'}
+                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: '#111' }}>{p.name}</div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-main)' }}>{p.name}</div>
                   <div style={{ fontSize: '0.8125rem', color: '#374151', marginTop: 4, fontFamily: "'Noto Sans Oriya', sans-serif" }}>
                     ନାମ: {p.name} | वय: {p.age} | जिल्हा: {p.district}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: 2 }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
                     {p.gender && `${p.gender} · `}{p.triage_records?.length || 0} visit{p.triage_records?.length !== 1 ? 's' : ''}
                   </div>
                   {lastDate && <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: 2 }}>Last visit: {lastDate}</div>}
@@ -92,13 +92,13 @@ function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
             )
           })}
         </div>
-        <div style={{ padding: '0.875rem 1.25rem', borderTop: '1px solid #e5e7eb', display: 'flex', gap: '0.625rem' }}>
+        <div style={{ padding: '0.875rem 1.25rem', borderTop: '1px solid var(--border)', display: 'flex', gap: '0.625rem' }}>
           <button onClick={onClose}
-            style={{ flex: 1, minHeight: 44, border: '1.5px solid #e5e7eb', background: '#fff', color: '#374151', borderRadius: 10, fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer' }}>
+            style={{ flex: 1, minHeight: 44, border: '1.5px solid #e5e7eb', background: 'var(--surface)', color: '#374151', borderRadius: 10, fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer' }}>
             Cancel
           </button>
           <button onClick={onNewPatient}
-            style={{ flex: 1, minHeight: 44, border: 'none', background: '#0F6E56', color: '#fff', borderRadius: 10, fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', fontFamily: "'Noto Sans Oriya', sans-serif" }}>
+            style={{ flex: 1, minHeight: 44, border: 'none', background: '#0F6E56', color: 'var(--surface)', borderRadius: 10, fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', fontFamily: "'Noto Sans Oriya', sans-serif" }}>
             ନା, ନୂଆ ରୋଗୀ / New
           </button>
         </div>
@@ -600,7 +600,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                     border: '1.5px solid',
                     borderColor: voiceLang === code ? '#0F6E56' : 'var(--color-border)',
                     background: voiceLang === code ? '#0F6E56' : 'transparent',
-                    color: voiceLang === code ? '#fff' : 'var(--color-text)',
+                    color: voiceLang === code ? 'var(--surface)' : 'var(--color-text)',
                     fontSize: '0.8125rem',
                     fontWeight: 600,
                     cursor: listening ? 'default' : 'pointer',
@@ -623,7 +623,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                   height: 48,
                   borderRadius: '50%',
                   background: listening ? '#e74c3c' : '#f39c12',
-                  color: '#fff',
+                  color: 'var(--surface)',
                   fontSize: '1.4rem',
                   display: 'flex',
                   alignItems: 'center',
@@ -715,7 +715,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             style={{
               width: '100%', height: 56, fontSize: '1.125rem', fontWeight: 700,
               background: triageLoading || saving ? '#9ca3af' : '#0F6E56',
-              color: '#fff', border: 'none', borderRadius: 12, cursor: triageLoading || saving ? 'default' : 'pointer',
+              color: 'var(--surface)', border: 'none', borderRadius: 12, cursor: triageLoading || saving ? 'default' : 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.625rem',
               transition: 'background 0.2s',
             }}
@@ -768,7 +768,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                 <button
                   type="button"
                   onClick={handleGoToChat}
-                  style={{ minHeight: 48, padding: '0 1.25rem', background: '#0F6E56', color: '#fff', border: 'none', borderRadius: 10, fontSize: '0.9375rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                  style={{ minHeight: 48, padding: '0 1.25rem', background: '#0F6E56', color: 'var(--surface)', border: 'none', borderRadius: 10, fontSize: '0.9375rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                 >
                   💬 AI ସହ ପଚାରନ୍ତୁ / Ask AI
                 </button>
@@ -807,14 +807,14 @@ const ODIA_MAP = {
 // ─── Expanded Triage Result Card with Precautions ────────────────────────────
 function TriageResultCard({ result, precautionData, precautionLoading }) {
   const sev = result.severity?.toLowerCase()
-  const cardBg    = sev === 'red' ? '#FEF2F2' : sev === 'yellow' ? '#FFFBEB' : '#F0FDF4'
+  const cardBg    = sev === 'red' ? 'var(--error-bg)' : sev === 'yellow' ? '#FFFBEB' : '#F0FDF4'
   const cardBorder= sev === 'red' ? '#FCA5A5' : sev === 'yellow' ? '#FCD34D' : '#86EFAC'
   const sevColor  = sev === 'red' ? '#C0392B' : sev === 'yellow' ? '#B7791F' : '#166534'
   const sevIcon   = sev === 'red' ? '!' : sev === 'yellow' ? '⚠' : '✓'
 
   const priority = precautionData?.priority
   const priorityConfig = {
-    immediate:       { bg: '#FEF2F2', border: '#FCA5A5', color: '#C0392B', label: '🚨 ତୁରନ୍ତ ଧ୍ୟାନ ଦରକାର / Immediate Attention' },
+    immediate:       { bg: 'var(--error-bg)', border: '#FCA5A5', color: '#C0392B', label: '🚨 ତୁରନ୍ତ ଧ୍ୟାନ ଦରକାର / Immediate Attention' },
     within_hours:    { bg: '#FFF7ED', border: '#FED7AA', color: '#C2410C', label: '⏰ ୨୪ ଘଣ୍ଟା ଭିତରେ / Within 24 Hours' },
     monitor_at_home: { bg: '#F0FDF4', border: '#86EFAC', color: '#166534', label: '🏠 ଘରେ ନଜର ରଖନ୍ତୁ / Monitor at Home' },
   }
@@ -832,7 +832,7 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
 
       {/* Severity header */}
       <div style={{ padding: '1rem 1rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', background: sevColor, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.25rem', flexShrink: 0 }}>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', background: sevColor, color: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.25rem', flexShrink: 0 }}>
           {sevIcon}
         </div>
         <div>

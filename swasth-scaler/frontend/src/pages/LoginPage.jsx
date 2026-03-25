@@ -88,7 +88,7 @@ export default function LoginPage() {
         >
           <LogoIcon />
           <div>
-            <h1 style={{ color: '#fff', fontSize: '1.75rem', marginBottom: '0.25rem' }}>
+            <h1 style={{ color: 'var(--surface)', fontSize: '1.75rem', marginBottom: '0.25rem' }}>
               Swasthya Setu
             </h1>
             <div
@@ -147,7 +147,7 @@ export default function LoginPage() {
               padding: '0.8125rem 1rem',
               borderRadius: 'var(--radius-sm)',
               border: '1.5px solid var(--color-border)',
-              background: '#fff',
+              background: 'var(--surface)',
               color: 'var(--color-text)',
               fontWeight: 600,
               fontSize: '0.9375rem',

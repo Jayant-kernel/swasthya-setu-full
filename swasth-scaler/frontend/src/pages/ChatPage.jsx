@@ -155,7 +155,7 @@ export default function ChatPage() {
           <span style={{ fontWeight: 700, fontSize: '0.9375rem' }}>{patientData.name}</span>
           <span className={`badge ${badge.cls}`} style={{ margin: 0 }}>{badge.label}</span>
           {triageResult.sickle_cell_risk && (
-            <div style={{ background: 'var(--color-red)', color: '#fff', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600 }}>
+            <div style={{ background: 'var(--color-red)', color: 'var(--surface)', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600 }}>
               🔴 High Risk
             </div>
           )}
@@ -346,7 +346,7 @@ export default function ChatPage() {
                 padding: '0.875rem 1.5rem',
                 borderRadius: 'var(--radius)',
                 background: loading || !input.trim() ? 'var(--color-border)' : 'var(--color-primary)',
-                color: '#fff',
+                color: 'var(--surface)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem',

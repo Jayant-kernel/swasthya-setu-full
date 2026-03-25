@@ -44,8 +44,8 @@ const ALL_DISTRICTS = [
 ]
 
 const SEVERITY_ORDER = { red: 0, yellow: 1, green: 2 }
-const TEAL = '#1A6E5C'   // eSanjeevani teal-green
-const BLUE_BG = '#E8F4F8' // eSanjeevani light blue background
+const TEAL = 'var(--primary)'   // eSanjeevani teal-green
+const BLUE_BG = 'var(--bg)' // Responsive dashboard background
 
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime()
@@ -239,20 +239,20 @@ export default function HomePage() {
           {[
             { sev: 'red', label: 'तातडीने', sub: 'Emergency', accent: '#C0392B', count: todayCounts.red },
             { sev: 'yellow', label: 'मध्यम', sub: 'Moderate', accent: '#B7791F', count: todayCounts.yellow },
-            { sev: 'green', label: 'स्थिर', sub: 'Stable', accent: '#1A6E5C', count: todayCounts.green },
+            { sev: 'green', label: 'स्थिर', sub: 'Stable', accent: 'var(--primary)', count: todayCounts.green },
           ].map(item => (
             <button key={item.sev}
               onClick={() => setActiveTab(activeTab === item.sev.toUpperCase() ? 'ALL' : item.sev.toUpperCase())}
               style={{
-                background: activeTab === item.sev.toUpperCase() ? item.accent : '#fff',
-                border: `1.5px solid ${activeTab === item.sev.toUpperCase() ? item.accent : '#e5e7eb'}`,
+                background: activeTab === item.sev.toUpperCase() ? item.accent : 'var(--surface)',
+                border: `1.5px solid ${activeTab === item.sev.toUpperCase() ? item.accent : 'var(--border)'}`,
                 borderRadius: 10, padding: '0.875rem 0.5rem', textAlign: 'center',
                 cursor: 'pointer', minHeight: 72, transition: 'all 0.15s',
               }}
             >
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, lineHeight: 1, color: activeTab === item.sev.toUpperCase() ? '#fff' : item.accent }}>{item.count}</div>
-              <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginTop: 3, color: activeTab === item.sev.toUpperCase() ? 'rgba(255,255,255,0.9)' : '#374151', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>{item.label}</div>
-              <div style={{ fontSize: '0.6875rem', color: activeTab === item.sev.toUpperCase() ? 'rgba(255,255,255,0.65)' : '#9ca3af', marginTop: 1 }}>{item.sub}</div>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, lineHeight: 1, color: activeTab === item.sev.toUpperCase() ? 'var(--surface)' : item.accent }}>{item.count}</div>
+              <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginTop: 3, color: activeTab === item.sev.toUpperCase() ? 'rgba(255,255,255,0.9)' : 'var(--text-main)', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>{item.label}</div>
+              <div style={{ fontSize: '0.6875rem', color: activeTab === item.sev.toUpperCase() ? 'rgba(255,255,255,0.65)' : 'var(--text-muted)', marginTop: 1 }}>{item.sub}</div>
             </button>
           ))}
         </div>
@@ -262,14 +262,14 @@ export default function HomePage() {
 
 
           {/* Sort */}
-          <div style={{ display: 'flex', background: '#fff', border: '1px solid #e5e7eb', borderRadius: 10, overflow: 'hidden' }}>
+          <div style={{ display: 'flex', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
             {[{ key: 'latest', label: 'Latest' }, { key: 'critical', label: 'Critical first' }].map(s => (
               <button key={s.key} onClick={() => setSortMode(s.key)}
                 style={{
                   minHeight: 40, padding: '0 0.875rem', border: 'none',
-                  borderRight: s.key === 'latest' ? '1px solid #e5e7eb' : 'none',
+                  borderRight: s.key === 'latest' ? '1px solid var(--border)' : 'none',
                   background: sortMode === s.key ? TEAL : 'transparent',
-                  color: sortMode === s.key ? '#fff' : '#374151',
+                  color: sortMode === s.key ? 'var(--surface)' : 'var(--text-main)',
                   fontWeight: sortMode === s.key ? 700 : 500,
                   fontSize: '0.875rem', cursor: 'pointer',
                 }}
@@ -281,16 +281,16 @@ export default function HomePage() {
 
           {/* District */}
           <select value={districtFilter} onChange={e => setDistrictFilter(e.target.value)}
-            style={{ minHeight: 40, padding: '0 2rem 0 0.75rem', fontSize: '0.875rem', border: '1px solid #e5e7eb', borderRadius: 10, background: '#fff', color: '#374151' }}>
+            style={{ minHeight: 40, padding: '0 2rem 0 0.75rem', fontSize: '0.875rem', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--surface)', color: 'var(--text-main)' }}>
             <option value="">All Districts</option>
             {ALL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
 
           {/* Search */}
           <div style={{ position: 'relative' }}>
-            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', pointerEvents: 'none' }}>🔍</span>
+            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }}>🔍</span>
             <input type="text"
-              style={{ minHeight: 40, paddingLeft: '2rem', paddingRight: '0.75rem', width: 180, fontSize: '0.875rem', border: '1px solid #e5e7eb', borderRadius: 10, background: '#fff', color: '#374151', outline: 'none' }}
+              style={{ minHeight: 40, paddingLeft: '2rem', paddingRight: '0.75rem', width: 180, fontSize: '0.875rem', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--surface)', color: 'var(--text-main)', outline: 'none' }}
               placeholder="Search by name…"
               value={query}
               onChange={e => setQuery(e.target.value)}
@@ -300,17 +300,17 @@ export default function HomePage() {
         </div>
 
         {/* Patient count */}
-        <div style={{ fontSize: '0.8125rem', color: '#6b7280', marginBottom: '0.75rem' }}>
+        <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
           {loading ? 'Loading…' : `${totalCount} patient${totalCount !== 1 ? 's' : ''} found`}
         </div>
 
         {/* Error state */}
         {dashError && (
-          <div style={{ textAlign: 'center', padding: '2rem', color: '#6b7280' }}>
+          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
             <div style={{ fontSize: '1rem', marginBottom: '0.75rem', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>काहीतरी चूक झाली / Something went wrong</div>
-            <div style={{ fontSize: '0.8125rem', color: '#9ca3af', marginBottom: '1rem' }}>{dashError}</div>
+            <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>{dashError}</div>
             <button onClick={() => { setDashError(null); fetchRecords() }}
-              style={{ minHeight: 44, padding: '0 1.5rem', background: TEAL, color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>
+              style={{ minHeight: 44, padding: '0 1.5rem', background: TEAL, color: 'var(--surface)', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>
               पुन्हा प्रयत्न करा / Retry
             </button>
           </div>
@@ -320,10 +320,10 @@ export default function HomePage() {
         {loading && patientResults.length === 0 && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '0.75rem' }}>
             {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} style={{ background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '1rem', opacity: 0.5 }}>
-                <div style={{ height: 16, background: '#e5e7eb', borderRadius: 4, marginBottom: 8, width: '60%' }} />
-                <div style={{ height: 12, background: '#e5e7eb', borderRadius: 4, marginBottom: 8, width: '40%' }} />
-                <div style={{ height: 12, background: '#e5e7eb', borderRadius: 4, width: '80%' }} />
+              <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem', opacity: 0.5 }}>
+                <div style={{ height: 16, background: 'var(--border)', borderRadius: 4, marginBottom: 8, width: '60%' }} />
+                <div style={{ height: 12, background: 'var(--border)', borderRadius: 4, marginBottom: 8, width: '40%' }} />
+                <div style={{ height: 12, background: 'var(--border)', borderRadius: 4, width: '80%' }} />
               </div>
             ))}
           </div>
@@ -331,7 +331,7 @@ export default function HomePage() {
 
         {/* Empty state */}
         {!loading && patientResults.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280', fontSize: '1rem' }}>
+          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)', fontSize: '1rem' }}>
             कोणतेही रुग्ण आढळले नाहीत<br /><span style={{ fontSize: '0.875rem' }}>No patients found.</span>
           </div>
         )}
@@ -341,14 +341,14 @@ export default function HomePage() {
           {visiblePatients.map(p => {
             const last = p.triage_records?.[0]
             const sev = last?.severity
-            const sevColor = sev === 'red' ? '#C0392B' : sev === 'yellow' ? '#B7791F' : '#1A6E5C'
+            const sevColor = sev === 'red' ? '#C0392B' : sev === 'yellow' ? '#B7791F' : 'var(--primary)'
             const sevLabel = sev === 'red' ? 'EMERGENCY' : sev === 'yellow' ? 'MODERATE' : sev ? 'STABLE' : null
             const visits = p.triage_records || []
             // Severity trend: last 3 visits (oldest → newest for left-to-right reading)
             const trendDots = visits.slice(0, 3).reverse()
             return (
               <div key={p.id}
-                style={{ background: '#fff', border: '1px solid #d1e8e2', borderLeft: `5px solid ${sevColor}`, borderRadius: 10, padding: '1rem', transition: 'box-shadow 0.15s', boxShadow: '0 1px 3px rgba(26,110,92,0.06)' }}
+                style={{ background: 'var(--surface)', border: '1px solid #d1e8e2', borderLeft: `5px solid ${sevColor}`, borderRadius: 10, padding: '1rem', transition: 'box-shadow 0.15s', boxShadow: '0 1px 3px rgba(26,110,92,0.06)' }}
                 onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(26,110,92,0.12)' }}
                 onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(26,110,92,0.06)' }}
               >
@@ -358,13 +358,13 @@ export default function HomePage() {
                     style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', flex: 1 }}
                   >
                     <div style={{ width: 9, height: 9, borderRadius: '50%', background: sevColor, flexShrink: 0 }} />
-                    <span style={{ fontWeight: 700, fontSize: '1rem', color: '#111' }}>{p.name}</span>
+                    <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-main)' }}>{p.name}</span>
                   </button>
                   <button onClick={(e) => handleDeletePatient(e, p.id)}
                     title="Delete patient"
-                    style={{ background: 'transparent', border: '1px solid #e5e7eb', borderRadius: 6, padding: '0.2rem 0.5rem', cursor: 'pointer', color: '#9ca3af', fontSize: '0.75rem', flexShrink: 0, marginLeft: '0.5rem', display: 'flex', alignItems: 'center', gap: 3, transition: 'all 0.15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = '#FEF2F2'; e.currentTarget.style.color = '#DC2626'; e.currentTarget.style.borderColor = '#FCA5A5' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#9ca3af'; e.currentTarget.style.borderColor = '#e5e7eb' }}
+                    style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 6, padding: '0.2rem 0.5rem', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.75rem', flexShrink: 0, marginLeft: '0.5rem', display: 'flex', alignItems: 'center', gap: 3, transition: 'all 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--error-bg)'; e.currentTarget.style.color = 'var(--error-text)'; e.currentTarget.style.borderColor = '#FCA5A5' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" />
@@ -380,14 +380,14 @@ export default function HomePage() {
                   {/* Severity pill + meta + visit count */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>
                     {sevLabel && (
-                      <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: sevColor, background: `${sevColor}15`, border: `1px solid ${sevColor}40`, borderRadius: 4, padding: '0.1rem 0.4rem', letterSpacing: '0.04em' }}>
+                      <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: sevColor, background: `color-mix(in srgb, ${sevColor} 15%, transparent)`, border: `1px solid ${sevColor}40`, borderRadius: 4, padding: '0.1rem 0.4rem', letterSpacing: '0.04em' }}>
                         {sevLabel}
                       </span>
                     )}
-                    <span style={{ fontSize: '0.8125rem', color: '#6b7280' }}>
+                    <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
                       {[p.age && `${p.age} yrs`, p.gender, p.district].filter(Boolean).join(' · ')}
                     </span>
-                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: TEAL, background: `${TEAL}12`, border: `1px solid ${TEAL}30`, borderRadius: 4, padding: '0.1rem 0.4rem' }}>
+                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: TEAL, background: `color-mix(in srgb, ${TEAL} 12%, transparent)`, border: `1px solid ${TEAL}30`, borderRadius: 4, padding: '0.1rem 0.4rem' }}>
                       {visits.length} visit{visits.length !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -395,13 +395,13 @@ export default function HomePage() {
                   {/* Severity trend dots (if >1 visit) */}
                   {trendDots.length > 1 && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.375rem' }}>
-                      <span style={{ fontSize: '0.6875rem', color: '#9ca3af', marginRight: '0.25rem' }}>Trend:</span>
+                      <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginRight: '0.25rem' }}>Trend:</span>
                       {trendDots.map((t, i) => {
-                        const dotColor = t.severity === 'red' ? '#C0392B' : t.severity === 'yellow' ? '#B7791F' : '#1A6E5C'
+                        const dotColor = t.severity === 'red' ? '#C0392B' : t.severity === 'yellow' ? '#B7791F' : 'var(--primary)'
                         return (
                           <React.Fragment key={t.id}>
                             <div style={{ width: 10, height: 10, borderRadius: '50%', background: dotColor, border: `1.5px solid ${dotColor}` }} title={`${t.severity} — ${new Date(t.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`} />
-                            {i < trendDots.length - 1 && <span style={{ fontSize: '0.6rem', color: '#d1d5db' }}>→</span>}
+                            {i < trendDots.length - 1 && <span style={{ fontSize: '0.6rem', color: 'var(--border)' }}>→</span>}
                           </React.Fragment>
                         )
                       })}
@@ -410,14 +410,14 @@ export default function HomePage() {
 
                   {/* Brief */}
                   {last?.brief && (
-                    <div style={{ fontSize: '0.8125rem', color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '0.375rem' }}>
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '0.375rem' }}>
                       {last.brief}
                     </div>
                   )}
 
                   {/* Time */}
                   {last && (
-                    <div style={{ fontSize: '0.75rem', color: '#9ca3af' }}>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                       Last visit: {timeAgo(last.created_at)}
                     </div>
                   )}
@@ -431,7 +431,7 @@ export default function HomePage() {
         {patientResults.length > showCount && (
           <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
             <button onClick={() => setShowCount(c => c + 6)}
-              style={{ minHeight: 48, padding: '0 2rem', background: '#fff', border: `1.5px solid ${TEAL}`, color: TEAL, borderRadius: 10, fontSize: '0.9375rem', fontWeight: 700, cursor: 'pointer' }}>
+              style={{ minHeight: 48, padding: '0 2rem', background: 'var(--surface)', border: `1.5px solid ${TEAL}`, color: TEAL, borderRadius: 10, fontSize: '0.9375rem', fontWeight: 700, cursor: 'pointer' }}>
               आणखी पहा / Show more ({patientResults.length - showCount} remaining)
             </button>
           </div>

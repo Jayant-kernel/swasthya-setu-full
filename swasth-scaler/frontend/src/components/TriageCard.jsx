@@ -62,7 +62,7 @@ export default function TriageCard({ severity, symptoms, sickle_cell_risk, brief
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#fff',
+              color: 'var(--surface)',
               fontSize: severity === 'green' ? '1.5rem' : '1.75rem',
               fontWeight: 700,
               flexShrink: 0,
@@ -106,7 +106,7 @@ export default function TriageCard({ severity, symptoms, sickle_cell_risk, brief
           className="sickle-cell-banner"
           style={{
             background: '#e74c3c',
-            color: '#fff',
+            color: 'var(--surface)',
             padding: '0.75rem 1.25rem',
             display: 'flex',
             alignItems: 'center',

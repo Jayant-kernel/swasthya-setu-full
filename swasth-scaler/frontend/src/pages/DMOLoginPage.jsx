@@ -32,7 +32,7 @@ export default function DMOLoginPage() {
           margin: '-1.25rem -1.25rem 1.5rem', 
           padding: '2rem', 
           textAlign: 'center',
-          color: '#fff' 
+          color: 'var(--surface)' 
         }}>
           <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🏛️</div>
           <h1 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>

@@ -132,7 +132,7 @@ export default function ChildbirthPage() {
           background: 'linear-gradient(135deg, #e91e8c 0%, #c2185b 100%)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke='var(--surface)' strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" />
             <circle cx="12" cy="9" r="2.5" />
           </svg>
@@ -223,7 +223,7 @@ export default function ChildbirthPage() {
           style={{
             width: 46, height: 46, flexShrink: 0, borderRadius: 10, border: 'none',
             background: listening ? '#e74c3c' : '#f39c12',
-            color: '#fff', fontSize: '1.25rem',
+            color: 'var(--surface)', fontSize: '1.25rem',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer',
             boxShadow: listening ? '0 0 0 4px rgba(231,76,60,0.25)' : '0 2px 8px rgba(243,156,18,0.4)',
@@ -263,7 +263,7 @@ export default function ChildbirthPage() {
           style={{
             padding: '0.875rem 1.5rem', borderRadius: 'var(--radius)',
             background: loading || !input.trim() ? 'var(--color-border)' : 'var(--color-primary)',
-            color: '#fff', fontWeight: 600, fontSize: '0.9375rem',
+            color: 'var(--surface)', fontWeight: 600, fontSize: '0.9375rem',
             border: 'none', cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
             flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.5rem',
             transition: 'background var(--transition)',

@@ -11,7 +11,7 @@ import DMOLoginPage from './pages/DMOLoginPage.jsx'
 import DMODashboardPage from './pages/DMODashboardPage.jsx'
 
 import { AuthProvider } from './context/AuthContext.jsx'
-import RoleSelectionPage from './pages/RoleSelectionPage.jsx'
+import LandingPage from './pages/LandingPage.jsx'
 import CitizenLoginPage from './pages/CitizenLoginPage.jsx'
 import CitizenRegistrationPage from './pages/CitizenRegistrationPage.jsx'
 import CitizenDashboardPage from './pages/CitizenDashboardPage.jsx'
@@ -22,7 +22,7 @@ export default function App() {
       <AuthProvider>
         <PatientProvider>
           <Routes>
-            <Route path="/" element={<RoleSelectionPage />} />
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login/asha" element={<LoginPage />} />
             <Route path="/login/dmo" element={<DMOLoginPage />} />
             <Route path="/login/citizen" element={<CitizenLoginPage />} />

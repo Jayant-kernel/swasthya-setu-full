@@ -95,7 +95,7 @@ export default function ProfileOverlay({ onClose }) {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#f9fafb', zIndex: 9999, display: 'flex', flexDirection: 'column', overflowY: 'auto', animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', zIndex: 9999, display: 'flex', flexDirection: 'column', overflowY: 'auto', animation: 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)' }}>
       <style>{`
         @keyframes slideUp {
           from { transform: translateY(20px); opacity: 0; }
@@ -103,12 +103,12 @@ export default function ProfileOverlay({ onClose }) {
         }
       `}</style>
       
-      <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '0.875rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
+      <header style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', padding: '0.875rem 1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 10 }}>
         <div>
-          <div style={{ fontWeight: 800, fontSize: '1.25rem', color: '#111' }}>Profile</div>
-          <div style={{ fontSize: '0.8125rem', color: '#6b7280', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>प्रोफाईल</div>
+          <div style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--text-main)' }}>Profile</div>
+          <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>प्रोफाईल</div>
         </div>
-        <button onClick={onClose} style={{ background: '#f3f4f6', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#111', width: 36, height: 36, borderRadius: '50%' }}>
+        <button onClick={onClose} style={{ background: 'var(--hover-bg)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-main)', width: 36, height: 36, borderRadius: '50%' }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -121,7 +121,7 @@ export default function ProfileOverlay({ onClose }) {
       ) : (
         <main style={{ flex: 1, padding: '2rem 1.25rem', maxWidth: 800, width: '100%', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
-          <div style={{ background: '#fff', padding: '2rem 1.5rem', borderRadius: 16, border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+          <div style={{ background: 'var(--surface)', padding: '2rem 1.5rem', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
             <div style={{ position: 'relative' }}>
               <div style={{ width: 120, height: 120, borderRadius: '50%', background: '#F3F4F6', overflow: 'hidden', border: '3px solid #0F6E56', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {avatar ? (
@@ -135,7 +135,7 @@ export default function ProfileOverlay({ onClose }) {
               </div>
               <button
                 onClick={() => fileInputRef.current?.click()}
-                style={{ position: 'absolute', bottom: 0, right: 0, background: '#0F6E56', color: '#fff', border: 'none', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}
+                style={{ position: 'absolute', bottom: 0, right: 0, background: '#0F6E56', color: 'var(--surface)', border: 'none', borderRadius: '50%', width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 2px 5px rgba(0,0,0,0.2)' }}
                 title="Upload Picture"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -148,18 +148,18 @@ export default function ProfileOverlay({ onClose }) {
             </div>
 
             <div style={{ textAlign: 'center' }}>
-              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#111' }}>{user?.email}</h2>
+              <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-main)' }}>{user?.email}</h2>
               <div style={{ fontSize: '0.875rem', color: '#6B7280', marginTop: 4 }}>Healthcare Provider</div>
             </div>
           </div>
 
-          <div style={{ background: '#fff', padding: '2rem 1.5rem', borderRadius: 16, border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', borderBottom: '1px solid #e5e7eb', paddingBottom: '0.75rem' }}>
+          <div style={{ background: 'var(--surface)', padding: '2rem 1.5rem', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.75rem' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, color: '#111' }}>Patient History</h3>
+                <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, color: 'var(--text-main)' }}>Patient History</h3>
                 <div style={{ fontSize: '0.8125rem', color: '#6B7280', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>रुग्ण इतिहास</div>
               </div>
-              <div style={{ background: '#ECFDF5', color: '#0F6E56', padding: '0.35rem 0.85rem', borderRadius: 99, fontSize: '0.875rem', fontWeight: 700 }}>
+              <div style={{ background: 'var(--success-bg)', color: '#0F6E56', padding: '0.35rem 0.85rem', borderRadius: 99, fontSize: '0.875rem', fontWeight: 700 }}>
                 {history.length} Visits
               </div>
             </div>
@@ -173,14 +173,14 @@ export default function ProfileOverlay({ onClose }) {
                 {history.map(record => {
                   const date = new Date(record.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
                   let sevColor = '#1A6E5C'
-                  let sevBg = '#ECFDF5'
-                  if (record.severity === 'red') { sevColor = '#C0392B'; sevBg = '#FEF2F2'; }
+                  let sevBg = 'var(--success-bg)'
+                  if (record.severity === 'red') { sevColor = '#C0392B'; sevBg = 'var(--error-bg)'; }
                   if (record.severity === 'yellow') { sevColor = '#B7791F'; sevBg = '#FFFBEB'; }
 
                   return (
                     <div key={record.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', background: '#F9FAFB', borderRadius: 12, border: '1px solid #E5E7EB' }}>
                       <div>
-                        <div style={{ fontWeight: 700, color: '#111', fontSize: '0.9375rem' }}>{record.patient_name}</div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.9375rem' }}>{record.patient_name}</div>
                         <div style={{ fontSize: '0.8125rem', color: '#6B7280', marginTop: 4 }}>{record.age}y · {record.gender} · {record.district}</div>
                         <div style={{ fontSize: '0.75rem', color: '#9CA3AF', marginTop: 4 }}>Date: {date}</div>
                       </div>
@@ -194,12 +194,12 @@ export default function ProfileOverlay({ onClose }) {
             )}
           </div>
 
-          <div style={{ background: '#fff', padding: '2rem 1.5rem', borderRadius: 16, border: '1px solid #e5e7eb', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, color: '#111', marginBottom: '0.5rem' }}>Danger Zone</h3>
+          <div style={{ background: 'var(--surface)', padding: '2rem 1.5rem', borderRadius: 16, border: '1px solid var(--border)', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Danger Zone</h3>
             
             <button
               onClick={handleLogout}
-              style={{ padding: '1rem 1.25rem', background: '#fff', border: '1.5px solid #e5e7eb', borderRadius: 12, color: '#111', fontWeight: 700, fontSize: '0.9375rem', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
+              style={{ padding: '1rem 1.25rem', background: 'var(--surface)', border: '1.5px solid #e5e7eb', borderRadius: 12, color: 'var(--text-main)', fontWeight: 700, fontSize: '0.9375rem', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
@@ -211,7 +211,7 @@ export default function ProfileOverlay({ onClose }) {
 
             <button
               onClick={handleDeleteAccount}
-              style={{ padding: '1rem 1.25rem', background: '#FEF2F2', border: '1.5px solid #FCA5A5', borderRadius: 12, color: '#DC2626', fontWeight: 700, fontSize: '0.9375rem', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
+              style={{ padding: '1rem 1.25rem', background: 'var(--error-bg)', border: '1.5px solid #FCA5A5', borderRadius: 12, color: 'var(--error-text)', fontWeight: 700, fontSize: '0.9375rem', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.75rem' }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="3 6 5 6 21 6"></polyline>

@@ -20,8 +20,8 @@ export default function TopNav() {
 
   return (
     <nav style={{ 
-      background: '#fff', 
-      borderBottom: '1px solid #e5e7eb', 
+      background: 'var(--surface)', 
+      borderBottom: '1px solid var(--border)', 
       padding: '0 1.25rem', 
       display: 'flex', 
       alignItems: 'center', 
@@ -48,8 +48,8 @@ export default function TopNav() {
                 flex: 1,
                 background: 'transparent',
                 border: 'none',
-                borderBottom: active ? '3px solid #0F6E56' : '3px solid transparent',
-                color: active ? '#0F6E56' : '#6b7280',
+                borderBottom: active ? '3px solid var(--primary)' : '3px solid transparent',
+                color: active ? 'var(--primary)' : 'var(--text-muted)',
                 fontWeight: active ? 700 : 500,
                 padding: '0.875rem 0',
                 cursor: 'pointer',
@@ -61,8 +61,8 @@ export default function TopNav() {
                 gap: 2,
                 transform: 'scale(1) translateY(0)'
               }}
-              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.15) translateY(-8px)'; e.currentTarget.style.color = '#0F6E56'; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1) translateY(0)'; if (!active) e.currentTarget.style.color = '#6b7280'; }}
+              onMouseEnter={e => { e.currentTarget.style.transform = 'scale(1.15) translateY(-8px)'; e.currentTarget.style.color = 'var(--primary)'; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = 'scale(1) translateY(0)'; if (!active) e.currentTarget.style.color = 'var(--text-muted)'; }}
             >
               <span>{item.label}</span>
               <span style={{ fontSize: '0.6875rem', opacity: 0.8, fontFamily: "'Noto Sans Devanagari', sans-serif" }}>{item.marathi}</span>
