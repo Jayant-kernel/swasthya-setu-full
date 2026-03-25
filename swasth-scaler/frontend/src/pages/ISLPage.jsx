@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Hands } from '@mediapipe/hands'
 import { Camera } from '@mediapipe/camera_utils'
+import Sidebar from '../components/Sidebar.jsx'
 
 const TEAL = '#0F6E56'
 const API_URL = 'http://localhost:5000'
@@ -9,31 +10,98 @@ const API_URL = 'http://localhost:5000'
 export default function ISLPage() {
   const navigate = useNavigate()
   const videoRef = useRef(null)
+
   const [detections, setDetections] = useState([])
   const [activeLabel, setActiveLabel] = useState(null)
   const [activeConfidence, setActiveConfidence] = useState(0)
+
   const [isConnected, setIsConnected] = useState(false)
   const [cameraOn, setCameraOn] = useState(false)
-  const sessionId = useRef('session-' + Date.now())
+
   const handsRef = useRef(null)
   const cameraRef = useRef(null)
 
+  // ─── Client-side Model State ───
+  const frameBuffer = useRef([])
+  const isPredicting = useRef(false)
+
+  // ─── Stabilization State ───
+  const CONFIRM_FRAMES = 3
+  const COOLDOWN_FRAMES = 10
+
+  const currentStreakLabel = useRef(null)
+  const currentStreakCount = useRef(0)
+  const cooldownRemaining = useRef(0)
+  const allDetections = useRef([])
+
   const extractLandmarks = useCallback((results) => {
-    const landmarks = new Array(126).fill(0)
+    const landmarks = new Array(126).fill(0);
     if (results.multiHandLandmarks && results.multiHandedness) {
       results.multiHandLandmarks.forEach((hand, idx) => {
-        if (idx >= 2) return
-        const handedness = results.multiHandedness[idx].label
-        // Map Right hand to the first 63 floats, Left hand to the next 63
-        const offset = handedness === 'Right' ? 0 : 63
+        if (idx >= 2) return;
+        
+        // The Python model was trained on mirrored webcam frames.
+        // We MUST swap 'Right' and 'Left' to match the training data.
+        let handedness = results.multiHandedness[idx].label;
+        handedness = handedness === 'Right' ? 'Left' : 'Right';
+        
+        const offset = handedness === 'Right' ? 0 : 63;
         hand.forEach((lm, i) => {
-          landmarks[offset + i * 3] = lm.x
-          landmarks[offset + i * 3 + 1] = lm.y
-          landmarks[offset + i * 3 + 2] = lm.z
-        })
-      })
+          // We must also flip the X coordinate to emulate a mirrored camera
+          landmarks[offset + i * 3] = 1.0 - lm.x;
+          landmarks[offset + i * 3 + 1] = lm.y;
+          landmarks[offset + i * 3 + 2] = lm.z;
+        });
+      });
     }
-    return landmarks
+    return landmarks;
+  }, []);
+
+  const handleStabilization = useCallback((prediction, confidence) => {
+    // 1. Process Cooldown
+    if (cooldownRemaining.current > 0) {
+      cooldownRemaining.current--
+      if (cooldownRemaining.current === 0) {
+        setActiveLabel(null)
+        setActiveConfidence(0)
+      }
+      return
+    }
+    // 2. Ignore low confidence predictions
+    if (confidence < 0.7) {
+      currentStreakCount.current = 0
+      currentStreakLabel.current = null
+      return
+    }
+    // 3. Track consecutive matching predictions
+    if (prediction === currentStreakLabel.current) {
+      currentStreakCount.current++
+    } else {
+      currentStreakLabel.current = prediction
+      currentStreakCount.current = 1
+    }
+    // 4. Lock in symptom if streak achieved
+    if (currentStreakCount.current >= CONFIRM_FRAMES) {
+      // PREVENT DUPLICATES in final list
+      const alreadyExists = allDetections.current.some(d => d.label === prediction)
+      if (!alreadyExists) {
+        const newDetection = {
+          label: prediction,
+          confidence,
+          index: allDetections.current.length + 1
+        }
+        allDetections.current = [...allDetections.current, newDetection]
+        setDetections([...allDetections.current])
+      }
+
+      setActiveLabel(prediction)
+      setActiveConfidence(confidence)
+
+      // Trigger cooldown
+      cooldownRemaining.current = COOLDOWN_FRAMES
+      currentStreakCount.current = 0
+      currentStreakLabel.current = null
+    }
   }, [])
 
   function startCamera() {
@@ -44,8 +112,8 @@ export default function ISLPage() {
   }
 
   function stopCamera() {
-    try { cameraRef.current?.stop() } catch {}
-    try { handsRef.current?.close() } catch {}
+    try { cameraRef.current?.stop() } catch { }
+    try { handsRef.current?.close() } catch { }
     if (videoRef.current?.srcObject) {
       videoRef.current.srcObject.getTracks().forEach(t => t.stop())
       videoRef.current.srcObject = null
@@ -61,43 +129,43 @@ export default function ISLPage() {
 
     hands.setOptions({
       maxNumHands: 2,
-      modelComplexity: 0,
+      modelComplexity: 1,
       minDetectionConfidence: 0.7,
       minTrackingConfidence: 0.5,
     })
 
-    let frameCount = 0
-    let isFetching = false
-
     hands.onResults(async (results) => {
-      frameCount++
-      if (frameCount % 3 !== 0) return
-
-      if (isFetching) return
-      isFetching = true
-
+      // Push EVERY frame to our local buffer
       const landmarks = extractLandmarks(results)
+      frameBuffer.current.push(landmarks)
 
-      try {
-        const res = await fetch(`${API_URL}/predict_frame`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            session_id: sessionId.current,
-            landmarks,
-          }),
-        })
-        const data = await res.json()
+      // Keep only the rolling window of the last 30 frames (1 second of time)
+      if (frameBuffer.current.length > 30) {
+        frameBuffer.current.shift()
+      }
 
-        if (data.detection) {
-          setDetections(data.all_detections || [])
+      // If buffer is full AND we aren't currently waiting for a network request
+      if (frameBuffer.current.length === 30 && !isPredicting.current) {
+        isPredicting.current = true
+
+        try {
+          // Send the full sequence batch at once - zero queuing delays
+          const sequence = [...frameBuffer.current]
+          const res = await fetch(`${API_URL}/predict`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sequence }),
+          })
+          const data = await res.json()
+
+          if (data.prediction) {
+            handleStabilization(data.prediction, data.confidence)
+          }
+        } catch (err) {
+          console.error('API error:', err)
+        } finally {
+          isPredicting.current = false
         }
-        setActiveLabel(data.active_label)
-        setActiveConfidence(data.active_confidence || 0)
-      } catch (err) {
-        console.error('API Error:', err)
-      } finally {
-        isFetching = false
       }
     })
 
@@ -131,27 +199,25 @@ export default function ISLPage() {
       clearInterval(pingId)
       stopCamera()
     }
-  }, [extractLandmarks])
+  }, [extractLandmarks, handleStabilization])
 
-  const handleReset = async () => {
-    try {
-      await fetch(`${API_URL}/reset`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ session_id: sessionId.current }),
-      })
-    } catch (e) {}
+  const handleReset = () => {
+    frameBuffer.current = []
+    allDetections.current = []
+    cooldownRemaining.current = 0
+    currentStreakCount.current = 0
     setDetections([])
     setActiveLabel(null)
   }
 
   return (
     <div style={{ minHeight: '100dvh', background: '#f7f9f8', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '0.875rem 1.25rem', display: 'flex', alignItems: 'center', gap: '0.875rem', position: 'sticky', top: 0, zIndex: 10 }}>
+      <Sidebar />
+      <header style={{ background: '#fff', borderBottom: '1px solid #e5e7eb', padding: '0.875rem 1.25rem 0.875rem 4rem', display: 'flex', alignItems: 'center', gap: '0.875rem', position: 'sticky', top: 0, zIndex: 10 }}>
         <button onClick={() => { stopCamera(); navigate('/patient') }}
           style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '0.25rem', display: 'flex', alignItems: 'center', color: TEAL }}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6"/>
+            <polyline points="15 18 9 12 15 6" />
           </svg>
         </button>
         <div>
@@ -178,7 +244,7 @@ export default function ISLPage() {
                   muted
                   playsInline
                 />
-                
+
                 {activeLabel && (
                   <div style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', background: activeConfidence > 0.75 ? '#1a472a' : '#4a3000', color: '#fff', borderRadius: 99, padding: '0.4rem 1.2rem', fontSize: '1rem', fontWeight: 700, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span>{activeLabel.replace('_', ' ').toUpperCase()}</span>
@@ -189,7 +255,7 @@ export default function ISLPage() {
             ) : (
               <div style={{ textAlign: 'center', color: '#9ca3af', padding: '2rem' }}>
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ marginBottom: 8, opacity: 0.4 }}>
-                  <path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/>
+                  <path d="M23 7l-7 5 7 5V7z" /><rect x="1" y="5" width="15" height="14" rx="2" />
                 </svg>
                 <div style={{ fontSize: '0.9rem' }}>Camera off</div>
               </div>
@@ -198,8 +264,8 @@ export default function ISLPage() {
 
           <div style={{ padding: '1rem' }}>
             {!cameraOn ? (
-              <button onClick={startCamera}
-                style={{ width: '100%', padding: '0.875rem', background: TEAL, color: '#fff', border: 'none', borderRadius: 10, fontSize: '1rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+              <button onClick={startCamera} disabled={!isConnected}
+                style={{ width: '100%', padding: '0.875rem', background: isConnected ? TEAL : '#9ca3af', color: '#fff', border: 'none', borderRadius: 10, fontSize: '1rem', fontWeight: 700, cursor: isConnected ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                 Start Camera
               </button>
             ) : (
@@ -240,7 +306,7 @@ export default function ISLPage() {
               ))}
             </div>
           )}
-          
+
           {detections.length > 0 && (
             <button onClick={() => {
               const text = detections.map(d => d.label.replace('_', ' ')).join(', ')

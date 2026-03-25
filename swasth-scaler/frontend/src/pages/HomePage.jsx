@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Sidebar from '../components/Sidebar.jsx'
-import BottomNav from '../components/BottomNav.jsx'
 
 const ALL_DISTRICTS = [
   'Koraput','Malkangiri','Rayagada','Kalahandi','Kandhamal','Nabarangpur','Mayurbhanj',
@@ -194,7 +193,7 @@ export default function HomePage() {
   const visiblePatients = patientResults.slice(0, showCount)
 
   return (
-    <div style={{ minHeight: '100dvh', background: BLUE_BG, display: 'flex', flexDirection: 'column', paddingBottom: 60 }}>
+    <div style={{ minHeight: '100dvh', background: BLUE_BG, display: 'flex', flexDirection: 'column' }}>
       <Sidebar />
 
       {/* Header */}
@@ -437,8 +436,6 @@ export default function HomePage() {
           </div>
         )}
       </main>
-
-      <BottomNav />
     </div>
   )
 }

@@ -39,7 +39,6 @@ import { usePatient } from '../context/PatientContext.jsx'
 import { useTriage } from '../hooks/useTriage'
 import { translateToEnglish, openai } from '../lib/openai'
 import Sidebar from '../components/Sidebar.jsx'
-import BottomNav from '../components/BottomNav.jsx'
 
 // ─── Duplicate-patient modal ──────────────────────────────────────────────────
 const SEV_STYLE = {
@@ -441,7 +440,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
   }
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--color-bg)', display: 'flex', flexDirection: 'column', paddingBottom: 60 }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--color-bg)', display: 'flex', flexDirection: 'column' }}>
       <Sidebar />
 
       {duplicateMatches && (
@@ -781,7 +780,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           </div>
         )}
       </main>
-      <BottomNav />
     </div>
   )
 }
