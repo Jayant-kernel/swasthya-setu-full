@@ -50,6 +50,8 @@ export default function LoginPage() {
         setInfo('Account created! Check your email to confirm, then sign in.')
         setIsSignUp(false)
       } else {
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) throw error
         localStorage.setItem('userRole', 'asha')
         navigate('/home')
       }
