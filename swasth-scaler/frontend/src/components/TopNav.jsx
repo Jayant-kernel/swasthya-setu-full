@@ -6,7 +6,6 @@ const NAV = [
   { path: '/home', label: 'Dashboard', marathi: 'डॅशबोर्ड' },
   { path: '/patient', label: 'Patient Triage', marathi: 'रुग्ण ट्रायज' },
   { path: '/chat', label: 'AI Chat', marathi: 'AI चॅट' },
-  { path: '/isl', label: 'ISL Sign Language', marathi: 'सांकेतिक भाषा' },
 ]
 
 export default function TopNav() {

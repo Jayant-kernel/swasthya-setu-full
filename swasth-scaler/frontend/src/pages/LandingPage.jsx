@@ -421,52 +421,69 @@ export default function LandingPage() {
                   accent: '#6ee7c7',
                   path: '/dashboard/citizen'
                 }
-              ].map((panel, idx) => (
-                <div
-                  key={panel.id}
-                  onMouseEnter={() => setHoveredPanel(panel.id)}
-                  onMouseLeave={() => setHoveredPanel(null)}
-                  onClick={() => setSelectedRole(panel)}
-                  style={{
-                    flex: hoveredPanel === panel.id ? '2.4' : '1',
-                    background: panel.bg,
-                    transition: 'flex 0.55s cubic-bezier(0.4, 0, 0.2, 1), transform 0.5s ease',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'flex-end',
-                    /* skewX on the whole panel — tilts photo + color + everything */
-                    transform: 'skewX(-12deg)',
-                    marginLeft: idx === 0 ? '-5%' : '-6%',
-                    marginRight: idx === 2 ? '-5%' : '0',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    animation: `panelSlideIn 0.8s cubic-bezier(0.23, 1, 0.32, 1) ${idx * 0.15}s backwards`,
-                  }}
-                >
-                  {/* Full-bleed photo bg + gradient overlay */}
-                  {/* Counter-skew the image so it fills without warping visually */}
-                  <img src={panel.image} alt={panel.title} style={{ position: 'absolute', inset: '-5% -8%', width: '116%', height: '116%', objectFit: 'cover', opacity: 0.45, transform: 'skewX(12deg)', transformOrigin: 'center', transition: 'opacity 0.5s ease' }} />
-                  <div style={{ position: 'absolute', inset: 0, background: panel.overlay }} />
+              ].map((panel, idx) => {
+                  const panelIdx = idx;
+                  const hoveredIdx = [
+                    { id: 'asha' },
+                    { id: 'dmo' },
+                    { id: 'citizen' }
+                  ].findIndex(p => p.id === hoveredPanel);
 
-                  {/* Close button - first panel only */}
-                  {idx === 0 && (
-                    <button onClick={e => { e.stopPropagation(); setShowLoginModal(false); setSelectedRole(null); }} style={{ position: 'absolute', top: '2rem', left: '3.5rem', zIndex: 10, width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', transform: 'skewX(12deg)' }}>✕</button>
-                  )}
+                  let shift = 0;
+                  if (hoveredPanel && panel.id !== hoveredPanel) {
+                    shift = panelIdx < hoveredIdx ? -40 : 40;
+                  }
 
-                  {/* Glow blob */}
-                  <div style={{ position: 'absolute', top: '-20%', right: '-20%', width: '60%', height: '60%', borderRadius: '50%', background: `radial-gradient(circle, ${panel.accent}44 0%, transparent 70%)`, pointerEvents: 'none' }} />
+                  return (
+                    <div
+                      key={panel.id}
+                      onMouseEnter={() => setHoveredPanel(panel.id)}
+                      onMouseLeave={() => setHoveredPanel(null)}
+                      onClick={() => setSelectedRole(panel)}
+                      style={{
+                        flex: hoveredPanel === panel.id ? '2.8' : '1',
+                        background: panel.bg,
+                        transition: 'flex 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'flex-end',
+                        /* skewX on the whole panel — tilts photo + color + everything */
+                        transform: `skewX(-12deg) translateX(${shift}px) scale(${hoveredPanel === panel.id ? 1.02 : 1})`,
+                        zIndex: hoveredPanel === panel.id ? 5 : 1,
+                        marginLeft: idx === 0 ? '-5%' : '-6%',
+                        marginRight: idx === 2 ? '-5%' : '0',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        animation: `panelSlideIn 0.8s cubic-bezier(0.23, 1, 0.32, 1) ${idx * 0.15}s backwards`,
+                      }}
+                    >
+                      {/* Full-bleed photo bg + gradient overlay */}
+                      {/* Counter-skew the image so it fills without warping visually */}
+                      <div style={{ position: 'absolute', inset: 0, background: panel.overlay }} />
+                      {/* Image moved after overlay to be "on top" visually (with blending if needed) or just layered after */}
+                      <img src={panel.image} alt={panel.title} style={{ position: 'absolute', inset: '-5% -8%', width: '116%', height: '116%', objectFit: 'cover', opacity: 0.65, transform: 'skewX(12deg)', transformOrigin: 'center', transition: 'opacity 0.5s ease', mixBlendMode: 'overlay' }} />
+                      
 
-                  {/* Counter-skew the content so text is perfectly upright */}
-                  <div style={{ position: 'relative', zIndex: 2, transform: 'skewX(12deg)', padding: '0 1rem 4rem', paddingLeft: idx === 0 ? '7rem' : '2rem' }}>
-                    <h2 style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2.25rem)', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', marginBottom: '1.25rem', lineHeight: 1.1, textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>{panel.title}</h2>
-                    <p style={{ color: 'rgba(255,255,255,0.88)', fontSize: '1rem', lineHeight: 1.6, maxWidth: 280, opacity: hoveredPanel === panel.id ? 1 : 0, transform: hoveredPanel === panel.id ? 'translateY(0)' : 'translateY(12px)', transition: 'all 0.4s ease', marginBottom: '2rem' }}>{panel.desc}</p>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: panel.accent, color: '#0f1a2e', padding: '0.875rem 1.75rem', borderRadius: 99, fontWeight: 700, fontSize: '1rem', opacity: hoveredPanel === panel.id ? 1 : 0, transform: hoveredPanel === panel.id ? 'translateY(0)' : 'translateY(12px)', transition: 'all 0.45s ease', width: 'fit-content', whiteSpace: 'nowrap' }}>
-                      Sign in as {panel.title} <span style={{ marginLeft: 4 }}>→</span>
+                      {/* Close button - first panel only */}
+                      {idx === 0 && (
+                        <button onClick={e => { e.stopPropagation(); setShowLoginModal(false); setSelectedRole(null); }} style={{ position: 'absolute', top: '2rem', left: '3.5rem', zIndex: 10, width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: '#fff', fontSize: '1.1rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(4px)', transform: 'skewX(12deg)' }}>✕</button>
+                      )}
+
+                      {/* Glow blob */}
+                      <div style={{ position: 'absolute', top: '-20%', right: '-20%', width: '60%', height: '60%', borderRadius: '50%', background: `radial-gradient(circle, ${panel.accent}44 0%, transparent 70%)`, pointerEvents: 'none' }} />
+
+                      {/* Counter-skew the content so text is perfectly upright */}
+                      <div style={{ position: 'relative', zIndex: 2, transform: 'skewX(12deg)', padding: '0 1rem 4rem', paddingLeft: idx === 0 ? '7rem' : '2rem' }}>
+                        <h2 style={{ fontSize: 'clamp(1.5rem, 2.5vw, 2.25rem)', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', marginBottom: '1.25rem', lineHeight: 1.1, textShadow: '0 2px 12px rgba(0,0,0,0.5)' }}>{panel.title}</h2>
+                        <p style={{ color: 'rgba(255,255,255,0.88)', fontSize: '1rem', lineHeight: 1.6, maxWidth: 280, opacity: hoveredPanel === panel.id ? 1 : 0, transform: hoveredPanel === panel.id ? 'translateY(0)' : 'translateY(12px)', transition: 'all 0.4s ease', marginBottom: '2rem' }}>{panel.desc}</p>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, background: panel.accent, color: '#0f1a2e', padding: '0.875rem 1.75rem', borderRadius: 99, fontWeight: 700, fontSize: '1rem', opacity: hoveredPanel === panel.id ? 1 : 0, transform: hoveredPanel === panel.id ? 'translateY(0)' : 'translateY(12px)', transition: 'all 0.45s ease', width: 'fit-content', whiteSpace: 'nowrap' }}>
+                          Sign in as {panel.title} <span style={{ marginLeft: 4 }}>→</span>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  );
+                })}
             </div>
           ) : (
             /* ── Phase 2: Full-screen Credential Form ── */
@@ -476,8 +493,9 @@ export default function LandingPage() {
             >
               {/* Left panel — colored brand side */}
               <div style={{ flex: '1 1 55%', background: selectedRole ? selectedRole.bg : '#0b0f1e', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '5rem' }}>
-                <img src={selectedRole?.image} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.35 }} />
                 <div style={{ position: 'absolute', inset: 0, background: selectedRole ? selectedRole.overlay : 'rgba(0,0,0,0.7)' }} />
+                <img src={selectedRole?.image} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.55, mixBlendMode: 'soft-light' }} />
+                
                 <div style={{ position: 'relative', zIndex: 2 }}>
                   <div style={{ display: 'inline-block', background: 'rgba(255,255,255,0.12)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 99, padding: '0.5rem 1.25rem', fontSize: '0.875rem', fontWeight: 600, color: '#fff', marginBottom: '2rem' }}>{selectedRole?.title} Portal</div>
                   <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1, marginBottom: '1.5rem' }}>Welcome<br />Back.</h2>

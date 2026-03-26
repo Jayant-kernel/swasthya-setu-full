@@ -40,6 +40,7 @@ import { useTriage } from '../hooks/useTriage'
 import { translateToEnglish, openai } from '../lib/openai'
 import TopNav from '../components/TopNav.jsx'
 import GlobalHeader from '../components/GlobalHeader.jsx'
+import SignLanguageModal from '../components/SignLanguageModal.jsx'
 
 // ─── Duplicate-patient modal ──────────────────────────────────────────────────
 const SEV_STYLE = {
@@ -173,6 +174,8 @@ export default function PatientFormPage() {
   const [translating, setTranslating] = useState(false)
   const [voiceError, setVoiceError] = useState('')
   const recognitionRef = useRef(null)
+
+  const [islModalOpen, setIslModalOpen] = useState(false)
 
   // Deduplication state
   const [duplicateMatches, setDuplicateMatches] = useState(null)
@@ -441,7 +444,21 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
   }
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--color-bg)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ 
+      minHeight: '100dvh', 
+      background: 'linear-gradient(-45deg, var(--island-grad-1), var(--island-grad-2), var(--island-grad-3), var(--island-grad-4))', 
+      backgroundSize: '400% 400%',
+      animation: 'islandGradientShift 15s ease infinite',
+      display: 'flex', 
+      flexDirection: 'column' 
+    }}>
+      <style>{`
+        @keyframes islandGradientShift {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+      `}</style>
       
 
       {duplicateMatches && (
@@ -457,8 +474,20 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
       <GlobalHeader />
       <TopNav />
 
-      {/* Form */}
-      <main style={{ flex: 1, padding: '2rem 1.5rem', maxWidth: 820, width: '100%', margin: '0 auto' }}>
+      {/* Form Island */}
+      <main style={{ 
+        flex: 1, 
+        padding: '2.5rem 2rem', 
+        maxWidth: 820, 
+        width: '100%', 
+        margin: '2rem auto',
+        background: 'var(--island-bg)',
+        backdropFilter: 'blur(12px)',
+        WebkitBackdropFilter: 'blur(12px)',
+        borderRadius: '24px',
+        boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
+        border: '1px solid var(--island-border)'
+      }}>
         <form onSubmit={handleSubmit} noValidate>
           {/* Patient Name */}
           <div className="form-group">
@@ -678,7 +707,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           {/* ISL Mode button */}
           <button
             type="button"
-            onClick={() => navigate('/isl')}
+            onClick={() => setIslModalOpen(true)}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -699,6 +728,17 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             🤟 ISL Mode — Use Hand Signs
             <span style={{ fontFamily: "'Noto Sans Oriya', sans-serif", fontSize: '0.8125rem' }}>/ ସାଙ୍କେତିକ ଭାଷା</span>
           </button>
+
+          <SignLanguageModal 
+            isOpen={islModalOpen} 
+            onClose={() => setIslModalOpen(false)}
+            onAddSymptom={(symptom) => {
+              setForm(prev => ({
+                ...prev,
+                symptomText: prev.symptomText ? `${prev.symptomText}, ${symptom}` : symptom
+              }))
+            }}
+          />
 
           {/* Errors */}
           {(triageError || saveError) && (

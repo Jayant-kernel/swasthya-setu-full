@@ -1,313 +1,644 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Hands } from '@mediapipe/hands'
-import { Camera } from '@mediapipe/camera_utils'
-import TopNav from '../components/TopNav.jsx'
-import GlobalHeader from '../components/GlobalHeader.jsx'
+import React, { useRef, useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import TopNav from '../components/TopNav.jsx';
+import GlobalHeader from '../components/GlobalHeader.jsx';
+import { Hands } from '@mediapipe/hands';
 
-const TEAL = '#0F6E56'
-const API_URL = 'http://localhost:5000'
+// ─── Config (mirrors config.py) ──────────────────────────────────
+const SEQUENCE_LENGTH = 30;
+const NUM_LANDMARKS = 21;
+const LANDMARK_DIMS = 3;
+const FEATURES_PER_FRAME = NUM_LANDMARKS * LANDMARK_DIMS; // 63
+const TOTAL_FEATURES = FEATURES_PER_FRAME * 2; // 126
+
+const CONFIRM_PREDICTIONS = 8;
+const COOLDOWN_PREDICTIONS = 20;
+const MIN_CONFIDENCE = 0.70;
+
+const API_BASE = "/api";
+
+// Hand skeleton connections (mirrors collect_data.py)
+const HAND_CONNECTIONS = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [0,9],[9,10],[10,11],[11,12],
+  [0,13],[13,14],[14,15],[15,16],
+  [0,17],[17,18],[18,19],[19,20],
+  [5,9],[9,13],[13,17],
+];
+
+function getConfidenceColor(conf) {
+  if (conf >= 0.75) return "#00e664";
+  if (conf >= 0.50) return "#00c8ff";
+  return "#5050ff";
+}
 
 export default function ISLPage() {
-  const navigate = useNavigate()
-  const videoRef = useRef(null)
+  const navigate = useNavigate();
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const overlayCanvasRef = useRef(null);
+  const handsRef = useRef(null);
+  const sessionId = useRef("session-" + Date.now());
+  const animFrameRef = useRef(null);
 
-  const [detections, setDetections] = useState([])
-  const [activeLabel, setActiveLabel] = useState(null)
-  const [activeConfidence, setActiveConfidence] = useState(0)
+  // ─── State mirrors test_video.py's stabilizer ──────────────────
+  const [apiState, setApiState] = useState({
+    detection: null,
+    active_label: null,
+    active_confidence: 0,
+    buffer_ready: false,
+    all_detections: [],
+  });
 
-  const [isConnected, setIsConnected] = useState(false)
-  const [cameraOn, setCameraOn] = useState(false)
+  // Local streak/cooldown state for the debug overlay (mirrors PredictionStabilizer)
+  const streakRef = useRef({ label: null, count: 0 });
+  const cooldownRef = useRef(0);
+  const [debugInfo, setDebugInfo] = useState({
+    streakLabel: null,
+    streakCount: 0,
+    cooldown: 0,
+    bufferFill: 0,
+    handsDetected: false,
+    lastRawPrediction: null,
+    lastRawConf: 0,
+  });
 
-  const handsRef = useRef(null)
-  const cameraRef = useRef(null)
+  const [detections, setDetections] = useState([]);
+  const [activeLabel, setActiveLabel] = useState(null);
+  const [activeConf, setActiveConf] = useState(0);
+  const [status, setStatus] = useState("Initializing MediaPipe...");
+  const [apiConnected, setApiConnected] = useState(false);
+  const frameCountRef = useRef(0);
 
-  // ─── Client-side Model State ───
-  const frameBuffer = useRef([])
-  const isPredicting = useRef(false)
+  // ─── Health check ────────────────────────────────────────────────
+  useEffect(() => {
+    fetch(`${API_BASE}/health`)
+      .then((r) => r.json())
+      .then((d) => {
+        setApiConnected(d.model_loaded);
+        setStatus(d.model_loaded ? "Model loaded ✓" : "Model not loaded!");
+      })
+      .catch(() => {
+        setApiConnected(false);
+        setStatus("Cannot reach the Flask API via proxy");
+      });
+  }, []);
 
-  // ─── Stabilization State ───
-  const CONFIRM_FRAMES = 3
-  const COOLDOWN_FRAMES = 10
-
-  const currentStreakLabel = useRef(null)
-  const currentStreakCount = useRef(0)
-  const cooldownRemaining = useRef(0)
-  const allDetections = useRef([])
-
+  // ─── Extract landmarks (mirrors collect_data.py) ─────────────────
   const extractLandmarks = useCallback((results) => {
-    const landmarks = new Array(126).fill(0);
-    if (results.multiHandLandmarks && results.multiHandedness) {
-      results.multiHandLandmarks.forEach((hand, idx) => {
-        if (idx >= 2) return;
-        
-        // The Python model was trained on mirrored webcam frames.
-        // We MUST swap 'Right' and 'Left' to match the training data.
-        let handedness = results.multiHandedness[idx].label;
-        handedness = handedness === 'Right' ? 'Left' : 'Right';
-        
-        const offset = handedness === 'Right' ? 0 : 63;
+    const landmarks = new Float32Array(TOTAL_FEATURES);
+    if (results.multiHandLandmarks) {
+      results.multiHandLandmarks.forEach((hand, handIdx) => {
+        if (handIdx >= 2) return;
+        const handedness = results.multiHandedness[handIdx]?.label;
+        const offset = handedness === "Right" ? 0 : FEATURES_PER_FRAME;
         hand.forEach((lm, i) => {
-          // We must also flip the X coordinate to emulate a mirrored camera
-          landmarks[offset + i * 3] = 1.0 - lm.x;
+          landmarks[offset + i * 3] = lm.x;
           landmarks[offset + i * 3 + 1] = lm.y;
           landmarks[offset + i * 3 + 2] = lm.z;
         });
       });
     }
-    return landmarks;
+    return Array.from(landmarks);
   }, []);
 
-  const handleStabilization = useCallback((prediction, confidence) => {
-    // 1. Process Cooldown
-    if (cooldownRemaining.current > 0) {
-      cooldownRemaining.current--
-      if (cooldownRemaining.current === 0) {
-        setActiveLabel(null)
-        setActiveConfidence(0)
-      }
-      return
-    }
-    // 2. Ignore low confidence predictions
-    if (confidence < 0.7) {
-      currentStreakCount.current = 0
-      currentStreakLabel.current = null
-      return
-    }
-    // 3. Track consecutive matching predictions
-    if (prediction === currentStreakLabel.current) {
-      currentStreakCount.current++
-    } else {
-      currentStreakLabel.current = prediction
-      currentStreakCount.current = 1
-    }
-    // 4. Lock in symptom if streak achieved
-    if (currentStreakCount.current >= CONFIRM_FRAMES) {
-      // PREVENT DUPLICATES in final list
-      const alreadyExists = allDetections.current.some(d => d.label === prediction)
-      if (!alreadyExists) {
-        const newDetection = {
-          label: prediction,
-          confidence,
-          index: allDetections.current.length + 1
+  // ─── Draw hand skeleton on overlay canvas (mirrors draw_hand_landmarks) ──
+  const drawHandSkeleton = useCallback((results) => {
+    const canvas = overlayCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    if (!results.multiHandLandmarks) return;
+
+    results.multiHandLandmarks.forEach((hand) => {
+      // Draw connections
+      ctx.strokeStyle = "rgba(0,255,150,0.85)";
+      ctx.lineWidth = 2;
+      HAND_CONNECTIONS.forEach(([a, b]) => {
+        ctx.beginPath();
+        ctx.moveTo(hand[a].x * w, hand[a].y * h);
+        ctx.lineTo(hand[b].x * w, hand[b].y * h);
+        ctx.stroke();
+      });
+
+      // Draw landmark dots
+      hand.forEach((lm) => {
+        const cx = lm.x * w;
+        const cy = lm.y * h;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(255,100,100,0.9)";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(255,255,255,0.7)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
+    });
+  }, []);
+
+  // ─── Send frame to API ────────────────────────────────────────────
+  const sendFrame = useCallback(
+    async (landmarks, handsDetected) => {
+      if (!apiConnected) return;
+      try {
+        const res = await fetch(`${API_BASE}/predict_frame`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            session_id: sessionId.current,
+            landmarks,
+          }),
+        });
+        const data = await res.json();
+
+        setApiState(data);
+
+        if (data.detection) {
+          setDetections((prev) => [...prev, data.detection]);
+          setActiveLabel(data.detection.label);
+          setActiveConf(data.detection.confidence);
         }
-        allDetections.current = [...allDetections.current, newDetection]
-        setDetections([...allDetections.current])
-      }
 
-      setActiveLabel(prediction)
-      setActiveConfidence(confidence)
-
-      // Trigger cooldown
-      cooldownRemaining.current = COOLDOWN_FRAMES
-      currentStreakCount.current = 0
-      currentStreakLabel.current = null
-    }
-  }, [])
-
-  function startCamera() {
-    setCameraOn(true)
-    setTimeout(() => {
-      initMediaPipe()
-    }, 50)
-  }
-
-  function stopCamera() {
-    try { cameraRef.current?.stop() } catch { }
-    try { handsRef.current?.close() } catch { }
-    if (videoRef.current?.srcObject) {
-      videoRef.current.srcObject.getTracks().forEach(t => t.stop())
-      videoRef.current.srcObject = null
-    }
-    setCameraOn(false)
-    setActiveLabel(null)
-  }
-
-  const initMediaPipe = () => {
-    const hands = new Hands({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
-    })
-
-    hands.setOptions({
-      maxNumHands: 2,
-      modelComplexity: 1,
-      minDetectionConfidence: 0.7,
-      minTrackingConfidence: 0.5,
-    })
-
-    hands.onResults(async (results) => {
-      // Push EVERY frame to our local buffer
-      const landmarks = extractLandmarks(results)
-      frameBuffer.current.push(landmarks)
-
-      // Keep only the rolling window of the last 30 frames (1 second of time)
-      if (frameBuffer.current.length > 30) {
-        frameBuffer.current.shift()
-      }
-
-      // If buffer is full AND we aren't currently waiting for a network request
-      if (frameBuffer.current.length === 30 && !isPredicting.current) {
-        isPredicting.current = true
-
-        try {
-          // Send the full sequence batch at once - zero queuing delays
-          const sequence = [...frameBuffer.current]
-          const res = await fetch(`${API_URL}/predict`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sequence }),
-          })
-          const data = await res.json()
-
-          if (data.prediction) {
-            handleStabilization(data.prediction, data.confidence)
-          }
-        } catch (err) {
-          console.error('API error:', err)
-        } finally {
-          isPredicting.current = false
+        if (data.active_label !== undefined) {
+          setActiveLabel(data.active_label);
+          setActiveConf(data.active_confidence);
         }
+
+        // Update debug info
+        setDebugInfo((prev) => ({
+          ...prev,
+          bufferFill: data.buffer_ready ? 1 : prev.bufferFill,
+          handsDetected,
+        }));
+      } catch (e) {
+        // silent — don't spam
       }
-    })
+    },
+    [apiConnected]
+  );
 
-    handsRef.current = hands
-
-    const video = videoRef.current
-    if (video) {
-      const camera = new Camera(video, {
-        onFrame: async () => await hands.send({ image: video }),
-        width: 640,
-        height: 480,
-      })
-      camera.start()
-      cameraRef.current = camera
-    }
-  }
-
+  // ─── MediaPipe setup ──────────────────────────────────────────────
   useEffect(() => {
-    fetch(`${API_URL}/health`)
-      .then(r => r.json())
-      .then(() => setIsConnected(true))
-      .catch(() => setIsConnected(false))
+    if (!videoRef.current) return;
 
-    const pingId = setInterval(() => {
-      fetch(`${API_URL}/health`)
-        .then(() => setIsConnected(true))
-        .catch(() => setIsConnected(false))
-    }, 5000)
+    const loadMediaPipe = async () => {
+      try {
+        const hands = new Hands({
+          locateFile: (file) =>
+            `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+        });
+
+        hands.setOptions({
+          maxNumHands: 2,
+          modelComplexity: 1,
+          minDetectionConfidence: 0.7,
+          minTrackingConfidence: 0.5,
+        });
+
+      hands.onResults(async (results) => {
+        const handsDetected =
+          results.multiHandLandmarks?.length > 0;
+
+        drawHandSkeleton(results);
+
+        frameCountRef.current += 1;
+        // Send every 2 frames to match predict.py's frame_count % 5 behaviour
+        // (browser is slower so every 2 is fine)
+        if (frameCountRef.current % 2 === 0) {
+          const lm = extractLandmarks(results);
+          await sendFrame(lm, handsDetected);
+          setDebugInfo((prev) => ({
+            ...prev,
+            handsDetected,
+            bufferFill: Math.min(
+              1,
+              prev.bufferFill + 1 / SEQUENCE_LENGTH
+            ),
+          }));
+        }
+      });
+
+      handsRef.current = hands;
+      setStatus("MediaPipe ready");
+
+      const video = videoRef.current;
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      video.srcObject = stream;
+      await new Promise((res) => (video.onloadedmetadata = res));
+      video.play();
+
+      const loop = async () => {
+        if (video.readyState >= 2) await hands.send({ image: video });
+        animFrameRef.current = requestAnimationFrame(loop);
+      };
+      animFrameRef.current = requestAnimationFrame(loop);
+      setStatus("Running");
+      } catch (err) {
+        setStatus("Error loading MediaPipe");
+        console.error(err);
+      }
+    };
+
+    loadMediaPipe();
 
     return () => {
-      clearInterval(pingId)
-      stopCamera()
-    }
-  }, [extractLandmarks, handleStabilization])
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
+      if (handsRef.current) handsRef.current.close();
+      if (videoRef.current?.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach((t) => t.stop());
+      }
+    };
+  }, [apiConnected, drawHandSkeleton, extractLandmarks, sendFrame]);
 
-  const handleReset = () => {
-    frameBuffer.current = []
-    allDetections.current = []
-    cooldownRemaining.current = 0
-    currentStreakCount.current = 0
-    setDetections([])
-    setActiveLabel(null)
-  }
+  // ─── Reset session ────────────────────────────────────────────────
+  const handleReset = useCallback(async () => {
+    await fetch(`${API_BASE}/reset`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId.current }),
+    });
+    setDetections([]);
+    setActiveLabel(null);
+    setActiveConf(0);
+    setApiState({ detection: null, active_label: null, active_confidence: 0, buffer_ready: false, all_detections: [] });
+    setDebugInfo({ streakLabel: null, streakCount: 0, cooldown: 0, bufferFill: 0, handsDetected: false, lastRawPrediction: null, lastRawConf: 0 });
+    frameCountRef.current = 0;
+  }, []);
+
+  // ─── Derived display values ───────────────────────────────────────
+  const bufferPct = apiState.buffer_ready ? 100 : Math.round((frameCountRef.current % SEQUENCE_LENGTH) / SEQUENCE_LENGTH * 100);
+  const confColor = getConfidenceColor(activeConf);
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100dvh', background: '#0a0a0f', display: 'flex', flexDirection: 'column' }}>
       <GlobalHeader />
       <TopNav />
-
-      <main style={{ flex: 1, padding: '1.25rem', maxWidth: 760, width: '100%', margin: '0 auto' }}>
-
-        <div style={{ background: isConnected ? 'var(--success-bg)' : 'var(--error-bg)', border: `1px solid ${isConnected ? 'var(--success-text)' : 'var(--error-text)'}`, borderRadius: 10, padding: '0.625rem 0.875rem', marginBottom: '1.25rem', fontSize: '0.8125rem', color: isConnected ? 'var(--success-text)' : 'var(--error-text)', display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ height: 10, width: 10, borderRadius: '50%', background: isConnected ? 'var(--primary)' : 'var(--error-text)' }}></span>
-          {isConnected ? 'API Connected and ready.' : 'API not running. Please start the ML backend on port 5000.'}
+      
+      <div style={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "flex-start",
+        padding: "20px",
+        fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+        color: "#e0e0e0",
+      }}>
+        {/* Header */}
+        <div style={{
+          width: "100%",
+          maxWidth: 900,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 16,
+          borderBottom: "1px solid #222",
+          paddingBottom: 12,
+        }}>
+          <div>
+            <div style={{ fontSize: 11, color: "#555", letterSpacing: 3, textTransform: "uppercase" }}>
+              Sign Language Recognition
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", letterSpacing: 1 }}>
+              ISL — Debug Mode
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div style={{
+              width: 8, height: 8, borderRadius: "50%",
+              background: apiConnected ? "#00e664" : "#ff4444",
+              boxShadow: apiConnected ? "0 0 8px #00e664" : "0 0 8px #ff4444",
+            }} />
+            <span style={{ fontSize: 11, color: "#888" }}>
+              {apiConnected ? "API CONNECTED" : "API OFFLINE"}
+            </span>
+            <button
+              onClick={handleReset}
+              style={{
+                marginLeft: 12,
+                padding: "5px 14px",
+                background: "transparent",
+                border: "1px solid #333",
+                color: "#888",
+                borderRadius: 4,
+                fontSize: 11,
+                cursor: "pointer",
+                letterSpacing: 1,
+                textTransform: "uppercase",
+              }}
+              onMouseEnter={(e) => { e.target.style.borderColor = "#555"; e.target.style.color = "#ccc"; }}
+              onMouseLeave={(e) => { e.target.style.borderColor = "#333"; e.target.style.color = "#888"; }}
+            >
+              Reset
+            </button>
+          </div>
         </div>
 
-        <div style={{ background: 'var(--surface)', borderRadius: 16, border: '1px solid var(--border)', overflow: 'hidden', marginBottom: '1rem' }}>
-          <div style={{ background: 'var(--text-main)', minHeight: cameraOn ? 'auto' : 180, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {cameraOn ? (
-              <div style={{ position: 'relative', width: '100%', maxWidth: '640px', margin: '0 auto' }}>
-                <video
-                  ref={videoRef}
-                  style={{ width: '100%', height: 'auto', display: 'block', transform: 'scaleX(-1)' }}
-                  autoPlay
-                  muted
-                  playsInline
-                />
+        {/* Main layout */}
+        <div style={{ display: "flex", gap: 16, width: "100%", maxWidth: 900, alignItems: "flex-start" }}>
 
-                {activeLabel && (
-                  <div style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', background: activeConfidence > 0.75 ? '#1a472a' : '#4a3000', color: 'var(--surface)', borderRadius: 99, padding: '0.4rem 1.2rem', fontSize: '1rem', fontWeight: 700, whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span>{activeLabel.replace('_', ' ').toUpperCase()}</span>
-                    <span style={{ fontSize: '0.8rem', opacity: 0.85 }}>{(activeConfidence * 100).toFixed(1)}%</span>
+          {/* Video + overlay */}
+          <div style={{ flex: "0 0 auto", position: "relative" }}>
+            {/* Header overlay — mirrors test_video.py header bar */}
+            <div style={{
+              position: "absolute", top: 0, left: 0, right: 0, zIndex: 10,
+              background: "rgba(10,10,15,0.85)",
+              borderRadius: "8px 8px 0 0",
+              padding: "8px 12px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              borderBottom: "1px solid #1a1a2a",
+            }}>
+              <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+                <span style={{ fontSize: 11, color: debugInfo.handsDetected ? "#00e664" : "#ff5050" }}>
+                  {debugInfo.handsDetected ? "● HANDS DETECTED" : "○ NO HANDS"}
+                </span>
+                <span style={{ fontSize: 11, color: "#555" }}>
+                  BUFFER: <span style={{ color: apiState.buffer_ready ? "#00e664" : "#888" }}>
+                    {apiState.buffer_ready ? "READY" : `${bufferPct}%`}
+                  </span>
+                </span>
+                <span style={{ fontSize: 11, color: "#555" }}>
+                  DETECTED: <span style={{ color: "#aaa" }}>{detections.length}</span>
+                </span>
+              </div>
+              <span style={{ fontSize: 10, color: "#333" }}>{status}</span>
+            </div>
+
+            {/* Video stack */}
+            <div style={{ position: "relative", width: 640, height: 480, background: "#050508", borderRadius: 8, overflow: "hidden" }}>
+              <video
+                ref={videoRef}
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", transform: "scaleX(-1)" }}
+                muted
+                playsInline
+              />
+              {/* Landmark canvas */}
+              <canvas
+                ref={overlayCanvasRef}
+                width={640}
+                height={480}
+                style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", transform: "scaleX(-1)" }}
+              />
+
+              {/* Active prediction overlay — mimics test_video.py active detection display */}
+              <div style={{
+                position: "absolute", bottom: 0, left: 0, right: 0,
+                background: "linear-gradient(transparent, rgba(0,0,0,0.85))",
+                padding: "24px 16px 12px",
+              }}>
+                {activeLabel ? (
+                  <div>
+                    <div style={{
+                      fontSize: 36, fontWeight: 800, color: confColor,
+                      textShadow: `0 0 20px ${confColor}55`,
+                      letterSpacing: 4, textTransform: "uppercase",
+                      lineHeight: 1,
+                    }}>
+                      {activeLabel.replace(/_/g, " ")}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
+                      <div style={{
+                        flex: 1,
+                        height: 4,
+                        background: "#1a1a1a",
+                        borderRadius: 2,
+                        overflow: "hidden",
+                      }}>
+                        <div style={{
+                          width: `${activeConf * 100}%`,
+                          height: "100%",
+                          background: confColor,
+                          boxShadow: `0 0 6px ${confColor}`,
+                          borderRadius: 2,
+                          transition: "width 0.3s ease",
+                        }} />
+                      </div>
+                      <span style={{ fontSize: 13, color: confColor, minWidth: 48, textAlign: "right" }}>
+                        {(activeConf * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 13, color: "#444", letterSpacing: 2 }}>
+                    WAITING FOR SIGN...
                   </div>
                 )}
               </div>
-            ) : (
-              <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>
-                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ marginBottom: 8, opacity: 0.4 }}>
-                  <path d="M23 7l-7 5 7 5V7z" /><rect x="1" y="5" width="15" height="14" rx="2" />
-                </svg>
-                <div style={{ fontSize: '0.9rem' }}>Camera off</div>
+            </div>
+          </div>
+
+          {/* Debug panel — right side, mirrors all the test_video.py overlay info */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+
+            {/* Stabilizer state */}
+            <div style={{
+              background: "#0d0d14",
+              border: "1px solid #1a1a2a",
+              borderRadius: 8,
+              padding: 14,
+            }}>
+              <div style={{ fontSize: 10, color: "#444", letterSpacing: 2, marginBottom: 10, textTransform: "uppercase" }}>
+                Stabilizer State
               </div>
-            )}
-          </div>
 
-          <div style={{ padding: '1rem' }}>
-            {!cameraOn ? (
-              <button onClick={startCamera} disabled={!isConnected}
-                style={{ width: '100%', padding: '0.875rem', background: isConnected ? TEAL : '#9ca3af', color: 'var(--surface)', border: 'none', borderRadius: 10, fontSize: '1rem', fontWeight: 700, cursor: isConnected ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                Start Camera
-              </button>
-            ) : (
-              <button onClick={stopCamera}
-                style={{ width: '100%', padding: '0.75rem', background: 'var(--error-bg)', color: 'var(--error-text)', border: '1.5px solid var(--error-text)', borderRadius: 10, fontSize: '0.9375rem', fontWeight: 700, cursor: 'pointer' }}>
-                Stop Camera
-              </button>
-            )}
-          </div>
-        </div>
-
-        <div style={{ background: 'var(--surface)', borderRadius: 16, border: '1px solid var(--border)', padding: '1.125rem', marginBottom: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
-            <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-main)' }}>
-              Detected Symptoms
-            </div>
-            {detections.length > 0 && (
-              <button onClick={handleReset}
-                style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 8, padding: '0.25rem 0.625rem', fontSize: '0.75rem', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                Reset Session
-              </button>
-            )}
-          </div>
-
-          {detections.length === 0 ? (
-            <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: '0.875rem', padding: '1.5rem 0' }}>
-              No symptoms detected yet — show a hand sign to the camera
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-              {detections.map((d, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', background: 'var(--success-bg)', border: '1.5px solid var(--success-text)', borderRadius: 99, padding: '0.3rem 0.75rem' }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--success-text)' }}>
-                    #{d.index}: {d.label.replace('_', ' ').toUpperCase()}
+              {/* Buffer fill */}
+              <div style={{ marginBottom: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                  <span style={{ fontSize: 11, color: "#555" }}>BUFFER</span>
+                  <span style={{ fontSize: 11, color: apiState.buffer_ready ? "#00e664" : "#888" }}>
+                    {apiState.buffer_ready ? `${SEQUENCE_LENGTH}/${SEQUENCE_LENGTH}` : `filling...`}
                   </span>
-                  <span style={{ fontSize: '0.625rem', color: '#16a34a' }}>{(d.confidence * 100).toFixed(1)}%</span>
                 </div>
-              ))}
-            </div>
-          )}
+                <div style={{ height: 3, background: "#1a1a1a", borderRadius: 2, overflow: "hidden" }}>
+                  <div style={{
+                    width: apiState.buffer_ready ? "100%" : `${bufferPct}%`,
+                    height: "100%",
+                    background: apiState.buffer_ready ? "#00e664" : "#4488ff",
+                    transition: "width 0.2s ease",
+                  }} />
+                </div>
+              </div>
 
-          {detections.length > 0 && (
-            <button onClick={() => {
-              const text = detections.map(d => d.label.replace('_', ' ')).join(', ')
-              navigate('/patient', { state: { prefill: { symptomText: text } } })
-            }}
-              style={{ marginTop: '1rem', width: '100%', padding: '0.875rem', background: TEAL, color: 'var(--surface)', border: 'none', borderRadius: 10, fontSize: '1rem', fontWeight: 700, cursor: 'pointer' }}>
-              Add to Patient Form →
-            </button>
-          )}
+              {/* Streak / cooldown rows — exactly like test_video.py's indicators */}
+              {apiState.all_detections?.length > 0 && (
+                <div style={{ marginBottom: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                    <span style={{ fontSize: 11, color: "#555" }}>COOLDOWN</span>
+                    <span style={{ fontSize: 11, color: "#6060ff" }}>
+                      {apiState.active_label ? "active" : "ready"}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Threshold info */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 10, color: "#333", borderTop: "1px solid #141420", paddingTop: 8 }}>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>CONFIRM STREAK</span>
+                  <span style={{ color: "#555" }}>{CONFIRM_PREDICTIONS} frames</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>COOLDOWN</span>
+                  <span style={{ color: "#555" }}>{COOLDOWN_PREDICTIONS} frames</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>MIN CONFIDENCE</span>
+                  <span style={{ color: "#555" }}>{(MIN_CONFIDENCE * 100).toFixed(0)}%</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
+                  <span>SEQUENCE LENGTH</span>
+                  <span style={{ color: "#555" }}>{SEQUENCE_LENGTH} frames</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Current prediction */}
+            <div style={{
+              background: "#0d0d14",
+              border: `1px solid ${apiState.active_label ? "#1a3020" : "#1a1a2a"}`,
+              borderRadius: 8,
+              padding: 14,
+            }}>
+              <div style={{ fontSize: 10, color: "#444", letterSpacing: 2, marginBottom: 10, textTransform: "uppercase" }}>
+                Active Detection
+              </div>
+              {apiState.active_label ? (
+                <div>
+                  <div style={{
+                    fontSize: 22, fontWeight: 700,
+                    color: confColor,
+                    textTransform: "uppercase",
+                    letterSpacing: 2,
+                  }}>
+                    {apiState.active_label.replace(/_/g, " ")}
+                  </div>
+                  <div style={{ fontSize: 12, color: "#555", marginTop: 2 }}>
+                    confidence: <span style={{ color: confColor }}>{(apiState.active_confidence * 100).toFixed(1)}%</span>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ fontSize: 12, color: "#333" }}>No active detection</div>
+              )}
+            </div>
+
+            {/* Detections log — mirrors the "Detected signs" list in test_video.py */}
+            <div style={{
+              background: "#0d0d14",
+              border: "1px solid #1a1a2a",
+              borderRadius: 8,
+              padding: 14,
+              flex: 1,
+              minHeight: 120,
+              display: "flex",
+              flexDirection: "column",
+            }}>
+              <div style={{
+                fontSize: 10, color: "#444", letterSpacing: 2,
+                marginBottom: 10, textTransform: "uppercase",
+                display: "flex", justifyContent: "space-between",
+              }}>
+                <span>Detections Log</span>
+                <span style={{ color: "#333" }}>{detections.length} total</span>
+              </div>
+
+              {detections.length === 0 ? (
+                <div style={{ fontSize: 11, color: "#2a2a2a", flex: 1 }}>None yet...</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, flex: 1 }}>
+                  {[...detections].reverse().slice(0, 8).map((d, i) => (
+                    <div key={d.index || i} style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      padding: "5px 8px",
+                      background: i === 0 ? "#111820" : "transparent",
+                      borderRadius: 4,
+                      borderLeft: i === 0 ? `2px solid ${getConfidenceColor(d.confidence)}` : "2px solid transparent",
+                    }}>
+                      <span style={{ fontSize: 10, color: "#333", minWidth: 20 }}>
+                        #{d.index || detections.length - i}
+                      </span>
+                      <span style={{ fontSize: 12, color: i === 0 ? "#ddd" : "#555", textTransform: "uppercase", letterSpacing: 1, flex: 1 }}>
+                        {d.label.replace(/_/g, " ")}
+                      </span>
+                      <span style={{ fontSize: 10, color: getConfidenceColor(d.confidence) }}>
+                        {(d.confidence * 100).toFixed(0)}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Add to Patient Form Button directly replacing old implementation */}
+              {detections.length > 0 && (
+                <button onClick={() => {
+                  const text = detections.map(d => d.label.replace(/_/g, ' ')).join(', ')
+                  navigate('/patient', { state: { prefill: { symptomText: text } } })
+                }}
+                  style={{ marginTop: '1rem', width: '100%', padding: '0.875rem', background: '#0F6E56', color: '#fff', border: 'none', borderRadius: 10, fontSize: '0.9rem', fontWeight: 700, cursor: 'pointer' }}>
+                  Add to Patient Form →
+                </button>
+              )}
+            </div>
+
+            {/* All class probabilities — bonus debug info */}
+            <div style={{
+              background: "#0d0d14",
+              border: "1px solid #1a1a2a",
+              borderRadius: 8,
+              padding: 14,
+              fontSize: 10,
+              color: "#333",
+            }}>
+              <div style={{ letterSpacing: 2, marginBottom: 8, textTransform: "uppercase", color: "#444" }}>
+                Model Info
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <span>INPUT SHAPE</span>
+                <span style={{ color: "#555" }}>30 × 126</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 3 }}>
+                <span>HANDS</span>
+                <span style={{ color: "#555" }}>2 × 21 landmarks</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 3 }}>
+                <span>ARCH</span>
+                <span style={{ color: "#555" }}>BiLSTM + Attention</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 3 }}>
+                <span>SESSION</span>
+                <span style={{ color: "#333", fontSize: 9 }}>{sessionId.current.slice(-8)}</span>
+              </div>
+            </div>
+
+          </div>
         </div>
-      </main>
+
+        {/* Bottom: no API fallback notice */}
+        {!apiConnected && (
+          <div style={{
+            marginTop: 16,
+            padding: "10px 20px",
+            background: "#1a0a0a",
+            border: "1px solid #3a1a1a",
+            borderRadius: 6,
+            fontSize: 12,
+            color: "#aa4444",
+            maxWidth: 900,
+            width: "100%",
+          }}>
+            ⚠ API unreachable — ensure the Flask app is running on port 5000 and the Vite proxy is active.
+          </div>
+        )}
+      </div>
     </div>
-  )
+  );
 }

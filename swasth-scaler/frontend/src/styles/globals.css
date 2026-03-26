@@ -35,6 +35,13 @@
   --font-sans: 'Noto Sans', 'Noto Sans Devanagari', system-ui, -apple-system, sans-serif;
   --transition: 0.2s ease;
   --max-width: 1100px;
+  
+  --island-grad-1: #e0f8e9;
+  --island-grad-2: #d1f4ff;
+  --island-grad-3: #bdf1d8;
+  --island-grad-4: #aee8ff;
+  --island-bg: rgba(255, 255, 255, 0.85);
+  --island-border: rgba(255, 255, 255, 0.6);
 }
 
 /* ── Resets & Base ── */
@@ -534,6 +541,13 @@ html[data-theme="dark"] {
   --color-text-light: #94a3b8;
   --color-border: #334155;
   --color-white: #1e293b;
+
+  --island-grad-1: #064e3b;
+  --island-grad-2: #0f172a;
+  --island-grad-3: #022c22;
+  --island-grad-4: #020617;
+  --island-bg: rgba(30, 41, 59, 0.85);
+  --island-border: rgba(100, 116, 139, 0.3);
 }
 
 body {
