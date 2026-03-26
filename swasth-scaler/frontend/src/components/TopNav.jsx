@@ -1,6 +1,7 @@
 import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useScrollDirection } from '../hooks/useScrollDirection'
 
 const NAV = [
   { path: '/home', label: 'Dashboard', marathi: 'डॅशबोर्ड' },
@@ -12,32 +13,31 @@ export default function TopNav() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  async function handleLogout() {
-    await supabase.auth.signOut()
-    navigate('/')
-  }
+  const isVisible = useScrollDirection()
 
   return (
-    <nav style={{ 
-      background: 'var(--surface)', 
-      borderBottom: '1px solid var(--border)', 
-      padding: '0 1.25rem', 
-      display: 'flex', 
-      alignItems: 'center', 
-      gap: '2.5rem', 
-      overflowX: 'auto', 
+    <nav style={{
+      background: 'var(--surface)',
+      borderBottom: '1px solid var(--border)',
+      padding: '0 1.25rem',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '2.5rem',
+      overflowX: 'auto',
       whiteSpace: 'nowrap',
-      scrollbarWidth: 'none', 
+      scrollbarWidth: 'none',
       msOverflowStyle: 'none',
       position: 'sticky',
       top: 65, // Below header
-      zIndex: 9
+      zIndex: 9,
+      transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+      transform: isVisible ? 'translateY(0)' : 'translateY(-150%)'
     }}>
       <style>{`nav::-webkit-scrollbar { display: none; }`}</style>
-      
+
       <div style={{ display: 'flex', justifyContent: 'space-evenly', gap: '1rem', flex: 1 }}>
         {NAV.map(item => {
-          const active = location.pathname.startsWith(item.path) || 
+          const active = location.pathname.startsWith(item.path) ||
             (item.path === '/home' && location.pathname === '/')
           return (
             <button
@@ -69,7 +69,7 @@ export default function TopNav() {
           )
         })}
       </div>
-      
-      </nav>
+
+    </nav>
   )
 }

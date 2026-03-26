@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import ProfileOverlay from './ProfileOverlay.jsx'
+import { useScrollDirection } from '../hooks/useScrollDirection'
+import { useNavigate } from 'react-router-dom'
 
 export default function GlobalHeader({ children, rightSide }) {
   const navigate = useNavigate()
@@ -15,6 +16,8 @@ export default function GlobalHeader({ children, rightSide }) {
 
   const toggleTheme = () => setTheme(t => t === 'light' ? 'dark' : 'light')
 
+  const isVisible = useScrollDirection()
+
   return (
     <>
       <header style={{ 
@@ -27,7 +30,9 @@ export default function GlobalHeader({ children, rightSide }) {
         position: 'sticky', 
         top: 0, 
         zIndex: 10,
-        boxShadow: 'var(--shadow)' 
+        boxShadow: 'var(--shadow)',
+        transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        transform: isVisible ? 'translateY(0)' : 'translateY(-100%)'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, gap: '1rem' }}>
           <button onClick={() => navigate('/home')} style={{ background: 'transparent', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer', flexShrink: 0 }}>

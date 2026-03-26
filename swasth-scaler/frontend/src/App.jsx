@@ -14,6 +14,7 @@ import LandingPage from './pages/LandingPage.jsx'
 import CitizenLoginPage from './pages/CitizenLoginPage.jsx'
 import CitizenRegistrationPage from './pages/CitizenRegistrationPage.jsx'
 import CitizenDashboardPage from './pages/CitizenDashboardPage.jsx'
+import ISLPage from './pages/ISLPage.jsx'
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
             
             <Route path="/home" element={<ProtectedRoute role="asha"><HomePage /></ProtectedRoute>} />
             <Route path="/patient" element={<ProtectedRoute role="asha"><PatientFormPage /></ProtectedRoute>} />
+            <Route path="/isl" element={<ProtectedRoute role="asha"><ISLPage /></ProtectedRoute>} />
             <Route path="/chat" element={<ProtectedRoute role="asha"><ChatPage /></ProtectedRoute>} />
             
             
