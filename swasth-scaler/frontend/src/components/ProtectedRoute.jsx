@@ -14,6 +14,15 @@ export default function ProtectedRoute({ children, role }) {
     )
   }
 
+  // DMO uses bypass auth (no Supabase session required)
+  if (role === 'dmo' && localStorage.getItem('dmo_bypass') === 'true') {
+    return children
+  }
+
+  // Admin uses bypass auth
+  if (role === 'admin' && localStorage.getItem('admin_bypass') === 'true') {
+    return children
+  }
   if (!session) {
     return <Navigate to="/" replace />
   }
