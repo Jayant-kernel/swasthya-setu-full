@@ -1,18 +1,34 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import ProfileOverlay from './ProfileOverlay.jsx'
 import { useScrollDirection } from '../hooks/useScrollDirection'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 
 export default function GlobalHeader({ children, rightSide }) {
   const navigate = useNavigate()
   const [showProfileOverlay, setShowProfileOverlay] = useState(false)
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
 
-  React.useEffect(() => {
+  useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
     document.body.classList.add('theme-transition')
     localStorage.setItem('theme', theme)
   }, [theme])
+
+  // Automatically show Profile if name is missing
+  useEffect(() => {
+    const checkOnboarding = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const name = user.user_metadata?.full_name
+        const loc = user.user_metadata?.location
+        if (!name || !loc) {
+          setShowProfileOverlay(true)
+        }
+      }
+    }
+    checkOnboarding()
+  }, [])
 
   const toggleTheme = () => setTheme(t => t === 'light' ? 'dark' : 'light')
 
