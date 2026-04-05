@@ -37,14 +37,21 @@ export default function HeroSlider() {
   const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
 
   return (
+    <div style={{
+      width: '100%',
+      display: 'flex',
+      justifyContent: 'center',
+      marginBottom: '3rem',
+      padding: '0 1.5rem'
+    }}>
     <div className="hero-slider-container" style={{
-      width: '100vw',
+      width: '100%',
+      maxWidth: '900px',
       position: 'relative',
-      left: '50%',
-      transform: 'translateX(-50%)',
       overflow: 'hidden',
-      background: '#eee',
-      marginBottom: '3rem'
+      borderRadius: '1rem',
+      boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
+      background: '#eee'
     }}>
       <div className="slides-wrapper" style={{
         position: 'relative',
@@ -229,6 +236,7 @@ export default function HeroSlider() {
           }
         }
       `}</style>
+    </div>
     </div>
   );
 }
