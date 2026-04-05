@@ -477,14 +477,14 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
       {/* Form Island */}
       <main style={{ 
         flex: 1, 
-        padding: '2.5rem 2rem', 
+        padding: 'clamp(1.25rem, 4vw, 2.5rem) clamp(1rem, 4vw, 2rem)', 
         maxWidth: 820, 
         width: '100%', 
-        margin: '2rem auto',
+        margin: 'clamp(0.5rem, 3vw, 2rem) auto',
         background: 'var(--island-bg)',
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
-        borderRadius: '24px',
+        borderRadius: '20px',
         boxShadow: '0 20px 40px rgba(0, 0, 0, 0.2)',
         border: '1px solid var(--island-border)'
       }}>
@@ -509,7 +509,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           </div>
 
           {/* Age + Gender row */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))', gap: '0.875rem' }}>
             <div className="form-group">
               <label className="form-label" htmlFor="age">
                 Age

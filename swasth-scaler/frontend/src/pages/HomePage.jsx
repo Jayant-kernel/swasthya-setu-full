@@ -220,7 +220,7 @@ export default function HomePage() {
 
       <TopNav />
 
-      <main style={{ flex: 1, padding: '1rem 1.25rem 1.5rem', maxWidth: 1100, width: '100%', margin: '0 auto' }}>
+      <main style={{ flex: 1, padding: '1rem', maxWidth: 1100, width: '100%', margin: '0 auto' }}>
 
         {/* Today's summary bar */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
@@ -254,7 +254,7 @@ export default function HomePage() {
             {[{ key: 'latest', label: 'Latest' }, { key: 'critical', label: 'Critical first' }].map(s => (
               <button key={s.key} onClick={() => setSortMode(s.key)}
                 style={{
-                  minHeight: 40, padding: '0 0.875rem', border: 'none',
+                  minHeight: 44, padding: '0 0.875rem', border: 'none',
                   borderRight: s.key === 'latest' ? '1px solid var(--border)' : 'none',
                   background: sortMode === s.key ? TEAL : 'transparent',
                   color: sortMode === s.key ? 'var(--surface)' : 'var(--text-main)',
@@ -265,20 +265,18 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div style={{ flex: 1 }} />
-
           {/* District */}
           <select value={districtFilter} onChange={e => setDistrictFilter(e.target.value)}
-            style={{ minHeight: 40, padding: '0 2rem 0 0.75rem', fontSize: '0.875rem', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--surface)', color: 'var(--text-main)' }}>
+            style={{ minHeight: 44, padding: '0 2rem 0 0.75rem', fontSize: '0.875rem', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--surface)', color: 'var(--text-main)', flex: '1 1 140px', minWidth: 0 }}>
             <option value="">All Districts</option>
             {ALL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
 
           {/* Search */}
-          <div style={{ position: 'relative' }}>
+          <div style={{ position: 'relative', flex: '1 1 140px', minWidth: 0 }}>
             <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }}>🔍</span>
             <input type="text"
-              style={{ minHeight: 40, paddingLeft: '2rem', paddingRight: '0.75rem', width: 180, fontSize: '0.875rem', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--surface)', color: 'var(--text-main)', outline: 'none' }}
+              style={{ minHeight: 44, paddingLeft: '2rem', paddingRight: '0.75rem', width: '100%', fontSize: '0.875rem', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--surface)', color: 'var(--text-main)', outline: 'none', boxSizing: 'border-box' }}
               placeholder="Search by name…"
               value={query}
               onChange={e => setQuery(e.target.value)}

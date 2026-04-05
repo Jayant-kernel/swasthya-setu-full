@@ -118,9 +118,10 @@ export default function LoginRoleModal({ onClose }) {
         background: 'rgba(0,0,0,0.6)',
         backdropFilter: 'blur(8px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '1rem',
+        padding: '0.75rem',
         transition: 'opacity 0.28s ease',
         opacity: mounted ? 1 : 0,
+        overflowY: 'auto',
       }}
     >
       {/* ── Modal card ── */}
@@ -129,6 +130,8 @@ export default function LoginRoleModal({ onClose }) {
         style={{
           width: '100%',
           maxWidth: selected ? '920px' : '860px',
+          maxHeight: '92dvh',
+          overflowY: 'auto',
           borderRadius: '1.5rem',
           overflow: 'hidden',
           boxShadow: '0 40px 100px rgba(0,0,0,0.55)',
@@ -138,6 +141,14 @@ export default function LoginRoleModal({ onClose }) {
           fontFamily: "'Inter', 'Noto Sans', sans-serif",
         }}
       >
+        <style>{`
+          @media (max-width: 600px) {
+            .lrm-role-grid { grid-template-columns: 1fr !important; }
+            .lrm-phase2 { flex-direction: column !important; height: auto !important; }
+            .lrm-brand-panel { display: none !important; }
+            .lrm-form-panel { padding: 2rem 1.5rem !important; }
+          }
+        `}</style>
         {!selected ? (
           /* ════════════════════════════════
              Phase 1 — Role Selection
@@ -173,7 +184,7 @@ export default function LoginRoleModal({ onClose }) {
             </div>
 
             {/* Role cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0' }} className="lrm-role-grid">
               {ROLES.map((role, idx) => {
                 const isHovered = hoveredId === role.id;
                 return (
@@ -289,14 +300,14 @@ export default function LoginRoleModal({ onClose }) {
           /* ════════════════════════════════
              Phase 2 — Login / Sign Up Form
           ════════════════════════════════ */
-          <div style={{ display: 'flex', height: '580px' }}>
+          <div style={{ display: 'flex', height: '580px' }} className="lrm-phase2">
             {/* Left — brand panel */}
             <div style={{
               flex: '0 0 42%', position: 'relative', overflow: 'hidden',
               background: selected.bg,
               display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
               padding: '2.5rem',
-            }}>
+            }} className="lrm-brand-panel">
               <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.45) 100%)` }} />
               <img
                 src={selected.image} alt=""
@@ -326,8 +337,8 @@ export default function LoginRoleModal({ onClose }) {
             <div style={{
               flex: 1, background: '#fff', display: 'flex', flexDirection: 'column',
               justifyContent: 'center', padding: '2.5rem 3rem', position: 'relative',
-              overflowY: 'auto',
-            }}>
+              overflowY: 'auto', minHeight: 0,
+            }} className="lrm-form-panel">
               {/* Back + Close buttons */}
               <button
                 onClick={() => { setSelected(null); setAuthError(''); setAuthInfo(''); }}

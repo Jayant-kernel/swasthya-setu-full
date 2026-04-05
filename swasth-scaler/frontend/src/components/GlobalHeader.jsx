@@ -39,7 +39,7 @@ export default function GlobalHeader({ children, rightSide }) {
       <header style={{ 
         background: 'var(--surface)', 
         borderBottom: '1px solid var(--border)', 
-        padding: '0.875rem 1.25rem', 
+        padding: '0.75rem 1rem', 
         display: 'flex', 
         alignItems: 'center', 
         justifyContent: 'space-between', 
@@ -48,12 +48,14 @@ export default function GlobalHeader({ children, rightSide }) {
         zIndex: 10,
         boxShadow: 'var(--shadow)',
         transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-        transform: isVisible ? 'translateY(0)' : 'translateY(-100%)'
+        transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
+        overflow: 'hidden',
+        gap: '0.5rem',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0, gap: '0.75rem' }}>
           <button onClick={() => navigate('/home')} style={{ background: 'transparent', border: 'none', padding: 0, textAlign: 'left', cursor: 'pointer', flexShrink: 0 }}>
-            <div style={{ fontWeight: 800, fontSize: '1.25rem', color: 'var(--primary)', letterSpacing: '-0.02em' }}>Swasthya Setu</div>
-            <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>आरोग्य सेतू</div>
+            <div style={{ fontWeight: 800, fontSize: 'clamp(1rem, 4vw, 1.25rem)', color: 'var(--primary)', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>Swasthya Setu</div>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontFamily: "'Noto Sans Devanagari', sans-serif" }} className="hide-mobile">आरोग्य सेतू</div>
           </button>
           
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -67,7 +69,7 @@ export default function GlobalHeader({ children, rightSide }) {
           <button
             onClick={toggleTheme}
             style={{ 
-              position: 'relative', width: 62, height: 32, borderRadius: 32, 
+              position: 'relative', width: 52, height: 28, borderRadius: 32, 
               background: theme === 'light' ? '#e5e7eb' : '#334155', border: '1px solid var(--border)',
               cursor: 'pointer', display: 'flex', alignItems: 'center', padding: 4,
               transition: 'background 0.3s ease', flexShrink: 0
@@ -75,8 +77,8 @@ export default function GlobalHeader({ children, rightSide }) {
             title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
           >
             <div style={{
-              position: 'absolute', width: 24, height: 24, borderRadius: '50%', background: '#fff',
-              left: theme === 'light' ? 4 : 32, transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
+              position: 'absolute', width: 20, height: 20, borderRadius: '50%', background: '#fff',
+              left: theme === 'light' ? 4 : 28, transition: 'all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
             }}>
               {theme === 'light' ? (

@@ -34,7 +34,7 @@ export default function LandingPage() {
     <div style={{ minHeight: '100dvh', background: 'var(--surface)', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', 'Noto Sans', sans-serif" }}>
 
       {/* Navigation */}
-      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem 4%', maxWidth: 1400, margin: '0 auto', width: '100%' }}>
+      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 5%', maxWidth: 1400, margin: '0 auto', width: '100%' }} className="landing-nav">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.35rem', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
           Swasthya Setu
         </div>
@@ -48,7 +48,7 @@ export default function LandingPage() {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button onClick={() => setShowLoginModal(true)} style={{ padding: '0.625rem 1.25rem', borderRadius: 99, border: '1.5px solid var(--border)', background: 'transparent', color: 'var(--text-main)', fontWeight: 600, fontSize: '0.9375rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.2s' }}>
+          <button onClick={() => setShowLoginModal(true)} className="landing-login-btn" style={{ padding: '0.75rem 1.5rem', borderRadius: 99, border: '1.5px solid var(--border)', background: 'var(--text-main)', color: 'var(--bg)', fontWeight: 700, fontSize: '0.9375rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}>
             <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" /></svg>
             Log in
           </button>
@@ -56,20 +56,20 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <div style={{ padding: '1rem 4%', maxWidth: 1400, margin: '0 auto', width: '100%' }}>
-        <div className="hero-gradient" style={{ borderRadius: 36, padding: '3rem 5%', display: 'flex', alignItems: 'center', gap: '2rem', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ padding: '1rem 5%', maxWidth: 1400, margin: '0 auto', width: '100%' }}>
+        <div className="hero-gradient" style={{ borderRadius: 24, padding: '2.5rem 5%', display: 'flex', alignItems: 'center', gap: '2rem', position: 'relative', overflow: 'hidden' }}>
 
-          <div style={{ flex: 1, zIndex: 2 }}>
-            <h1 style={{ fontSize: 'clamp(2.5rem, 3.5vw, 3.5rem)', fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '1.5rem' }}>
+          <div style={{ flex: 1, zIndex: 2, minWidth: 0 }}>
+            <h1 className="hero-heading" style={{ fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '1.25rem' }}>
               Empowering<br />Lives Through<br />Health
-              <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center', verticalAlign: 'middle', background: 'var(--surface)', borderRadius: 99, padding: '6px 14px', border: '1px solid var(--border)', marginLeft: 16 }}>
-                <span style={{ fontSize: '1.5rem' }}>💊</span><span style={{ fontSize: '1.5rem' }}>🧬</span>
+              <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center', verticalAlign: 'middle', background: 'var(--surface)', borderRadius: 99, padding: '6px 14px', border: '1px solid var(--border)', marginLeft: 12 }}>
+                <span style={{ fontSize: '1.25rem' }}>💊</span><span style={{ fontSize: '1.25rem' }}>🧬</span>
               </span>
             </h1>
-            <p style={{ fontSize: '1.125rem', color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 440, marginBottom: '2.5rem' }}>
+            <p className="hero-sub" style={{ color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 440, marginBottom: '2rem' }}>
               Navigating Health Together: Your Trusted Rural Medical Resource network directly bridging communities and medical officers.
             </p>
-            <button onClick={() => setShowLoginModal(true)} style={{ padding: '1rem 2rem', borderRadius: 99, background: 'var(--text-main)', color: 'var(--bg)', fontWeight: 700, fontSize: '1.125rem', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 10, transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+            <button onClick={() => setShowLoginModal(true)} className="hero-cta" style={{ borderRadius: 99, background: 'var(--text-main)', color: 'var(--bg)', fontWeight: 700, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 10, transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
               Get started now <ArrowRight />
             </button>
           </div>
@@ -106,10 +106,10 @@ export default function LandingPage() {
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 20px', borderRadius: 99, color: '#e2e8f0', fontSize: '0.9375rem', fontWeight: 600, marginBottom: '2rem', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
               <span style={{ color: '#a855f7' }}>✦</span> What we offer
             </span>
-            <h2 style={{ fontSize: '3.5rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.03em' }}>One service</h2>
+            <h2 style={{ fontSize: 'clamp(2rem, 6vw, 3.5rem)', fontWeight: 800, color: '#fff', letterSpacing: '-0.03em' }}>One service</h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '1.5rem' }}>
 
             {/* Card 1 */}
             <div style={{ background: 'linear-gradient(180deg, #1f1b3d 0%, #15122b 100%)', borderRadius: 32, border: '1px solid rgba(255,255,255,0.06)', padding: '0 0 3.5rem 0', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', boxShadow: '0 24px 48px rgba(0,0,0,0.4)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
@@ -183,10 +183,10 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
 
           <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <h2 style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.03em' }}>Meet the founders</h2>
+            <h2 style={{ fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.03em' }}>Meet the founders</h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '3rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '2rem' }}>
 
             {/* Pushkar Kulkarni */}
             <div style={{ background: 'var(--surface)', borderRadius: 24, overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
@@ -248,10 +248,10 @@ export default function LandingPage() {
 
       {/* Contact Section */}
       <div id="contact" style={{ padding: '8rem 4%', background: 'var(--surface)', position: 'relative' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '4rem' }}>
-          <div style={{ flex: '1 1 400px' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '2.5rem' }}>
+          <div style={{ flex: '1 1 280px' }}>
             <span style={{ display: 'inline-block', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '1rem' }}>Get in Touch</span>
-            <h2 style={{ fontSize: '3.5rem', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', marginBottom: '2rem', lineHeight: 1.1 }}>Let's build a healthier future together.</h2>
+            <h2 style={{ fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', marginBottom: '2rem', lineHeight: 1.1 }}>Let's build a healthier future together.</h2>
             <p style={{ fontSize: '1.125rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '3rem' }}>Have questions about the Swasthya Setu platform? Want to deploy it in your district? Reach out to our team instantly.</p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -276,7 +276,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div style={{ flex: '1 1 500px', background: 'var(--bg)', padding: '3.5rem', borderRadius: 32, boxShadow: '0 24px 64px rgba(0,0,0,0.08)', border: '1px solid var(--border)' }}>
+          <div style={{ flex: '1 1 300px', background: 'var(--bg)', padding: 'clamp(1.25rem, 4vw, 3.5rem)', borderRadius: 24, boxShadow: '0 24px 64px rgba(0,0,0,0.08)', border: '1px solid var(--border)' }}>
             <form style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} onSubmit={e => e.preventDefault()}>
               <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
                 <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -373,10 +373,42 @@ export default function LandingPage() {
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        .hero-heading { font-size: clamp(2rem, 8vw, 3.5rem); }
+        .hero-sub { font-size: clamp(0.9375rem, 2.5vw, 1.125rem); }
+        .hero-cta { padding: 0.875rem 1.75rem; font-size: clamp(0.9375rem, 2.5vw, 1.125rem); }
+
         @media (max-width: 900px) {
           .hide-mobile { display: none !important; }
         }
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        @media (max-width: 768px) {
+          .landing-nav { padding: 0.875rem 5% !important; }
+          .landing-login-btn { padding: 0.875rem 1.5rem !important; font-size: 1rem !important; }
+
+          /* Hero: stack vertically */
+          .hero-gradient {
+            border-radius: 16px !important;
+            padding: 2rem 6% !important;
+            flex-direction: column !important;
+          }
+          .hero-cta { width: 100%; justify-content: center; }
+
+          /* Goal + about sections: tighter vertical padding */
+          #goal { padding: 4rem 5% !important; }
+          #about { padding: 4rem 5% !important; }
+          #contact { padding: 4rem 5% !important; }
+
+          /* Footer */
+          footer { padding: 3rem 5% 2rem !important; }
+        }
+
+        @media (max-width: 480px) {
+          .landing-login-btn { gap: 6px !important; }
+          .hero-heading { letter-spacing: -0.02em !important; }
+          #goal, #about, #contact { padding: 3rem 5% !important; }
+        }
        `}</style>
     </div>
   )
