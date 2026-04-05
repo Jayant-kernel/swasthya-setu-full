@@ -15,6 +15,12 @@ class UserCreate(BaseModel):
     location: Optional[str] = None
     district: Optional[str] = None
 
+class UserUpdateProfile(BaseModel):
+    full_name: Optional[str] = None
+    location: Optional[str] = None
+    avatar_b64: Optional[str] = None
+    banner_b64: Optional[str] = None
+
 class PatientCreate(BaseModel):
     name: str
     age: Optional[int] = None

@@ -23,5 +23,24 @@ async def get_my_profile(current_user: dict = Depends(get_current_user), db: Asy
         "role": user.role,
         "full_name": user.full_name,
         "location": user.location,
-        "district": user.district
+        "district": user.district,
+        "avatar_b64": user.avatar_b64,
+        "banner_b64": user.banner_b64
     }
+
+@router.patch("/profile")
+async def update_my_profile(profile_data: dict, current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    query = select(User).where(User.id == current_user["id"])
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    if "full_name" in profile_data: user.full_name = profile_data["full_name"]
+    if "location" in profile_data: user.location = profile_data["location"]
+    if "avatar_b64" in profile_data: user.avatar_b64 = profile_data["avatar_b64"]
+    if "banner_b64" in profile_data: user.banner_b64 = profile_data["banner_b64"]
+    
+    await db.commit()
+    return {"message": "Profile updated successfully"}

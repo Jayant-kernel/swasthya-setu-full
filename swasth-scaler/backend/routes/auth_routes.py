@@ -56,7 +56,9 @@ async def login(user_login: UserLogin, db: AsyncSession = Depends(get_db)):
             "role": user.role,
             "full_name": user.full_name,
             "location": user.location,
-            "district": user.district
+            "district": user.district,
+            "avatar_b64": user.avatar_b64,
+            "banner_b64": user.banner_b64
         }
     }
 

@@ -54,11 +54,9 @@ export default function ProfileOverlay({ onClose }) {
         setIsEditing(true)
       }
 
-      // Load Avatar & Banner from localStorage
-      const savedAvatar = localStorage.getItem(`avatar_${authUser.id}`)
-      if (savedAvatar) setAvatar(savedAvatar)
-      const savedBanner = localStorage.getItem(`banner_${authUser.id}`)
-      if (savedBanner) setBanner(savedBanner)
+      // Load Avatar & Banner from authUser context
+      if (authUser.avatar_b64) setAvatar(authUser.avatar_b64)
+      if (authUser.banner_b64) setBanner(authUser.banner_b64)
 
       // Load Triage History via custom backend API
       try {
@@ -108,7 +106,12 @@ export default function ProfileOverlay({ onClose }) {
         
         setAvatar(dataUrl)
         if (user) {
-          localStorage.setItem(`avatar_${user.id}`, dataUrl)
+          const token = localStorage.getItem('access_token')
+          fetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ avatar_b64: dataUrl })
+          })
         }
       }
       img.src = e.target.result
@@ -144,7 +147,12 @@ export default function ProfileOverlay({ onClose }) {
         
         setBanner(dataUrl)
         if (user) {
-          localStorage.setItem(`banner_${user.id}`, dataUrl)
+          const token = localStorage.getItem('access_token')
+          fetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ banner_b64: dataUrl })
+          })
         }
       }
       img.src = e.target.result
@@ -159,7 +167,13 @@ export default function ProfileOverlay({ onClose }) {
     }
     setSaveLoading(true)
     try {
-      // Stubbed backend update - Just update local storage for now
+      const token = localStorage.getItem('access_token')
+      await fetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ full_name: fullName.trim(), location: location.trim() })
+      })
+
       const updatedUser = { ...user, full_name: fullName.trim(), location: location.trim() }
       setUser(updatedUser)
       localStorage.setItem('user', JSON.stringify(updatedUser))
