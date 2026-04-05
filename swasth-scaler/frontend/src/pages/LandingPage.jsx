@@ -188,15 +188,15 @@ export default function LandingPage() {
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '3rem' }}>
 
-            {/* Person 1 */}
+            {/* Pushkar Kulkarni */}
             <div style={{ background: 'var(--surface)', borderRadius: 24, overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
               <div style={{ height: 380, background: '#2d2d2d', position: 'relative' }}>
-                <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Om" />
+                <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Pushkar Kulkarni" />
               </div>
               <div style={{ padding: '2rem 2.5rem', background: '#fff' }}>
-                <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>Om</h3>
-                <p style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>Founder | Vision & Experience</p>
-                <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: 1.6 }}>Driven by a vision to democratize access to quality healthcare across India, Om leads the strategic direction and overall user experience of the Swasthya Setu platform.</p>
+                <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>Pushkar Kulkarni</h3>
+                <p style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>Team Lead and Main Coder</p>
+                <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: 1.6 }}>Architecting the scalable backend of Swasthya Setu, Pushkar leads the core development team, building the robust and secure infrastructure that guarantees uptime for remote healthcare centers.</p>
               </div>
               <div style={{ padding: '2rem 2.5rem', background: 'linear-gradient(135deg, #181124 0%, #2a1b38 100%)', color: '#e2e8f0', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <p style={{ fontSize: '0.9375rem', lineHeight: 1.6, textAlign: 'center', marginBottom: '1.5rem', fontStyle: 'italic', color: '#f1f5f9' }}>
@@ -206,15 +206,15 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Person 2 */}
+            {/* Jayant Saxena */}
             <div style={{ background: 'var(--surface)', borderRadius: 24, overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
               <div style={{ height: 380, background: '#2d2d2d', position: 'relative' }}>
-                <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=600&h=800&fit=crop" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Dr. Sharma" />
+                <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=600&h=800&fit=crop" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Jayant Saxena" />
               </div>
               <div style={{ padding: '2rem 2.5rem', background: '#fff' }}>
-                <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>Dr. Sharma</h3>
-                <p style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>Co-Founder | Operations</p>
-                <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: 1.6 }}>Deploying decades of field medical experience, Dr. Sharma ensures our operational framework seamlessly integrates with existing government health structures.</p>
+                <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>Jayant Saxena</h3>
+                <p style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>Frontend and UI/UX Dev</p>
+                <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: 1.6 }}>Driven by a vision to create intuitive user experiences, Jayant leads the frontend architecture. His aesthetic UI/UX designs make Swasthya Setu accessible to thousands of people across rural districts.</p>
               </div>
               <div style={{ padding: '2rem 2.5rem', background: 'linear-gradient(135deg, #12182b 0%, #1e293b 100%)', color: '#e2e8f0', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <p style={{ fontSize: '0.9375rem', lineHeight: 1.6, textAlign: 'center', marginBottom: '1.5rem', fontStyle: 'italic', color: '#f1f5f9' }}>
@@ -224,33 +224,15 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Person 3 */}
+            {/* Vaibhav Mishra */}
             <div style={{ background: 'var(--surface)', borderRadius: 24, overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
               <div style={{ height: 380, background: '#2d2d2d', position: 'relative' }}>
-                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&h=800&fit=crop" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Jane Doe" />
+                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&h=800&fit=crop" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Vaibhav Mishra" />
               </div>
               <div style={{ padding: '2rem 2.5rem', background: '#fff' }}>
-                <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>Jane Doe</h3>
-                <p style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>Co-Founder | Technology</p>
-                <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: 1.6 }}>Architecting the scalable backend of Swasthya Setu, Jane builds the distributed networks that guarantee uptime for remote healthcare centers.</p>
-              </div>
-              <div style={{ padding: '2rem 2.5rem', background: 'linear-gradient(135deg, #1f1122 0%, #3b1c34 100%)', color: '#e2e8f0', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <p style={{ fontSize: '0.9375rem', lineHeight: 1.6, textAlign: 'center', marginBottom: '1.5rem', fontStyle: 'italic', color: '#f1f5f9' }}>
-                  "Our prime purpose in this life is to help others. And if you can't help them, at least don't hurt them."
-                </p>
-                <p style={{ fontSize: '0.8125rem', color: '#94a3b8', textAlign: 'center', fontWeight: 600 }}>Dalai Lama</p>
-              </div>
-            </div>
-
-            {/* Person 4 */}
-            <div style={{ background: 'var(--surface)', borderRadius: 24, overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-              <div style={{ height: 380, background: '#2d2d2d', position: 'relative' }}>
-                <img src="https://images.unsplash.com/photo-1594824436998-eba83af00b8e?w=600&h=800&fit=crop" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Dr. Patil" />
-              </div>
-              <div style={{ padding: '2rem 2.5rem', background: '#fff' }}>
-                <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>Dr. Patil</h3>
-                <p style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>Co-Founder | Community Health</p>
-                <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: 1.6 }}>Specializing in on-ground implementation, Dr. Patil champions the enablement of ASHA workers mapping out localized logistics for village care.</p>
+                <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>Vaibhav Mishra</h3>
+                <p style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>The calling and major citizen worker</p>
+                <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: 1.6 }}>Specializing in community outreach and ground-level engagement, Vaibhav champions the enablement of ASHA workers and manages direct citizen operations.</p>
               </div>
               <div style={{ padding: '2rem 2.5rem', background: 'linear-gradient(135deg, #0f1c2e 0%, #1e1b4b 100%)', color: '#e2e8f0', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
                 <p style={{ fontSize: '0.9375rem', lineHeight: 1.6, textAlign: 'center', marginBottom: '1.5rem', fontStyle: 'italic', color: '#f1f5f9' }}>

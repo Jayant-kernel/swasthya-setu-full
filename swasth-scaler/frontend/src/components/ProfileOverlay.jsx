@@ -252,9 +252,11 @@ export default function ProfileOverlay({ onClose }) {
               ) : (
                 <button 
                   onClick={handleClose} 
-                  style={{ zIndex: 10, width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'background 0.2s', height: 'fit-content' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.4)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.25)'}
+                  style={{ zIndex: 10, width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)', height: 'fit-content', transform: 'scale(1) rotate(0deg)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)'; e.currentTarget.style.transform = 'scale(1.15) rotate(90deg)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.25)'; e.currentTarget.style.transform = 'scale(1) rotate(0deg)'; }}
+                  onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9) rotate(90deg)'}
+                  onMouseUp={e => e.currentTarget.style.transform = 'scale(1.15) rotate(90deg)'}
                 >✕</button>
               )}
             </div>
