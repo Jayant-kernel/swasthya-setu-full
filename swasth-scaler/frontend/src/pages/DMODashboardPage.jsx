@@ -99,7 +99,7 @@ export default function DMODashboardPage() {
     try {
       // Fetch ALL patients in this district via native fetch
       const token = localStorage.getItem('access_token')
-      const res = await fetch('http://localhost:8000/api/v1/patients/', {
+      const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       if (!res.ok) throw new Error('Failed to fetch patients')

@@ -63,7 +63,7 @@ export default function ProfileOverlay({ onClose }) {
       // Load Triage History via custom backend API
       try {
         const token = localStorage.getItem('access_token')
-        const response = await fetch('http://localhost:8000/api/v1/triage_records/', {
+        const response = await fetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
           headers: {
             'Authorization': `Bearer ${token}`
           }

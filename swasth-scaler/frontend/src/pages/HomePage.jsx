@@ -105,7 +105,7 @@ export default function HomePage() {
     try {
       const token = localStorage.getItem('access_token')
 
-      const res = await fetch('http://localhost:8000/api/v1/triage_records/', {
+      const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -181,7 +181,7 @@ export default function HomePage() {
     const token = localStorage.getItem('access_token')
     // In a real app we'd have a DELETE /api/v1/patients/patientId endpoint.
     // For now, simulating the frontend state removal.
-    // await fetch(`http://localhost:8000/api/v1/patients/${patientId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } })
+    // await fetch(`https://swasthya-setu-full.onrender.com/api/v1/patients/${patientId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } })
     setPatientResults(prev => prev.filter(p => p.id !== patientId))
     setTotalCount(prev => prev - 1)
   }

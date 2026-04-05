@@ -99,7 +99,7 @@ export default function AdminDashboardPage() {
   const fetchAll = useCallback(async () => {
     try {
       const token = localStorage.getItem('access_token')
-      const res = await fetch('http://localhost:8000/api/v1/patients/', {
+      const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
         headers: {
           'Authorization': `Bearer ${token}`
         }

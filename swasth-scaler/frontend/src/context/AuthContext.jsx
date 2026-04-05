@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 const AuthContext = createContext(null)
 
 // Point this to your backend deployed URL (Render) later. For now local:
-const API_BASE_URL = 'http://localhost:8000/api/v1'
+const API_BASE_URL = 'https://swasthya-setu-full.onrender.com/api/v1'
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null) // holds the JWT
