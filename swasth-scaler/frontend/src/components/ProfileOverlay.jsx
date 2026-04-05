@@ -210,7 +210,7 @@ export default function ProfileOverlay({ onClose }) {
         onClick={e => e.stopPropagation()}
         style={{
           background: '#0b0f19',
-          width: '100%', maxWidth: '720px', maxHeight: '90vh',
+          width: '100%', maxWidth: '720px', maxHeight: '90dvh',
           borderRadius: '1.5rem', overflow: 'hidden', overflowY: 'auto',
           boxShadow: '0 32px 80px rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.08)',
           fontFamily: "'Inter', 'Noto Sans', sans-serif",
@@ -219,6 +219,14 @@ export default function ProfileOverlay({ onClose }) {
           transform: mounted ? 'translateY(0) scale(1)' : 'translateY(30px) scale(0.97)'
         }}
       >
+        <style>{`
+          @media (max-width: 600px) {
+            .po-form-grid { grid-template-columns: 1fr !important; }
+            .po-actions-grid { grid-template-columns: 1fr !important; }
+            .po-profile-header { padding: 0 1.25rem 1.5rem !important; }
+            .po-history-section { padding: 1.25rem !important; }
+          }
+        `}</style>
         {loading ? (
           <div style={{ padding: '6rem', display: 'flex', justifyContent: 'center' }}>
             <span className="spinner spinner-light" style={{ width: 40, height: 40 }} />
@@ -262,7 +270,7 @@ export default function ProfileOverlay({ onClose }) {
             </div>
 
             {/* --- Profile Header (Avatar & Info) --- */}
-            <div style={{ padding: '0 2rem 2rem', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="po-profile-header" style={{ padding: '0 2rem 2rem', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1.5rem', marginTop: '-50px', marginBottom: '1.5rem' }}>
                 
                 {/* Avatar */}
@@ -324,7 +332,7 @@ export default function ProfileOverlay({ onClose }) {
               {/* Form specifically if editing */}
               {isEditing && (
                 <div style={{ background: '#1e293b', borderRadius: 16, padding: '1.5rem', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.5rem' }}>
+                  <div className="po-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.5rem' }}>
                     <div>
                       <label style={{ display: 'block', color: '#94a3b8', fontSize: '0.8125rem', fontWeight: 600, marginBottom: 6 }}>Full Name</label>
                       <input 
@@ -358,7 +366,7 @@ export default function ProfileOverlay({ onClose }) {
             </div>
 
             {/* --- Patient History --- */}
-            <div style={{ padding: '2rem' }}>
+            <div className="po-history-section" style={{ padding: '2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
                 <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 700, color: '#e2e8f0' }}>Patient History <span style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: 500, marginLeft: 8 }}>रुग्ण इतिहास</span></h3>
                 <span style={{ background: 'rgba(20, 184, 166, 0.1)', color: '#14b8a6', padding: '0.25rem 0.75rem', borderRadius: 99, fontSize: '0.8125rem', fontWeight: 700 }}>
@@ -406,7 +414,7 @@ export default function ProfileOverlay({ onClose }) {
               <div style={{ padding: '0 2rem 2rem' }}>
                 <h3 style={{ margin: '0 0 1rem', fontSize: '0.9375rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Account Actions</h3>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div className="po-actions-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   <button
                     onClick={handleLogout}
                     style={{ padding: '1rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, color: '#e2e8f0', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', transition: 'all 0.2s' }}

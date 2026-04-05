@@ -300,11 +300,11 @@ export default function ChatPage() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--color-bg)' }}>
       {/* Top header bar */}
       <GlobalHeader>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', paddingLeft: '1rem', borderLeft: '2px solid #e5e7eb', marginLeft: '0.5rem' }}>
-          <span style={{ fontWeight: 700, fontSize: '0.9375rem' }}>{patientData.name}</span>
-          <span className={`badge ${badge.cls}`} style={{ margin: 0 }}>{badge.label}</span>
+        <div className="chat-patient-header" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingLeft: '0.75rem', borderLeft: '2px solid #e5e7eb', marginLeft: '0.25rem', minWidth: 0, overflow: 'hidden' }}>
+          <span style={{ fontWeight: 700, fontSize: '0.9375rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>{patientData.name}</span>
+          <span className={`badge ${badge.cls}`} style={{ margin: 0, flexShrink: 0 }} className="hide-mobile">{badge.label}</span>
           {triageResult.sickle_cell_risk && (
-            <div style={{ background: 'var(--color-red)', color: 'var(--surface)', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600 }}>
+            <div className="hide-mobile" style={{ background: 'var(--color-red)', color: 'var(--surface)', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, flexShrink: 0 }}>
               🔴 High Risk
             </div>
           )}
@@ -312,11 +312,23 @@ export default function ChatPage() {
       </GlobalHeader>
       <TopNav />
 
+      {/* Mobile media queries */}
+      <style>{`
+        @media (max-width: 768px) {
+          .chat-sidebar { display: none !important; }
+          .chat-messages-area { padding: 1rem !important; }
+          .chat-input-area { padding: 0.5rem 1rem 0.75rem !important; }
+          .chat-quick-replies { padding: 0.5rem 1rem 0 !important; }
+          .chat-patient-header { max-width: 140px; }
+          .chat-patient-header .badge { display: none; }
+        }
+      `}</style>
+
       {/* Main body: sidebar + chat */}
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
 
         {/* Sidebar — patient summary */}
-        <aside style={{
+        <aside className="chat-sidebar" style={{
           width: 280,
           flexShrink: 0,
           background: 'var(--color-surface)',
@@ -397,6 +409,7 @@ export default function ChatPage() {
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
           {/* Messages */}
           <div
+            className="chat-messages-area"
             style={{ flex: 1, overflowY: 'auto', padding: '1.5rem 2rem', display: 'flex', flexDirection: 'column' }}
             role="log"
             aria-live="polite"
@@ -431,24 +444,25 @@ export default function ChatPage() {
           </div>
 
           {/* Quick reply chips */}
-          <div style={{ padding: '0.5rem 2rem 0', background: 'var(--color-surface)', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', borderTop: '1px solid var(--color-border)' }}>
+          <div className="chat-quick-replies" style={{ padding: '0.5rem 2rem 0', background: 'var(--color-surface)', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', borderTop: '1px solid var(--color-border)' }}>
             {QUICK_REPLIES.map((chip) => (
               <button
                 key={chip.marathi}
                 type="button"
                 onClick={() => sendMessage(chip.english)}
                 disabled={loading}
-                style={{ padding: '0.3rem 0.75rem', borderRadius: 99, border: '1.5px solid var(--color-primary)', background: 'transparent', color: 'var(--color-primary)', fontSize: '0.8125rem', fontWeight: 600, cursor: loading ? 'default' : 'pointer', fontFamily: "'Noto Sans Devanagari', sans-serif", whiteSpace: 'nowrap' }}
+                style={{ padding: '0.4rem 0.75rem', borderRadius: 99, border: '1.5px solid var(--color-primary)', background: 'transparent', color: 'var(--color-primary)', fontSize: '0.8125rem', fontWeight: 600, cursor: loading ? 'default' : 'pointer', fontFamily: "'Noto Sans Devanagari', sans-serif", minHeight: 44 }}
               >
                 {chip.marathi}
               </button>
             ))}
-            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', alignSelf: 'center', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>मराठी किंवा इंग्रजीमध्ये लिहा</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', alignSelf: 'center', fontFamily: "'Noto Sans Devanagari', sans-serif" }} className="hide-mobile">मराठी किंवा इंग्रजीमध्ये लिहा</span>
           </div>
 
           {/* Input */}
           <form
             onSubmit={handleSend}
+            className="chat-input-area"
             style={{
               padding: '0.75rem 2rem 1rem',
               background: 'var(--color-surface)',
