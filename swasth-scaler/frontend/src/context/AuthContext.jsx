@@ -1,58 +1,71 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext(null)
 
+// Point this to your backend deployed URL (Render) later. For now local:
+const API_BASE_URL = 'http://localhost:8000/api/v1'
+
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(null)
-  const [userRole, setUserRole] = useState(null) // 'asha' | 'dmo' | 'citizen'
+  const [session, setSession] = useState(null) // holds the JWT
+  const [userRole, setUserRole] = useState(null) // 'asha' | 'dmo'
+  const [user, setUser] = useState(null) // holds user info
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      if (session) {
-        // In a real app, you'd fetch the role from a profiles table
-        // For now, we'll use localStorage or a mock
-        const savedRole = localStorage.getItem('userRole')
-        setUserRole(savedRole)
-      }
-      setLoading(false)
-    })
+    // Check localStorage for existing JWT session
+    const token = localStorage.getItem('access_token')
+    const savedRole = localStorage.getItem('userRole')
+    const savedUser = localStorage.getItem('user')
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      if (session) {
-        const savedRole = localStorage.getItem('userRole')
-        setUserRole(savedRole)
-      } else {
-        setUserRole(null)
-        localStorage.removeItem('userRole')
-      }
-      setLoading(false)
-    })
-
-    return () => subscription.unsubscribe()
+    if (token) {
+      setSession({ access_token: token })
+      setUserRole(savedRole)
+      try {
+        if (savedUser) setUser(JSON.parse(savedUser))
+      } catch (e) {}
+    }
+    setLoading(false)
   }, [])
 
-  const login = async (email, password, role) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) throw error
-    localStorage.setItem('userRole', role)
-    setUserRole(role)
+  const login = async (employee_id, password, role) => {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ employee_id, password, role })
+    })
+
+    const data = await response.json()
+
+    if (!response.ok) {
+      throw new Error(data.detail || 'Login failed')
+    }
+
+    // Save tokens and info
+    localStorage.setItem('access_token', data.access_token)
+    localStorage.setItem('userRole', data.user.role)
+    localStorage.setItem('user', JSON.stringify(data.user))
+
+    setSession({ access_token: data.access_token })
+    setUserRole(data.user.role)
+    setUser(data.user)
+
     return data
   }
 
   const logout = async () => {
-    await supabase.auth.signOut()
+    localStorage.removeItem('access_token')
     localStorage.removeItem('userRole')
+    localStorage.removeItem('user')
+
+    setSession(null)
     setUserRole(null)
+    setUser(null)
   }
 
   return (
-    <AuthContext.Provider value={{ session, userRole, loading, login, logout, setUserRole }}>
+    <AuthContext.Provider value={{ session, userRole, user, loading, login, logout, setUserRole }}>
       {children}
     </AuthContext.Provider>
   )

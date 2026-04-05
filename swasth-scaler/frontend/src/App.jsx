@@ -2,11 +2,11 @@ import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { PatientProvider } from './context/PatientContext.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
-import LoginPage from './pages/LoginPage.jsx'
+
 import HomePage from './pages/HomePage.jsx'
 import PatientFormPage from './pages/PatientFormPage.jsx'
 import ChatPage from './pages/ChatPage.jsx'
-import DMOLoginPage from './pages/DMOLoginPage.jsx'
+
 import DMODashboardPage from './pages/DMODashboardPage.jsx'
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx'
 
@@ -21,8 +21,7 @@ export default function App() {
         <PatientProvider>
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/login/asha" element={<LoginPage />} />
-            <Route path="/login/dmo" element={<DMOLoginPage />} />
+
 
             <Route path="/home" element={<ProtectedRoute role="asha"><HomePage /></ProtectedRoute>} />
             <Route path="/patient" element={<ProtectedRoute role="asha"><PatientFormPage /></ProtectedRoute>} />

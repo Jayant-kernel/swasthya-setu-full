@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { supabase } from '../lib/supabase'
+
 
 // ── Admin credentials (hardcoded for bypass auth) ─────────────────────────────
 const ADMIN_ID = 'ADMIN001'
@@ -97,14 +97,16 @@ export default function DMODashboardPage() {
 
   const fetchData = useCallback(async () => {
     try {
-      // Fetch ALL patients in this district
-      const { data, error } = await supabase
-        .from('patients')
-        .select('id, name, age, gender, district, created_at')
-        .eq('district', dmoDistrict)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
+      // Fetch ALL patients in this district via native fetch
+      const token = localStorage.getItem('access_token')
+      const res = await fetch('http://localhost:8000/api/v1/patients/', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (!res.ok) throw new Error('Failed to fetch patients')
+      
+      const allData = await res.json()
+      // Frontend filter for district for demo purposes
+      const data = allData.filter(r => r.district === dmoDistrict)
 
       const rows = data || []
       setPatients(rows)

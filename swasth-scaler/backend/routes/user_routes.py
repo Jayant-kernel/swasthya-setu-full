@@ -1,0 +1,27 @@
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
+
+from database import get_db
+from models import User
+from auth import get_current_user
+
+router = APIRouter()
+
+@router.get("/me")
+async def get_my_profile(current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    query = select(User).where(User.id == current_user["id"])
+    result = await db.execute(query)
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    return {
+        "id": user.id,
+        "employee_id": user.employee_id,
+        "role": user.role,
+        "full_name": user.full_name,
+        "location": user.location,
+        "district": user.district
+    }

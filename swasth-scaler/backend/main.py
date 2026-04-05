@@ -2,12 +2,15 @@ import os
 import json
 import logging
 import httpx
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from openai import OpenAI
-from supabase import create_client
 from dotenv import load_dotenv
+
+from database import engine, Base, AsyncSessionLocal
+from models import TriageRecord
+from routes import auth_routes, patient_routes, triage_routes, user_routes
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -22,6 +25,33 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Register new routers
+app.include_router(auth_routes.router, prefix="/api/v1/auth", tags=["Auth"])
+app.include_router(user_routes.router, prefix="/api/v1/users", tags=["Users"])
+app.include_router(patient_routes.router, prefix="/api/v1/patients", tags=["Patients"])
+app.include_router(triage_routes.router, prefix="/api/v1/triage_records", tags=["Triage Records"])
+
+from sqlalchemy.future import select
+from models import User
+from auth import get_password_hash
+
+@app.on_event("startup")
+async def startup():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+        
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(select(User).limit(1))
+        if not result.scalar_one_or_none():
+            logger.info("Database empty! Seeding default user accounts...")
+            session.add_all([
+                User(employee_id="ASHA001", role="asha", password_hash=get_password_hash("password"), full_name="Kalyani Dash", location="Village Alpha", district="Puri"),
+                User(employee_id="DMO001", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Pradhan", location="District HQ", district="Puri"),
+                User(employee_id="ADMIN001", role="admin", password_hash=get_password_hash("password"), full_name="System Admin", location="State HQ", district="All")
+            ])
+            await session.commit()
+            logger.info("Seed complete.")
+
 # Initialize clients with error handling
 try:
     openai_client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
@@ -29,16 +59,6 @@ try:
 except Exception as e:
     logger.error(f"OpenAI init failed: {e}")
     openai_client = None
-
-try:
-    supabase = create_client(
-        os.getenv("SUPABASE_URL"),
-        os.getenv("SUPABASE_KEY")
-    )
-    logger.info("Supabase client initialized")
-except Exception as e:
-    logger.error(f"Supabase init failed: {e}")
-    supabase = None
 
 TRIAGE_SYSTEM_PROMPT = """
 You are a rural healthcare triage assistant for ASHA workers
@@ -195,28 +215,30 @@ Text: {original_transcript}"""
             except Exception as e:
                 logger.error(f"Triage failed: {e}")
 
-        # Save to Supabase
-        if supabase:
-            try:
-                supabase.table("triage_records").insert({
-                    "patient_name": f"Caller {caller_phone[-4:]}",
-                    "caller_phone": caller_phone,
-                    "call_sid": call_sid,
-                    "source": "helpline_call",
-                    "recording_url": recording_url + ".mp3" if recording_url else "",
-                    "transcript": original_transcript,
-                    "transcript_english": translations.get("english", ""),
-                    "transcript_hindi": translations.get("hindi", ""),
-                    "transcript_odia": translations.get("odia", ""),
-                    "symptoms": triage_result.get("symptoms", []),
-                    "severity": triage_result.get("severity", "yellow"),
-                    "sickle_cell_risk": triage_result.get("sickle_cell_risk", False),
-                    "brief": triage_result.get("brief", ""),
-                    "reviewed": False
-                }).execute()
-                logger.info("Saved to Supabase")
-            except Exception as e:
-                logger.error(f"Supabase save failed: {e}")
+        # Save to DB
+        try:
+            async with AsyncSessionLocal() as db:
+                db_record = TriageRecord(
+                    patient_name=f"Caller {caller_phone[-4:]}",
+                    caller_phone=caller_phone,
+                    call_sid=call_sid,
+                    source="helpline_call",
+                    recording_url=recording_url + ".mp3" if recording_url else "",
+                    transcript=original_transcript,
+                    transcript_english=translations.get("english", ""),
+                    transcript_hindi=translations.get("hindi", ""),
+                    transcript_odia=translations.get("odia", ""),
+                    symptoms=triage_result.get("symptoms", []),
+                    severity=triage_result.get("severity", "yellow"),
+                    sickle_cell_risk=triage_result.get("sickle_cell_risk", False),
+                    brief=triage_result.get("brief", ""),
+                    reviewed=False
+                )
+                db.add(db_record)
+                await db.commit()
+                logger.info("Saved to Database")
+        except Exception as e:
+            logger.error(f"Database save failed: {e}")
 
         # Return TwiML voice response
         twiml = """<?xml version="1.0" encoding="UTF-8"?>
@@ -240,12 +262,4 @@ Text: {original_transcript}"""
         return PlainTextResponse(content=twiml, media_type="application/xml")
 
 
-@app.patch("/calls/{record_id}/reviewed")
-async def mark_reviewed(record_id: str):
-    try:
-        supabase.table("triage_records").update(
-            {"reviewed": True}
-        ).eq("id", record_id).execute()
-        return {"success": True}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+

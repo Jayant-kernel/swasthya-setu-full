@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import { useAuth } from '../hooks/useAuth'
 
 export default function ProfileOverlay({ onClose }) {
   const navigate = useNavigate()
@@ -33,18 +33,19 @@ export default function ProfileOverlay({ onClose }) {
     setTimeout(onClose, 280)
   }
 
+  const { user: authUser, logout, setUserRole } = useAuth()
+  
   useEffect(() => {
     async function loadProfile() {
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
-      if (authError || !user) {
+      if (!authUser) {
         navigate('/login/asha')
         return
       }
-      setUser(user)
+      setUser(authUser)
 
       // Initialize Name & Location
-      const savedName = user.user_metadata?.full_name || ''
-      const savedLoc = user.user_metadata?.location || ''
+      const savedName = authUser.full_name || ''
+      const savedLoc = authUser.location || ''
       setFullName(savedName)
       setLocation(savedLoc)
 
@@ -53,24 +54,31 @@ export default function ProfileOverlay({ onClose }) {
         setIsEditing(true)
       }
 
-      // Load Avatar & Banner from localStorage (could be moved to Supabase Storage later)
-      const savedAvatar = localStorage.getItem(`avatar_${user.id}`)
+      // Load Avatar & Banner from localStorage
+      const savedAvatar = localStorage.getItem(`avatar_${authUser.id}`)
       if (savedAvatar) setAvatar(savedAvatar)
-      const savedBanner = localStorage.getItem(`banner_${user.id}`)
+      const savedBanner = localStorage.getItem(`banner_${authUser.id}`)
       if (savedBanner) setBanner(savedBanner)
 
-      // Load Triage History
-      const { data: records } = await supabase
-        .from('triage_records')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
-      
-      if (records) setHistory(records)
+      // Load Triage History via custom backend API
+      try {
+        const token = localStorage.getItem('access_token')
+        const response = await fetch('http://localhost:8000/api/v1/triage_records/', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        if (response.ok) {
+          const records = await response.json()
+          setHistory(records)
+        }
+      } catch(err) {
+        console.error('Failed to load history', err)
+      }
       setLoading(false)
     }
     loadProfile()
-  }, [navigate])
+  }, [navigate, authUser])
 
   const handleFileChange = (e) => {
     const file = e.target.files[0]
@@ -151,17 +159,11 @@ export default function ProfileOverlay({ onClose }) {
     }
     setSaveLoading(true)
     try {
-      const { error } = await supabase.auth.updateUser({
-        data: { full_name: fullName.trim(), location: location.trim() }
-      })
-      if (error) throw error
-      
-      // Update local state
-      setUser(prev => ({
-        ...prev,
-        user_metadata: { ...prev.user_metadata, full_name: fullName.trim(), location: location.trim() }
-      }))
-      
+      // Stubbed backend update - Just update local storage for now
+      const updatedUser = { ...user, full_name: fullName.trim(), location: location.trim() }
+      setUser(updatedUser)
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+
       setIsEditing(false)
       setForceOnboard(false)
     } catch (err) {
@@ -172,7 +174,7 @@ export default function ProfileOverlay({ onClose }) {
   }
 
   async function handleLogout() {
-    await supabase.auth.signOut()
+    await logout()
     navigate('/')
   }
 
@@ -184,10 +186,8 @@ export default function ProfileOverlay({ onClose }) {
 
     try {
       if (user && user.id) {
-        await supabase.from('triage_records').delete().eq('user_id', user.id)
         localStorage.removeItem(`avatar_${user.id}`)
-        await supabase.auth.updateUser({ data: { deleted: true } })
-        await supabase.auth.signOut()
+        await logout()
         navigate('/')
       }
     } catch (err) {
@@ -287,14 +287,14 @@ export default function ProfileOverlay({ onClose }) {
               {!isEditing ? (
                 <>
                   <h2 style={{ margin: '0 0 0.25rem', fontSize: '1.375rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.02em' }}>
-                    {user?.user_metadata?.full_name || 'Set your name'}
+                    {user?.full_name || 'Set your name'}
                   </h2>
                   <div style={{ fontSize: '0.875rem', color: '#14b8a6', fontWeight: 600, marginBottom: '0.375rem' }}>Healthcare Provider</div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: '0.8125rem', color: '#94a3b8', marginBottom: '0.25rem' }}>
                     <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-                    {user?.user_metadata?.location || <span style={{ color: '#475569', fontStyle: 'italic' }}>No location set</span>}
+                    {user?.location || <span style={{ color: '#475569', fontStyle: 'italic' }}>No location set</span>}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '1.25rem' }}>{user?.email}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '1.25rem' }}>ID: {user?.employee_id}</div>
 
                   {/* Edit Profile button */}
                   {!forceOnboard && (
@@ -339,7 +339,7 @@ export default function ProfileOverlay({ onClose }) {
                   </div>
                   <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                     {!forceOnboard && (
-                      <button onClick={() => { setIsEditing(false); setFullName(user?.user_metadata?.full_name || ''); setLocation(user?.user_metadata?.location || ''); }} style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontWeight: 600, cursor: 'pointer', padding: '0.5rem 1rem' }}>Cancel</button>
+                      <button onClick={() => { setIsEditing(false); setFullName(user?.full_name || ''); setLocation(user?.location || ''); }} style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontWeight: 600, cursor: 'pointer', padding: '0.5rem 1rem' }}>Cancel</button>
                     )}
                     <button 
                       onClick={handleSaveProfile} disabled={saveLoading}

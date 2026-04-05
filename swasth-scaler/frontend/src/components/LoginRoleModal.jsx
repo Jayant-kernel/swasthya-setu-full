@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
@@ -39,12 +38,11 @@ const ROLES = [
 
 export default function LoginRoleModal({ onClose }) {
   const [selected, setSelected] = useState(null);
-  const [authEmail, setAuthEmail] = useState('');
+  const [authEmployeeId, setAuthEmployeeId] = useState('');
   const [authPassword, setAuthPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [authInfo, setAuthInfo] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   const auth = useAuth();
@@ -66,28 +64,13 @@ export default function LoginRoleModal({ onClose }) {
     setAuthInfo('');
     setAuthLoading(true);
     try {
-      if (isSignUp) {
-        const { error } = await supabase.auth.signUp({ email: authEmail, password: authPassword });
-        if (error) throw error;
-        setAuthInfo('Account created! Check your email to confirm, then sign in.');
-        setIsSignUp(false);
-      } else {
-        await auth.login(authEmail, authPassword, selected.id);
-        navigate(selected.path);
-      }
+      await auth.login(authEmployeeId, authPassword, selected.id);
+      navigate(selected.path);
     } catch (err) {
       setAuthError(err.message);
     } finally {
       setAuthLoading(false);
     }
-  };
-
-  const handleOAuth = async (provider) => {
-    localStorage.setItem('userRole', selected.id);
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: `${window.location.origin}${selected.path}` },
-    });
   };
 
   return (
@@ -375,10 +358,10 @@ export default function LoginRoleModal({ onClose }) {
 
                 <div style={{ marginBottom: '1.5rem', marginTop: '2.5rem' }}>
                   <h1 style={{ fontSize: '1.625rem', fontWeight: 900, color: '#111827', letterSpacing: '-0.03em', margin: '0 0 0.375rem' }}>
-                    {isSignUp ? 'Create Account' : 'Sign In'}
+                    Sign In
                   </h1>
                   <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>
-                    {isSignUp ? 'Join as ' : 'Continuing as '}
+                    Continuing as{' '}
                     <strong style={{ color: '#374151' }}>{selected.title}</strong>
                   </p>
                 </div>
@@ -396,8 +379,8 @@ export default function LoginRoleModal({ onClose }) {
                   )}
 
                   <input
-                    type="email" placeholder="Email address"
-                    value={authEmail} onChange={e => setAuthEmail(e.target.value)} required
+                    type="text" placeholder="Employee / Officer ID"
+                    value={authEmployeeId} onChange={e => setAuthEmployeeId(e.target.value)} required
                     style={{ width: '100%', padding: '0.875rem 1.125rem', borderRadius: '12px', border: '1.5px solid #e5e7eb', outline: 'none', fontSize: '0.9375rem', color: '#111827', background: '#f9fafb', boxSizing: 'border-box', minHeight: 48 }}
                     onFocus={e => e.target.style.borderColor = selected.color}
                     onBlur={e => e.target.style.borderColor = '#e5e7eb'}
@@ -426,63 +409,12 @@ export default function LoginRoleModal({ onClose }) {
                     onMouseEnter={e => { if (!authLoading) e.currentTarget.style.background = '#1f2937'; }}
                     onMouseLeave={e => { if (!authLoading) e.currentTarget.style.background = '#111827'; }}
                   >
-                    <span>{authLoading ? (isSignUp ? 'Creating…' : 'Signing in…') : (isSignUp ? 'Create Account' : 'Sign In')}</span>
+                    <span>{authLoading ? 'Signing in…' : 'Sign In'}</span>
                     <span style={{ background: '#fff', color: '#111827', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1rem' }}>
                       {authLoading ? '…' : '→'}
                     </span>
                   </button>
-
-                  {/* Divider */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', margin: '0.125rem 0' }}>
-                    <div style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
-                    <span style={{ color: '#9ca3af', fontSize: '0.8125rem', whiteSpace: 'nowrap' }}>or continue with</span>
-                    <div style={{ flex: 1, height: 1, background: '#e5e7eb' }} />
-                  </div>
-
-                  {/* OAuth */}
-                  <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    {[
-                      {
-                        label: 'Google', provider: 'google',
-                        icon: <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" /><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" /><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" /><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" /></svg>
-                      },
-                      {
-                        label: 'Apple', provider: 'apple',
-                        icon: <svg width="16" height="16" viewBox="0 0 814 1000"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76 0-103.7 40.8-165.9 40.8s-105-57.8-155.5-127.4C46 790.8 0 663 0 541.8c0-207.7 134.7-317.7 266.9-317.7 99.1 0 160.1 65.5 214.1 65.5 51.7 0 122.7-68.8 232.2-68.8 37.9 0 137.1 3.2 210.2 84.9zm-246.7-161.7c43.3-51.8 74.6-124.1 74.6-196.3 0-9.6-.6-19.3-2.6-28.3-69.3 2.6-152.4 48.3-202.1 107.3-37.9 43.8-74.6 116.1-74.6 189.6 0 10.3.6 20.7 3.2 29.6 6.5.5 13 1.3 20.1 1.3 61.3 0 138.3-41.5 181.4-103.2z" /></svg>
-                      },
-                    ].map(({ label, provider, icon }) => (
-                      <button
-                        key={provider}
-                        type="button"
-                        onClick={() => handleOAuth(provider)}
-                        style={{
-                          flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          gap: '0.5rem', minHeight: 46,
-                          borderRadius: '12px', border: '1.5px solid #e5e7eb',
-                          background: '#fff', color: '#374151', fontWeight: 600,
-                          fontSize: '0.875rem', cursor: 'pointer', transition: 'all 0.2s',
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.borderColor = '#d1d5db'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.07)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.boxShadow = 'none'; }}
-                      >
-                        {icon} {label}
-                      </button>
-                    ))}
-                  </div>
                 </form>
-
-                {/* Sign up / sign in toggle — only for ASHA */}
-                {selected.id === 'asha' && (
-                  <p style={{ textAlign: 'center', marginTop: '1.25rem', color: '#6b7280', fontSize: '0.875rem' }}>
-                    {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
-                    <span
-                      onClick={() => { setIsSignUp(!isSignUp); setAuthError(''); setAuthInfo(''); }}
-                      style={{ color: '#111827', fontWeight: 700, cursor: 'pointer', textDecoration: 'underline' }}
-                    >
-                      {isSignUp ? 'Sign in here' : 'Sign up here'}
-                    </span>
-                  </p>
-                )}
               </div>
             </div>
           )}

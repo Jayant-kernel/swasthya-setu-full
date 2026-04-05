@@ -1,6 +1,6 @@
 import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+
 import { useScrollDirection } from '../hooks/useScrollDirection'
 
 const NAV = [

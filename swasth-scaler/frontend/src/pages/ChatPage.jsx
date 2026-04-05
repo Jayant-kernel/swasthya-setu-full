@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+
 import { openai, getChatSystemPrompt } from '../lib/openai'
 import { usePatient } from '../context/PatientContext.jsx'
 import ChatBubble from '../components/ChatBubble.jsx'
@@ -63,48 +63,34 @@ export default function ChatPage() {
   async function fetchAvailablePatients() {
     setLoadingPatients(true)
     try {
-      // Robust fetch: try patients table with join first
-      let { data, error } = await supabase
-        .from('patients')
-        .select('*, triage_records(*)')
-        .order('created_at', { ascending: false })
+      const token = localStorage.getItem('access_token')
+      const res = await fetch('http://localhost:8000/api/v1/triage_records/', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      if (!res.ok) throw new Error('Failed to fetch triage records')
+      const recs = await res.json()
       
-      let patients = []
-
-      if (!error && data && data.length > 0) {
-        patients = data.map(p => {
-          const sorted = [...(p.triage_records || [])].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-          return { ...p, records: sorted, latestSeverity: sorted[0]?.severity || 'green' }
-        }).filter(p => p.records.length > 0)
-      } else {
-        // Fallback: direct triage_records
-        const { data: recs, error: err2 } = await supabase
-          .from('triage_records')
-          .select('*')
-          .order('created_at', { ascending: false })
-        
-        if (err2) throw err2
-        
-        const grouped = new Map()
-        recs.forEach(r => {
-          const key = `${(r.patient_name || '').toLowerCase()}_${r.age}_${r.district}`
-          if (!grouped.has(key)) {
-            grouped.set(key, {
-              id: r.patient_id || key,
-              name: r.patient_name,
-              age: r.age,
-              gender: r.gender,
-              district: r.district,
-              records: []
-            })
-          }
-          grouped.get(key).records.push(r)
-        })
-        patients = Array.from(grouped.values()).map(p => ({
-          ...p,
-          latestSeverity: p.records[0]?.severity || 'green'
-        }))
-      }
+      const grouped = new Map()
+      recs.forEach(r => {
+        const key = `${(r.patient_name || '').toLowerCase()}_${r.age}_${r.district}`
+        if (!grouped.has(key)) {
+          grouped.set(key, {
+            id: r.patient_id || key,
+            name: r.patient_name,
+            age: r.age,
+            gender: r.gender,
+            district: r.district,
+            records: []
+          })
+        }
+        grouped.get(key).records.push(r)
+      })
+      const patients = Array.from(grouped.values()).map(p => ({
+        ...p,
+        latestSeverity: p.records[0]?.severity || 'green'
+      }))
       
       setAvailablePatients(patients)
     } catch (err) {
@@ -303,7 +289,7 @@ export default function ChatPage() {
       <GlobalHeader>
         <div className="chat-patient-header" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingLeft: '0.75rem', borderLeft: '2px solid #e5e7eb', marginLeft: '0.25rem', minWidth: 0, overflow: 'hidden' }}>
           <span style={{ fontWeight: 700, fontSize: '0.9375rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>{patientData.name}</span>
-          <span className={`badge ${badge.cls}`} style={{ margin: 0, flexShrink: 0 }} className="hide-mobile">{badge.label}</span>
+          <span className={`badge ${badge.cls} hide-mobile`} style={{ margin: 0, flexShrink: 0 }}>{badge.label}</span>
           {triageResult.sickle_cell_risk && (
             <div className="hide-mobile" style={{ background: 'var(--color-red)', color: 'var(--surface)', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, flexShrink: 0 }}>
               🔴 High Risk

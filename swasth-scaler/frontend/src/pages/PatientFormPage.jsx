@@ -34,7 +34,6 @@
 
 import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
 import { usePatient } from '../context/PatientContext.jsx'
 import { useTriage } from '../hooks/useTriage'
 import { translateToEnglish, openai } from '../lib/openai'
@@ -186,15 +185,20 @@ export default function PatientFormPage() {
   useEffect(() => {
     if (prefill?.name && prefill?.age && prefill?.district && !prefillPatientId) {
       const lookupPatient = async () => {
-        const { data } = await supabase
-          .from('patients')
-          .select('*, triage_records(*)')
-          .ilike('name', prefill.name.trim())
-          .eq('age', parseInt(prefill.age))
-          .eq('district', prefill.district)
-          .limit(1)
-        if (data && data.length > 0) {
-          setResolvedPatientId(data[0].id)
+        try {
+          const token = localStorage.getItem('access_token')
+          const res = await fetch('http://localhost:8000/api/v1/patients/', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+          if (res.ok) {
+            const data = await res.json()
+            const match = data.find(p => p.name.toLowerCase() === prefill.name.trim().toLowerCase() && p.age === parseInt(prefill.age) && p.district === prefill.district)
+            if (match) {
+              setResolvedPatientId(match.id)
+            }
+          }
+        } catch (e) {
+          console.error('Patient lookup failed', e)
         }
       }
       lookupPatient()
@@ -307,33 +311,46 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
   // ── helpers ──────────────────────────────────────────────────────────────
 
   async function createNewPatient(patientObj) {
-    const { data, error } = await supabase
-      .from('patients')
-      .insert({ name: patientObj.name, age: patientObj.age, gender: patientObj.gender, district: patientObj.district })
-      .select()
-      .single()
-    if (error) throw error
-    return data
+    const token = localStorage.getItem('access_token')
+    const res = await fetch('http://localhost:8000/api/v1/patients/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({
+        name: patientObj.name,
+        age: patientObj.age,
+        gender: patientObj.gender,
+        district: patientObj.district
+      })
+    })
+    if (!res.ok) {
+      const err = await res.json()
+      throw new Error(err.detail || 'Could not create patient')
+    }
+    return await res.json()
   }
 
   async function saveRecord(patientId, patientObj, triaged) {
     setSaving(true)
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      const { error } = await supabase.from('triage_records').insert({
-        user_id:          user?.id,
+      const token = localStorage.getItem('access_token')
+      const payload = {
         patient_id:       patientId,
         patient_name:     patientObj.name,
-        age:              patientObj.age,
-        gender:           patientObj.gender,
         district:         patientObj.district,
-        symptom_text:     patientObj.symptomText,
         severity:         triaged.severity,
         symptoms:         triaged.symptoms,
         sickle_cell_risk: triaged.sickle_cell_risk,
         brief:            triaged.brief,
+      }
+      const res = await fetch('http://localhost:8000/api/v1/triage_records/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(payload)
       })
-      if (error) throw error
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.detail || 'Could not save triage record')
+      }
     } catch (err) {
       setSaveError('Record could not be saved: ' + (err.message || ''))
     } finally {
@@ -363,13 +380,15 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
 
     // STEP 1: Check for duplicates before triage (only when patient not already resolved)
     if (!resolvedPatientId) {
-      const { data: existing } = await supabase
-        .from('patients')
-        .select('*, triage_records(id, severity, brief, created_at, district)')
-        .ilike('name', form.name.trim())
-        .eq('district', form.district)
-        .eq('age', parseInt(form.age, 10))
-        .limit(5)
+      const token = localStorage.getItem('access_token')
+      const res = await fetch('http://localhost:8000/api/v1/patients/', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      let existing = []
+      if (res.ok) {
+        const data = await res.json()
+        existing = data.filter(p => p.name.toLowerCase() === form.name.trim().toLowerCase() && p.district === form.district && p.age === parseInt(form.age, 10)).slice(0, 5)
+      }
 
       const matches = existing || []
 
@@ -945,10 +964,25 @@ function VisitHistory({ name, patientId }) {
   useEffect(() => {
     if (!name || name.trim().length < 3) return
     setLoading(true)
-    const q = patientId
-      ? supabase.from('triage_records').select('id, severity, brief, created_at, district').eq('patient_id', patientId).order('created_at', { ascending: false }).limit(3)
-      : supabase.from('triage_records').select('id, severity, brief, created_at, district').ilike('patient_name', `%${name.trim()}%`).order('created_at', { ascending: false }).limit(3)
-    q.then(({ data }) => { setRecords(data || []); setLoading(false) })
+    const token = localStorage.getItem('access_token')
+    fetch('http://localhost:8000/api/v1/triage_records/', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        let filtered = data
+        if (patientId) {
+          filtered = data.filter(r => r.patient_id === patientId)
+        } else {
+          filtered = data.filter(r => r.patient_name?.toLowerCase().includes(name.trim().toLowerCase()))
+        }
+        setRecords(filtered.slice(0, 3) || [])
+        setLoading(false)
+      })
+      .catch((e) => {
+        console.error(e)
+        setLoading(false)
+      })
   }, [name, patientId])
 
   if (loading) return <div style={{ padding: '0.75rem 0', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>Loading history…</div>

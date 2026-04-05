@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+
 
 const DistrictHeatmap = lazy(() => import('../components/DistrictHeatmap'))
 
@@ -98,12 +98,14 @@ export default function AdminDashboardPage() {
 
   const fetchAll = useCallback(async () => {
     try {
-      const { data, error } = await supabase
-        .from('patients')
-        .select('id, name, age, gender, district, created_at')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
+      const token = localStorage.getItem('access_token')
+      const res = await fetch('http://localhost:8000/api/v1/patients/', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      if (!res.ok) throw new Error('Failed to fetch patients')
+      const data = await res.json()
       const rows = data || []
       setAllPatients(rows)
 
