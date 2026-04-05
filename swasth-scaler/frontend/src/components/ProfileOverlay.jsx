@@ -262,8 +262,8 @@ export default function ProfileOverlay({ onClose }) {
                 >✕</button>
               )}
 
-              {/* Avatar — sits at bottom-left of cover */}
-              <div style={{ position: 'absolute', bottom: -48, left: '1.5rem', zIndex: 5 }}>
+              {/* Avatar — centered in banner, hangs below */}
+              <div style={{ position: 'absolute', bottom: -48, left: '50%', transform: 'translateX(-50%)', zIndex: 5 }}>
                 <div style={{ width: 96, height: 96, borderRadius: '50%', background: '#1e293b', border: '4px solid #0b0f19', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(0,0,0,0.5)' }}>
                   {avatar ? (
                     <img src={avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -283,22 +283,22 @@ export default function ProfileOverlay({ onClose }) {
             </div>
 
             {/* --- Profile Info (below cover) --- */}
-            <div className="po-profile-header" style={{ padding: '3.75rem 1.5rem 1.5rem', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="po-profile-header" style={{ padding: '3.75rem 1.5rem 1.5rem', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
 
               {/* Name + role + location */}
               {!isEditing ? (
                 <>
-                  <h2 style={{ margin: '0 0 0.25rem', fontSize: '1.375rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.02em', paddingRight: '7rem' }}>
+                  <h2 style={{ margin: '0 0 0.25rem', fontSize: '1.375rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.02em' }}>
                     {user?.user_metadata?.full_name || 'Set your name'}
                   </h2>
                   <div style={{ fontSize: '0.875rem', color: '#14b8a6', fontWeight: 600, marginBottom: '0.375rem' }}>Healthcare Provider</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.8125rem', color: '#94a3b8', marginBottom: '0.25rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: '0.8125rem', color: '#94a3b8', marginBottom: '0.25rem' }}>
                     <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
                     {user?.user_metadata?.location || <span style={{ color: '#475569', fontStyle: 'italic' }}>No location set</span>}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '1rem' }}>{user?.email}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '1.25rem' }}>{user?.email}</div>
 
-                  {/* Edit Profile button — separate row, never overlaps */}
+                  {/* Edit Profile button */}
                   {!forceOnboard && (
                     <button
                       onClick={() => setIsEditing(true)}
