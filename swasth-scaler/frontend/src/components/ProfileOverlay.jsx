@@ -234,7 +234,7 @@ export default function ProfileOverlay({ onClose }) {
         ) : (
           <>
             {/* --- Cover Banner --- */}
-            <div style={{ position: 'relative', height: '140px', background: banner ? `url(${banner}) center/cover no-repeat` : 'linear-gradient(135deg, #0f766e 0%, #0369a1 100%)', overflow: 'hidden', flexShrink: 0 }}>
+            <div style={{ position: 'relative', height: '160px', background: banner ? `url(${banner}) center/cover no-repeat` : 'linear-gradient(135deg, #0f766e 0%, #0369a1 100%)', overflow: 'hidden', flexShrink: 0 }}>
               {!banner && <div style={{ position: 'absolute', inset: 0, background: 'url("data:image/svg+xml,%3Csvg width=\\"20\\" height=\\"20\\" xmlns=\\"http://www.w3.org/2000/svg\\"%3E%3Ccircle cx=\\"2\\" cy=\\"2\\" r=\\"1\\" fill=\\"rgba(255,255,255,0.1)\\"/%3E%3C/svg%3E")', backgroundSize: '20px 20px' }} />}
 
               {/* Banner Upload Button */}
@@ -263,8 +263,8 @@ export default function ProfileOverlay({ onClose }) {
               )}
 
               {/* Avatar — sits at bottom-left of cover */}
-              <div style={{ position: 'absolute', bottom: -40, left: '1.5rem', zIndex: 5 }}>
-                <div style={{ width: 88, height: 88, borderRadius: '50%', background: '#1e293b', border: '4px solid #0b0f19', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(0,0,0,0.5)' }}>
+              <div style={{ position: 'absolute', bottom: -48, left: '1.5rem', zIndex: 5 }}>
+                <div style={{ width: 96, height: 96, borderRadius: '50%', background: '#1e293b', border: '4px solid #0b0f19', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(0,0,0,0.5)' }}>
                   {avatar ? (
                     <img src={avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
@@ -283,31 +283,33 @@ export default function ProfileOverlay({ onClose }) {
             </div>
 
             {/* --- Profile Info (below cover) --- */}
-            <div className="po-profile-header" style={{ padding: '3.25rem 1.5rem 1.5rem', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+            <div className="po-profile-header" style={{ padding: '3.75rem 1.5rem 1.5rem', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
 
-              {/* Edit Profile button — top right */}
-              {!isEditing && !forceOnboard && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  style={{ position: 'absolute', top: '0.875rem', right: '1.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#f8fafc', padding: '0.4rem 0.875rem', borderRadius: 99, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
-                >
-                  Edit Profile
-                </button>
-              )}
-
+              {/* Name + role + location */}
               {!isEditing ? (
                 <>
-                  <h2 style={{ margin: '0 0 0.25rem', fontSize: '1.375rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.02em' }}>
+                  <h2 style={{ margin: '0 0 0.25rem', fontSize: '1.375rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.02em', paddingRight: '7rem' }}>
                     {user?.user_metadata?.full_name || 'Set your name'}
                   </h2>
                   <div style={{ fontSize: '0.875rem', color: '#14b8a6', fontWeight: 600, marginBottom: '0.375rem' }}>Healthcare Provider</div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.8125rem', color: '#94a3b8', marginBottom: '0.25rem' }}>
                     <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-                    {user?.user_metadata?.location || 'Add location...'}
+                    {user?.user_metadata?.location || <span style={{ color: '#475569', fontStyle: 'italic' }}>No location set</span>}
                   </div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{user?.email}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '1rem' }}>{user?.email}</div>
+
+                  {/* Edit Profile button — separate row, never overlaps */}
+                  {!forceOnboard && (
+                    <button
+                      onClick={() => setIsEditing(true)}
+                      style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: '#f8fafc', padding: '0.5rem 1.25rem', borderRadius: 99, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                      onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.13)'}
+                      onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
+                    >
+                      <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      Edit Profile
+                    </button>
+                  )}
                 </>
               ) : (
                 <div style={{ color: '#f8fafc', marginBottom: '1rem' }}>

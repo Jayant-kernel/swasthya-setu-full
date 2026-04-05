@@ -12,9 +12,6 @@ import AdminDashboardPage from './pages/AdminDashboardPage.jsx'
 
 import { AuthProvider } from './context/AuthContext.jsx'
 import LandingPage from './pages/LandingPage.jsx'
-import CitizenLoginPage from './pages/CitizenLoginPage.jsx'
-import CitizenRegistrationPage from './pages/CitizenRegistrationPage.jsx'
-import CitizenDashboardPage from './pages/CitizenDashboardPage.jsx'
 import ISLPage from './pages/ISLPage.jsx'
 
 export default function App() {
@@ -26,18 +23,14 @@ export default function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login/asha" element={<LoginPage />} />
             <Route path="/login/dmo" element={<DMOLoginPage />} />
-            <Route path="/login/citizen" element={<CitizenLoginPage />} />
-            <Route path="/register/citizen" element={<CitizenRegistrationPage />} />
-            
+
             <Route path="/home" element={<ProtectedRoute role="asha"><HomePage /></ProtectedRoute>} />
             <Route path="/patient" element={<ProtectedRoute role="asha"><PatientFormPage /></ProtectedRoute>} />
             <Route path="/isl" element={<ProtectedRoute role="asha"><ISLPage /></ProtectedRoute>} />
             <Route path="/chat" element={<ProtectedRoute role="asha"><ChatPage /></ProtectedRoute>} />
-            
-            
+
             <Route path="/dashboard/dmo" element={<ProtectedRoute role="dmo"><DMODashboardPage /></ProtectedRoute>} />
             <Route path="/dashboard/admin" element={<ProtectedRoute role="admin"><AdminDashboardPage /></ProtectedRoute>} />
-            <Route path="/dashboard/citizen" element={<ProtectedRoute role="citizen"><CitizenDashboardPage /></ProtectedRoute>} />
           </Routes>
         </PatientProvider>
       </AuthProvider>
