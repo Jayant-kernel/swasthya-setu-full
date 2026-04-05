@@ -44,6 +44,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [showMobileInfo, setShowMobileInfo] = useState(false)
   const messagesEndRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -312,15 +313,32 @@ export default function ChatPage() {
       </GlobalHeader>
       <TopNav />
 
-      {/* Mobile media queries */}
+      {/* Mobile media queries + drawer */}
       <style>{`
         @media (max-width: 768px) {
           .chat-sidebar { display: none !important; }
           .chat-messages-area { padding: 1rem !important; }
           .chat-input-area { padding: 0.5rem 1rem 0.75rem !important; }
           .chat-quick-replies { padding: 0.5rem 1rem 0 !important; }
-          .chat-patient-header { max-width: 140px; }
           .chat-patient-header .badge { display: none; }
+          .chat-info-btn { display: flex !important; }
+        }
+        .chat-info-btn { display: none; }
+        .chat-drawer-backdrop {
+          position: fixed; inset: 0; z-index: 500;
+          background: rgba(0,0,0,0.55);
+          backdrop-filter: blur(4px);
+          transition: opacity 0.25s ease;
+        }
+        .chat-drawer {
+          position: fixed; left: 0; right: 0; bottom: 0; z-index: 501;
+          background: var(--color-surface);
+          border-radius: 1.25rem 1.25rem 0 0;
+          max-height: 85dvh;
+          overflow-y: auto;
+          padding: 0 0 2rem;
+          box-shadow: 0 -8px 40px rgba(0,0,0,0.25);
+          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
       `}</style>
 
@@ -406,7 +424,29 @@ export default function ChatPage() {
         </aside>
 
         {/* Chat area */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
+
+          {/* Mobile Patient Info button */}
+          <button
+            className="chat-info-btn"
+            onClick={() => setShowMobileInfo(true)}
+            style={{
+              margin: '0.75rem 1rem 0',
+              alignItems: 'center', gap: '0.5rem',
+              background: 'var(--color-surface)',
+              border: '1.5px solid var(--color-border)',
+              borderRadius: 99,
+              padding: '0.5rem 1rem',
+              fontSize: '0.8125rem', fontWeight: 700,
+              color: 'var(--color-primary)',
+              cursor: 'pointer',
+              alignSelf: 'flex-start',
+            }}
+          >
+            <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Patient Info
+            <span style={{ background: severityColor, color: '#fff', borderRadius: 99, padding: '0.1rem 0.5rem', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' }}>{triageResult.severity}</span>
+          </button>
           {/* Messages */}
           <div
             className="chat-messages-area"
@@ -537,6 +577,64 @@ export default function ChatPage() {
           </form>
         </div>
       </div>
+
+      {/* Mobile Patient Info Drawer */}
+      {showMobileInfo && (
+        <>
+          <div className="chat-drawer-backdrop" onClick={() => setShowMobileInfo(false)} />
+          <div className="chat-drawer">
+            {/* Drag handle */}
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '0.75rem 0 0.5rem' }}>
+              <div style={{ width: 40, height: 4, borderRadius: 4, background: 'var(--color-border)' }} />
+            </div>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.5rem 1.25rem 1rem', borderBottom: '1px solid var(--color-border)' }}>
+              <div style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--color-text)' }}>Patient Info</div>
+              <button onClick={() => setShowMobileInfo(false)} style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--color-text-muted)' }}>✕</button>
+            </div>
+            {/* Content */}
+            <div style={{ padding: '1.25rem' }}>
+              {/* Patient fields */}
+              <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-muted)', marginBottom: '0.875rem' }}>Patient Details</div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem', marginBottom: '1.25rem' }}>
+                {[
+                  { label: 'Name', value: patientData.name },
+                  { label: 'Age', value: `${patientData.age} years` },
+                  { label: 'Gender', value: patientData.gender },
+                  { label: 'District', value: patientData.district },
+                ].map(({ label, value }) => (
+                  <div key={label} style={{ background: 'var(--color-bg)', borderRadius: 10, padding: '0.75rem' }}>
+                    <div style={{ fontSize: '0.6875rem', color: 'var(--color-text-muted)', fontWeight: 600, marginBottom: 2 }}>{label}</div>
+                    <div style={{ fontSize: '0.9375rem', fontWeight: 700, color: 'var(--color-text)' }}>{value}</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Triage result */}
+              <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>Triage Result</div>
+              <div style={{ padding: '1rem', borderRadius: 12, border: `2px solid ${severityColor}`, background: `${severityColor}12`, marginBottom: '1rem' }}>
+                <div style={{ fontSize: '0.75rem', fontWeight: 800, color: severityColor, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{triageResult.severity}</div>
+                <div style={{ fontSize: '0.875rem', color: 'var(--color-text)', lineHeight: 1.5 }}>{triageResult.brief}</div>
+              </div>
+
+              {/* Symptoms */}
+              <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', fontWeight: 600, marginBottom: '0.5rem' }}>Symptoms</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem', marginBottom: triageResult.sickle_cell_risk ? '1rem' : 0 }}>
+                {triageResult.symptoms?.map(s => (
+                  <span key={s} style={{ background: 'var(--color-bg)', border: '1px solid var(--color-border)', borderRadius: 99, padding: '0.25rem 0.75rem', fontSize: '0.8125rem', color: 'var(--color-text)' }}>{s}</span>
+                ))}
+              </div>
+
+              {/* Sickle cell warning */}
+              {triageResult.sickle_cell_risk && (
+                <div style={{ background: 'var(--color-red-bg)', border: '1.5px solid var(--color-red-border)', borderRadius: 12, padding: '0.875rem', color: 'var(--color-red)', fontSize: '0.875rem', fontWeight: 600, marginTop: '0.5rem' }}>
+                  🔴 High Sickle Cell Risk — Refer to district hospital immediately.
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   )
 }

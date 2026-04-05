@@ -234,100 +234,87 @@ export default function ProfileOverlay({ onClose }) {
         ) : (
           <>
             {/* --- Cover Banner --- */}
-            <div style={{ position: 'relative', height: '160px', background: banner ? `url(${banner}) center/cover no-repeat` : 'linear-gradient(135deg, #0f766e 0%, #0369a1 100%)', display: 'flex', justifyContent: 'flex-end', padding: '1rem', overflow: 'hidden' }}>
+            <div style={{ position: 'relative', height: '140px', background: banner ? `url(${banner}) center/cover no-repeat` : 'linear-gradient(135deg, #0f766e 0%, #0369a1 100%)', overflow: 'hidden', flexShrink: 0 }}>
               {!banner && <div style={{ position: 'absolute', inset: 0, background: 'url("data:image/svg+xml,%3Csvg width=\\"20\\" height=\\"20\\" xmlns=\\"http://www.w3.org/2000/svg\\"%3E%3Ccircle cx=\\"2\\" cy=\\"2\\" r=\\"1\\" fill=\\"rgba(255,255,255,0.1)\\"/%3E%3C/svg%3E")', backgroundSize: '20px 20px' }} />}
-              
+
               {/* Banner Upload Button */}
               {!forceOnboard && (
                 <button
                   onClick={(e) => { e.stopPropagation(); bannerInputRef.current?.click() }}
-                  style={{ position: 'absolute', top: '1rem', left: '1rem', zIndex: 10, padding: '0.4rem 0.8rem', borderRadius: 99, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 600, transition: 'background 0.2s' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.5)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.3)'}
+                  style={{ position: 'absolute', top: '0.875rem', left: '0.875rem', zIndex: 10, padding: '0.35rem 0.75rem', borderRadius: 99, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.7rem', fontWeight: 600 }}
                   title="Change Cover Banner"
                 >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
-                  Change Cover
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                  Cover
                 </button>
               )}
               <input type="file" accept="image/*" style={{ display: 'none' }} ref={bannerInputRef} onChange={handleBannerChange} />
-              
-              {/* Close Button or Force Notice */}
+
+              {/* Close / Onboard notice */}
               {forceOnboard ? (
-                <div style={{ zIndex: 10, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', padding: '0.4rem 1rem', borderRadius: 99, color: '#fff', fontSize: '0.8125rem', fontWeight: 600, height: 'fit-content' }}>
-                  Please complete your profile
+                <div style={{ position: 'absolute', top: '0.875rem', right: '0.875rem', zIndex: 10, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', padding: '0.375rem 0.875rem', borderRadius: 99, color: '#fff', fontSize: '0.8rem', fontWeight: 600 }}>
+                  Complete your profile
                 </div>
               ) : (
-                <button 
-                  onClick={handleClose} 
-                  style={{ zIndex: 10, width: 36, height: 36, borderRadius: '50%', background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)', height: 'fit-content', transform: 'scale(1) rotate(0deg)' }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.5)'; e.currentTarget.style.transform = 'scale(1.15) rotate(90deg)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(0,0,0,0.25)'; e.currentTarget.style.transform = 'scale(1) rotate(0deg)'; }}
-                  onMouseDown={e => e.currentTarget.style.transform = 'scale(0.9) rotate(90deg)'}
-                  onMouseUp={e => e.currentTarget.style.transform = 'scale(1.15) rotate(90deg)'}
+                <button
+                  onClick={handleClose}
+                  style={{ position: 'absolute', top: '0.875rem', right: '0.875rem', zIndex: 10, width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >✕</button>
               )}
-            </div>
 
-            {/* --- Profile Header (Avatar & Info) --- */}
-            <div className="po-profile-header" style={{ padding: '0 2rem 2rem', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1.5rem', marginTop: '-50px', marginBottom: '1.5rem' }}>
-                
-                {/* Avatar */}
-                <div style={{ position: 'relative', zIndex: 5 }}>
-                  <div style={{ width: 110, height: 110, borderRadius: '50%', background: '#1e293b', border: '5px solid #0b0f19', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
-                    {avatar ? (
-                      <img src={avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      <span style={{ fontSize: '2.5rem' }}>👩‍⚕️</span>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    style={{ position: 'absolute', bottom: 4, right: 4, background: '#14b8a6', color: '#fff', border: 'none', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(20,184,166,0.3)', border: '2px solid #0b0f19' }}
-                    title="Upload Avatar"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
-                  </button>
-                  <input type="file" accept="image/*" style={{ display: 'none' }} ref={fileInputRef} onChange={handleFileChange} />
-                </div>
-
-                {/* Profile Name & Text logic */}
-                <div style={{ flex: 1, paddingBottom: '0.5rem' }}>
-                  {!isEditing ? (
-                    <>
-                      <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.02em' }}>
-                        {user?.user_metadata?.full_name || 'Set your name'}
-                      </h2>
-                      <div style={{ fontSize: '0.9375rem', color: '#14b8a6', fontWeight: 600, marginTop: 4 }}>
-                        Healthcare Provider
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.875rem', color: '#94a3b8', marginTop: 4 }}>
-                        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-                        {user?.user_metadata?.location || 'Add location...'}
-                      </div>
-                      <div style={{ fontSize: '0.8125rem', color: '#64748b', marginTop: 4 }}>{user?.email}</div>
-                    </>
+              {/* Avatar — sits at bottom-left of cover */}
+              <div style={{ position: 'absolute', bottom: -40, left: '1.5rem', zIndex: 5 }}>
+                <div style={{ width: 88, height: 88, borderRadius: '50%', background: '#1e293b', border: '4px solid #0b0f19', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(0,0,0,0.5)' }}>
+                  {avatar ? (
+                    <img src={avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
-                    <div style={{ color: '#f8fafc' }}>
-                      <h2 style={{ margin: '0 0 0.25rem', fontSize: '1.25rem' }}>Complete Profile</h2>
-                      <p style={{ color: '#94a3b8', fontSize: '0.875rem', margin: 0 }}>Required to serve patients</p>
-                    </div>
+                    <span style={{ fontSize: '2.25rem' }}>👩‍⚕️</span>
                   )}
                 </div>
-
-                {/* Edit Button */}
-                {!isEditing && !forceOnboard && (
-                  <button 
-                    onClick={() => setIsEditing(true)} 
-                    style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#f8fafc', padding: '0.5rem 1rem', borderRadius: 99, fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s', alignSelf: 'flex-start', marginTop: '1rem' }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
-                  >
-                    Edit Profile
-                  </button>
-                )}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  style={{ position: 'absolute', bottom: 2, right: 2, background: '#14b8a6', color: '#fff', border: '2px solid #0b0f19', borderRadius: '50%', width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 4px 12px rgba(20,184,166,0.3)' }}
+                  title="Upload Avatar"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                </button>
+                <input type="file" accept="image/*" style={{ display: 'none' }} ref={fileInputRef} onChange={handleFileChange} />
               </div>
+            </div>
+
+            {/* --- Profile Info (below cover) --- */}
+            <div className="po-profile-header" style={{ padding: '3.25rem 1.5rem 1.5rem', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+
+              {/* Edit Profile button — top right */}
+              {!isEditing && !forceOnboard && (
+                <button
+                  onClick={() => setIsEditing(true)}
+                  style={{ position: 'absolute', top: '0.875rem', right: '1.5rem', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#f8fafc', padding: '0.4rem 0.875rem', borderRadius: 99, fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                >
+                  Edit Profile
+                </button>
+              )}
+
+              {!isEditing ? (
+                <>
+                  <h2 style={{ margin: '0 0 0.25rem', fontSize: '1.375rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.02em' }}>
+                    {user?.user_metadata?.full_name || 'Set your name'}
+                  </h2>
+                  <div style={{ fontSize: '0.875rem', color: '#14b8a6', fontWeight: 600, marginBottom: '0.375rem' }}>Healthcare Provider</div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.8125rem', color: '#94a3b8', marginBottom: '0.25rem' }}>
+                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                    {user?.user_metadata?.location || 'Add location...'}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{user?.email}</div>
+                </>
+              ) : (
+                <div style={{ color: '#f8fafc', marginBottom: '1rem' }}>
+                  <h2 style={{ margin: '0 0 0.2rem', fontSize: '1.125rem', fontWeight: 800 }}>Complete Profile</h2>
+                  <p style={{ color: '#94a3b8', fontSize: '0.8125rem', margin: 0 }}>Required to serve patients</p>
+                </div>
+              )}
 
               {/* Form specifically if editing */}
               {isEditing && (
