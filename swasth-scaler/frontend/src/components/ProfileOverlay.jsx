@@ -6,6 +6,7 @@ export default function ProfileOverlay({ onClose }) {
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
   const [avatar, setAvatar] = useState(null)
+  const [banner, setBanner] = useState(null)
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
   
@@ -18,6 +19,7 @@ export default function ProfileOverlay({ onClose }) {
 
   const [mounted, setMounted] = useState(false)
   const fileInputRef = useRef(null)
+  const bannerInputRef = useRef(null)
 
   useEffect(() => {
     // Start entry animation
@@ -51,9 +53,11 @@ export default function ProfileOverlay({ onClose }) {
         setIsEditing(true)
       }
 
-      // Load Avatar from localStorage (could be moved to Supabase Storage later)
+      // Load Avatar & Banner from localStorage (could be moved to Supabase Storage later)
       const savedAvatar = localStorage.getItem(`avatar_${user.id}`)
       if (savedAvatar) setAvatar(savedAvatar)
+      const savedBanner = localStorage.getItem(`banner_${user.id}`)
+      if (savedBanner) setBanner(savedBanner)
 
       // Load Triage History
       const { data: records } = await supabase
@@ -97,6 +101,42 @@ export default function ProfileOverlay({ onClose }) {
         setAvatar(dataUrl)
         if (user) {
           localStorage.setItem(`avatar_${user.id}`, dataUrl)
+        }
+      }
+      img.src = e.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleBannerChange = (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const MAX_WIDTH = 1200
+        const MAX_HEIGHT = 400
+        let width = img.width
+        let height = img.height
+
+        if (width > height) {
+          if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+        } else {
+          if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+        }
+
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
+        
+        setBanner(dataUrl)
+        if (user) {
+          localStorage.setItem(`banner_${user.id}`, dataUrl)
         }
       }
       img.src = e.target.result
@@ -186,8 +226,23 @@ export default function ProfileOverlay({ onClose }) {
         ) : (
           <>
             {/* --- Cover Banner --- */}
-            <div style={{ position: 'relative', height: '160px', background: 'linear-gradient(135deg, #0f766e 0%, #0369a1 100%)', display: 'flex', justifyContent: 'flex-end', padding: '1rem' }}>
-              <div style={{ position: 'absolute', inset: 0, background: 'url("data:image/svg+xml,%3Csvg width=\\"20\\" height=\\"20\\" xmlns=\\"http://www.w3.org/2000/svg\\"%3E%3Ccircle cx=\\"2\\" cy=\\"2\\" r=\\"1\\" fill=\\"rgba(255,255,255,0.1)\\"/%3E%3C/svg%3E")', backgroundSize: '20px 20px' }} />
+            <div style={{ position: 'relative', height: '160px', background: banner ? `url(${banner}) center/cover no-repeat` : 'linear-gradient(135deg, #0f766e 0%, #0369a1 100%)', display: 'flex', justifyContent: 'flex-end', padding: '1rem', overflow: 'hidden' }}>
+              {!banner && <div style={{ position: 'absolute', inset: 0, background: 'url("data:image/svg+xml,%3Csvg width=\\"20\\" height=\\"20\\" xmlns=\\"http://www.w3.org/2000/svg\\"%3E%3Ccircle cx=\\"2\\" cy=\\"2\\" r=\\"1\\" fill=\\"rgba(255,255,255,0.1)\\"/%3E%3C/svg%3E")', backgroundSize: '20px 20px' }} />}
+              
+              {/* Banner Upload Button */}
+              {!forceOnboard && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); bannerInputRef.current?.click() }}
+                  style={{ position: 'absolute', top: '1rem', left: '1rem', zIndex: 10, padding: '0.4rem 0.8rem', borderRadius: 99, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 600, transition: 'background 0.2s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,0,0,0.5)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,0,0,0.3)'}
+                  title="Change Cover Banner"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                  Change Cover
+                </button>
+              )}
+              <input type="file" accept="image/*" style={{ display: 'none' }} ref={bannerInputRef} onChange={handleBannerChange} />
               
               {/* Close Button or Force Notice */}
               {forceOnboard ? (
