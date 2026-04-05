@@ -211,7 +211,9 @@ export default function ProfileOverlay({ onClose }) {
         style={{
           background: '#0b0f19',
           width: '100%', maxWidth: '720px', maxHeight: '90dvh',
-          borderRadius: '1.5rem', overflow: 'hidden', overflowY: 'auto',
+          borderRadius: '1.5rem',
+          overflow: 'hidden',
+          overflowY: 'auto',
           boxShadow: '0 32px 80px rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.08)',
           fontFamily: "'Inter', 'Noto Sans', sans-serif",
           display: 'flex', flexDirection: 'column',
@@ -232,43 +234,38 @@ export default function ProfileOverlay({ onClose }) {
             <span className="spinner spinner-light" style={{ width: 40, height: 40 }} />
           </div>
         ) : (
-          <>
-            {/* Wrapper: cover + avatar as siblings (so avatar isn't clipped by overflow:hidden) */}
-            <div style={{ position: 'relative', flexShrink: 0, marginBottom: 0 }}>
+          <>            {/* --- Cover Banner --- */}
+            <div style={{ position: 'relative', height: '150px', background: banner ? `url(${banner}) center/cover no-repeat` : 'linear-gradient(135deg, #0f766e 0%, #0369a1 100%)', flexShrink: 0 }}>
+              {!banner && <div style={{ position: 'absolute', inset: 0, background: 'url("data:image/svg+xml,%3Csvg width=\\"20\\" height=\\"20\\" xmlns=\\"http://www.w3.org/2000/svg\\"%3E%3Ccircle cx=\\"2\\" cy=\\"2\\" r=\\"1\\" fill=\\"rgba(255,255,255,0.1)\\"/%3E%3C/svg%3E")', backgroundSize: '20px 20px' }} />}
 
-              {/* Cover Banner */}
-              <div style={{ position: 'relative', height: '160px', background: banner ? `url(${banner}) center/cover no-repeat` : 'linear-gradient(135deg, #0f766e 0%, #0369a1 100%)', overflow: 'hidden' }}>
-                {!banner && <div style={{ position: 'absolute', inset: 0, background: 'url("data:image/svg+xml,%3Csvg width=\\"20\\" height=\\"20\\" xmlns=\\"http://www.w3.org/2000/svg\\"%3E%3Ccircle cx=\\"2\\" cy=\\"2\\" r=\\"1\\" fill=\\"rgba(255,255,255,0.1)\\"/%3E%3C/svg%3E")', backgroundSize: '20px 20px' }} />}
+              {/* Banner Upload */}
+              {!forceOnboard && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); bannerInputRef.current?.click() }}
+                  style={{ position: 'absolute', top: '0.875rem', left: '0.875rem', zIndex: 10, padding: '0.35rem 0.75rem', borderRadius: 99, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.7rem', fontWeight: 600 }}
+                  title="Change Cover Banner"
+                >
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                  Cover
+                </button>
+              )}
+              <input type="file" accept="image/*" style={{ display: 'none' }} ref={bannerInputRef} onChange={handleBannerChange} />
 
-                {/* Banner Upload Button */}
-                {!forceOnboard && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); bannerInputRef.current?.click() }}
-                    style={{ position: 'absolute', top: '0.875rem', left: '0.875rem', zIndex: 10, padding: '0.35rem 0.75rem', borderRadius: 99, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.7rem', fontWeight: 600 }}
-                    title="Change Cover Banner"
-                  >
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
-                    Cover
-                  </button>
-                )}
-                <input type="file" accept="image/*" style={{ display: 'none' }} ref={bannerInputRef} onChange={handleBannerChange} />
+              {/* Close / Onboard notice */}
+              {forceOnboard ? (
+                <div style={{ position: 'absolute', top: '0.875rem', right: '0.875rem', zIndex: 10, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', padding: '0.375rem 0.875rem', borderRadius: 99, color: '#fff', fontSize: '0.8rem', fontWeight: 600 }}>
+                  Complete your profile
+                </div>
+              ) : (
+                <button onClick={handleClose} style={{ position: 'absolute', top: '0.875rem', right: '0.875rem', zIndex: 10, width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+              )}
+            </div>
 
-                {/* Close / Onboard notice */}
-                {forceOnboard ? (
-                  <div style={{ position: 'absolute', top: '0.875rem', right: '0.875rem', zIndex: 10, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)', padding: '0.375rem 0.875rem', borderRadius: 99, color: '#fff', fontSize: '0.8rem', fontWeight: 600 }}>
-                    Complete your profile
-                  </div>
-                ) : (
-                  <button
-                    onClick={handleClose}
-                    style={{ position: 'absolute', top: '0.875rem', right: '0.875rem', zIndex: 10, width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                  >✕</button>
-                )}
-              </div>
-              {/* END Cover */}
+            {/* --- Profile Info --- */}
+            <div className="po-profile-header" style={{ padding: '0 1.5rem 1.5rem', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
 
-              {/* Avatar — OUTSIDE cover so overflow:hidden doesn’t clip it */}
-              <div style={{ position: 'absolute', top: 112, left: '50%', transform: 'translateX(-50%)', zIndex: 20 }}>
+              {/* Avatar — negative margin pulls it up over the cover edge, in normal flow so nothing clips it */}
+              <div style={{ position: 'relative', display: 'inline-block', marginTop: -48, marginBottom: '0.875rem', zIndex: 10 }}>
                 <div style={{ width: 96, height: 96, borderRadius: '50%', background: '#1e293b', border: '4px solid #0b0f19', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.6)' }}>
                   {avatar ? (
                     <img src={avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
@@ -285,12 +282,6 @@ export default function ProfileOverlay({ onClose }) {
                 </button>
                 <input type="file" accept="image/*" style={{ display: 'none' }} ref={fileInputRef} onChange={handleFileChange} />
               </div>
-
-            </div>
-            {/* END wrapper */}
-
-            {/* --- Profile Info (below cover+avatar wrapper) --- */}
-            <div className="po-profile-header" style={{ padding: '3.5rem 1.5rem 1.5rem', position: 'relative', borderBottom: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
 
               {/* Name + role + location */}
               {!isEditing ? (
