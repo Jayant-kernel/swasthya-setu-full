@@ -6,6 +6,10 @@ import img1 from '../images/image_3.jpg'
 import img2 from '../images/image_1.webp'
 import img3 from '../images/image_2.jpg'
 
+import pushkarAvatar from '../images/pushkar.jpg'
+import jayantAvatar from '../images/jayant.png'
+import vaibhavAvatar from '../images/vaibhav.png'
+
 // Mock icons mapped to Lucide standard equivalents via raw SVG
 const ArrowRight = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-7-7 7 7-7 7" /></svg>
 const PlayCircle = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinejoin="round" d="m10 8 6 4-6 4z" /></svg>
@@ -191,7 +195,7 @@ export default function LandingPage() {
             {/* Pushkar Kulkarni */}
             <div style={{ background: 'var(--surface)', borderRadius: 24, overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
               <div style={{ height: 380, background: '#2d2d2d', position: 'relative' }}>
-                <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&h=800&fit=crop" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Pushkar Kulkarni" />
+                <img src={pushkarAvatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Pushkar Kulkarni" />
               </div>
               <div style={{ padding: '2rem 2.5rem', background: '#fff' }}>
                 <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>Pushkar Kulkarni</h3>
@@ -209,7 +213,7 @@ export default function LandingPage() {
             {/* Jayant Saxena */}
             <div style={{ background: 'var(--surface)', borderRadius: 24, overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
               <div style={{ height: 380, background: '#2d2d2d', position: 'relative' }}>
-                <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=600&h=800&fit=crop" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Jayant Saxena" />
+                <img src={jayantAvatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Jayant Saxena" />
               </div>
               <div style={{ padding: '2rem 2.5rem', background: '#fff' }}>
                 <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>Jayant Saxena</h3>
@@ -227,7 +231,7 @@ export default function LandingPage() {
             {/* Vaibhav Mishra */}
             <div style={{ background: 'var(--surface)', borderRadius: 24, overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
               <div style={{ height: 380, background: '#2d2d2d', position: 'relative' }}>
-                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=600&h=800&fit=crop" style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Vaibhav Mishra" />
+                <img src={vaibhavAvatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Vaibhav Mishra" />
               </div>
               <div style={{ padding: '2rem 2.5rem', background: '#fff' }}>
                 <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>Vaibhav Mishra</h3>
