@@ -22,8 +22,22 @@ export default function LandingPage() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentImageIndex(prev => (prev + 1) % heroImages.length)
-    }, 2800)
+    }, 22800)
     return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible')
+          observer.unobserve(entry.target)
+        }
+      })
+    }, { threshold: 0.2 })
+
+    document.querySelectorAll('.observe-anim').forEach(el => observer.observe(el))
+    return () => observer.disconnect()
   }, [])
 
   return (
@@ -97,7 +111,7 @@ export default function LandingPage() {
           className="hero-left-content"
         >
           {/* Trust Badge */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+          <div className="observe-anim animate-fade-up" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
             <div style={{ display: 'flex' }}>
               <img src={pushkarAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', objectFit: 'cover' }} />
               <img src={jayantAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', objectFit: 'cover', marginLeft: -12 }} />
@@ -110,7 +124,7 @@ export default function LandingPage() {
           </div>
 
           <h1
-            className="hero-heading"
+            className="observe-anim animate-fade-up delay-150 hero-heading"
             style={{ fontWeight: 800, color: '#ffffff', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2.5rem', maxWidth: 700, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}
           >
             We are here to help<br />you stay healthy.
@@ -118,7 +132,7 @@ export default function LandingPage() {
 
           <button
             onClick={() => setShowLoginModal(true)}
-            className="hero-cta"
+            className="observe-anim animate-fade-up delay-300 hero-cta"
             style={{ padding: '1.25rem 2.5rem', borderRadius: 99, background: 'var(--primary)', color: '#fff', fontSize: '1.125rem', fontWeight: 700, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', transition: 'transform 0.2s', boxShadow: '0 12px 32px rgba(13,148,136,0.35)' }}
             onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
             onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
@@ -155,10 +169,10 @@ export default function LandingPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '1.5rem' }}>
 
             {/* Card 1 */}
-            <div style={{ background: 'linear-gradient(180deg, #1f1b3d 0%, #15122b 100%)', borderRadius: 32, border: '1px solid rgba(255,255,255,0.06)', padding: '0 0 3.5rem 0', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', boxShadow: '0 24px 48px rgba(0,0,0,0.4)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+            <div className="observe-anim animate-fade-up-card delay-c0" style={{ background: 'linear-gradient(180deg, #1f1b3d 0%, #15122b 100%)', borderRadius: 32, border: '1px solid rgba(255,255,255,0.06)', padding: '0 0 3.5rem 0', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', boxShadow: '0 24px 48px rgba(0,0,0,0.4)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.classList.contains('is-visible') ? e.currentTarget.style.transform = 'none' : null}>
               <div style={{ height: 240, position: 'relative', overflow: 'hidden', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                 <div style={{ position: 'absolute', top: '-10%', left: '50%', transform: 'translateX(-50%)', width: 250, height: 250, background: 'radial-gradient(circle, rgba(168,85,247,0.25) 0%, rgba(0,0,0,0) 70%)' }} />
-                <svg viewBox="0 0 200 100" style={{ width: '100%', height: '100%', fill: 'none' }}>
+                <svg className="card-icon" viewBox="0 0 200 100" style={{ width: '100%', height: '100%', fill: 'none' }}>
                   <polyline points="0,60 40,60 55,30 75,90 90,60 130,60 140,45 155,60 200,60" stroke="rgba(255,255,255,0.4)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   <polyline points="-10,60 30,60 45,30 65,90 80,60 120,60 130,45 145,60 190,60" stroke="rgba(255,255,255,0.08)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" transform="translate(10, -5)" />
                   <circle cx="75" cy="90" r="2.5" fill="#fff" filter="drop-shadow(0 0 6px #fff)" />
@@ -172,10 +186,10 @@ export default function LandingPage() {
             </div>
 
             {/* Card 2 */}
-            <div style={{ background: 'linear-gradient(180deg, #1f1b3d 0%, #15122b 100%)', borderRadius: 32, border: '1px solid rgba(255,255,255,0.06)', padding: '0 0 3.5rem 0', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', boxShadow: '0 24px 48px rgba(0,0,0,0.4)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+            <div className="observe-anim animate-fade-up-card delay-c200" style={{ background: 'linear-gradient(180deg, #1f1b3d 0%, #15122b 100%)', borderRadius: 32, border: '1px solid rgba(255,255,255,0.06)', padding: '0 0 3.5rem 0', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', boxShadow: '0 24px 48px rgba(0,0,0,0.4)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.classList.contains('is-visible') ? e.currentTarget.style.transform = 'none' : null}>
               <div style={{ height: 240, position: 'relative', overflow: 'hidden', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                 <div style={{ position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: 200, height: 200, background: 'radial-gradient(circle, rgba(99,102,241,0.25) 0%, rgba(0,0,0,0) 70%)' }} />
-                <svg viewBox="0 0 200 100" style={{ width: '100%', height: '100%', fill: 'none' }}>
+                <svg className="card-icon" viewBox="0 0 200 100" style={{ width: '100%', height: '100%', fill: 'none' }}>
                   <path d="M 20,20 Q 60,80 100,50 T 180,80" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
                   <path d="M 20,80 Q 60,20 100,50 T 180,20" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
                   <circle cx="100" cy="50" r="3" fill="#fff" filter="drop-shadow(0 0 6px #fff)" />
@@ -190,10 +204,10 @@ export default function LandingPage() {
             </div>
 
             {/* Card 3 */}
-            <div style={{ background: 'linear-gradient(180deg, #1f1b3d 0%, #15122b 100%)', borderRadius: 32, border: '1px solid rgba(255,255,255,0.06)', padding: '0 0 3.5rem 0', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', boxShadow: '0 24px 48px rgba(0,0,0,0.4)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+            <div className="observe-anim animate-fade-up-card delay-c400" style={{ background: 'linear-gradient(180deg, #1f1b3d 0%, #15122b 100%)', borderRadius: 32, border: '1px solid rgba(255,255,255,0.06)', padding: '0 0 3.5rem 0', display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden', boxShadow: '0 24px 48px rgba(0,0,0,0.4)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} onMouseLeave={e => e.currentTarget.classList.contains('is-visible') ? e.currentTarget.style.transform = 'none' : null}>
               <div style={{ height: 240, position: 'relative', overflow: 'hidden', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                 <div style={{ position: 'absolute', top: '20%', right: '10%', width: 200, height: 200, background: 'radial-gradient(circle, rgba(236,72,153,0.2) 0%, rgba(0,0,0,0) 70%)' }} />
-                <svg viewBox="0 0 200 100" style={{ width: '100%', height: '100%', fill: 'none' }}>
+                <svg className="card-icon" viewBox="0 0 200 100" style={{ width: '100%', height: '100%', fill: 'none' }}>
                   <circle cx="100" cy="50" r="25" stroke="rgba(255,255,255,0.25)" strokeWidth="1" strokeDasharray="4 4" />
                   <circle cx="100" cy="50" r="40" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
                   <path d="M 94,35 h 12 v 10 h 10 v 10 h -10 v 10 h -12 v -10 h -10 v -10 h 10 z" fill="#fff" filter="drop-shadow(0 0 8px #fff)" opacity="0.9" />
@@ -248,10 +262,18 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '2.5rem' }}>
           <div style={{ flex: '1 1 280px' }}>
             <span style={{ display: 'inline-block', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '1rem' }}>Get in Touch</span>
-            <h2 style={{ fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', marginBottom: '2rem', lineHeight: 1.1 }}>Let's build a healthier future together.</h2>
+            
+            <div className="observe-anim mask-container" style={{ marginBottom: '2rem' }}>
+              <h2 style={{ fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}>
+                <div className="line-mask"><div className="line-mask-inner mask-delay-0">Let's build a</div></div>
+                <div className="line-mask"><div className="line-mask-inner mask-delay-100">healthier future</div></div>
+                <div className="line-mask"><div className="line-mask-inner mask-delay-200">together.</div></div>
+              </h2>
+            </div>
+            
             <p style={{ fontSize: '1.125rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '3rem' }}>Have questions about the Swasthya Setu platform? Want to deploy it in your district? Reach out to our team instantly.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div className="observe-anim animate-slide-left slide-delay-0" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(16,185,129,0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
                 </div>
@@ -260,7 +282,7 @@ export default function LandingPage() {
                   <p style={{ color: 'var(--text-muted)' }}>+91 1800-456-7890</p>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <div className="observe-anim animate-slide-left slide-delay-100" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(16,185,129,0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
                 </div>
@@ -272,7 +294,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div style={{ flex: '1 1 300px', background: 'var(--bg)', padding: 'clamp(1.25rem, 4vw, 3.5rem)', borderRadius: 24, boxShadow: '0 24px 64px rgba(0,0,0,0.08)', border: '1px solid var(--border)' }}>
+          <div className="observe-anim animate-slide-right" style={{ flex: '1 1 300px', background: 'var(--bg)', padding: 'clamp(1.25rem, 4vw, 3.5rem)', borderRadius: 24, boxShadow: '0 24px 64px rgba(0,0,0,0.08)', border: '1px solid var(--border)' }}>
             <form style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} onSubmit={e => e.preventDefault()}>
               <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
                 <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -346,6 +368,87 @@ export default function LandingPage() {
         :root { --hero-g1: #e0f2fe; --hero-g2: #dcfce3; }
         [data-theme='dark'] { --hero-g1: #020b1e; --hero-g2: #02241e; }
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        
+        /* Entrance Animations */
+        .animate-fade-up {
+          opacity: 0;
+          transform: translateY(24px);
+          will-change: opacity, transform;
+        }
+        .animate-fade-up.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+          transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1), transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .delay-150 { transition-delay: 150ms; }
+        .delay-300 { transition-delay: 300ms; }
+
+        .animate-fade-up-card {
+          opacity: 0;
+          transform: translateY(24px);
+          will-change: opacity, transform;
+        }
+        .animate-fade-up-card.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+          transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1), transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .delay-c0 { transition-delay: 0ms; }
+        .delay-c200 { transition-delay: 200ms; }
+        .delay-c400 { transition-delay: 400ms; }
+
+        .card-icon {
+          transform: scale(0.96);
+          transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+          transform-origin: center;
+          will-change: transform;
+        }
+        .animate-fade-up-card.is-visible .card-icon {
+          transform: scale(1);
+        }
+
+        .line-mask {
+          overflow: hidden;
+          padding-bottom: 0.1em;
+          margin-bottom: -0.1em;
+        }
+        .line-mask-inner {
+          transform: translateY(100%);
+          will-change: transform;
+        }
+        .mask-container.is-visible .line-mask-inner {
+          transform: translateY(0);
+          transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .mask-delay-0 { transition-delay: 0ms; }
+        .mask-delay-100 { transition-delay: 100ms; }
+        .mask-delay-200 { transition-delay: 200ms; }
+
+        .animate-slide-left {
+          opacity: 0;
+          transform: translateX(-24px);
+          will-change: opacity, transform;
+        }
+        .animate-slide-left.is-visible {
+          opacity: 1;
+          transform: translateX(0);
+          transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1), transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .slide-delay-0 { transition-delay: 0ms; }
+        .slide-delay-100 { transition-delay: 100ms; }
+
+        .animate-slide-right {
+          opacity: 0;
+          transform: translateX(20px);
+          will-change: opacity, transform;
+        }
+        .animate-slide-right.is-visible {
+          opacity: 1;
+          transform: translateX(0);
+          transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1), transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+          transition-delay: 200ms;
+        }
+
         .hero-heading { font-size: clamp(2.5rem, 8vw, 4.5rem); }
         .hero-cta { padding: 0.875rem 1.75rem; font-size: clamp(0.9375rem, 2.5vw, 1.125rem); }
         @media (max-width: 900px) { .hide-mobile { display: none !important; } }
