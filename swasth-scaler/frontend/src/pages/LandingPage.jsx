@@ -57,57 +57,71 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <div style={{ background: '#f8fafc', width: '100%', position: 'relative', overflow: 'hidden' }} className="hero-section">
-        <div style={{ maxWidth: 1600, margin: '0 auto', display: 'flex', alignItems: 'center', flexWrap: 'wrap', minHeight: '85vh' }}>
+      <div style={{ position: 'relative', width: '100%', minHeight: '90vh', overflow: 'hidden', display: 'flex', alignItems: 'center' }} className="hero-section">
 
-          {/* Left Content */}
-          <div style={{ flex: '1 1 500px', padding: '4rem 5%', zIndex: 2 }} className="hero-left-content">
-            {/* Trust Badge */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-              <div style={{ display: 'flex' }}>
-                <img src={pushkarAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #f8fafc', objectFit: 'cover', background: '#e2e8f0' }} />
-                <img src={jayantAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #f8fafc', objectFit: 'cover', marginLeft: -12, background: '#e2e8f0' }} />
-                <img src={vaibhavAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #f8fafc', objectFit: 'cover', marginLeft: -12, background: '#e2e8f0' }} />
-                <div style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #f8fafc', marginLeft: -12, background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>+</div>
-              </div>
-              <div style={{ fontWeight: 600, color: '#64748b', fontSize: '0.875rem', lineHeight: 1.3 }}>
-                <span style={{ color: '#111827', fontWeight: 800, fontSize: '1rem' }}>10,000+</span><br />healthy patients
-              </div>
+        {/* Background Images */}
+        {[img1, img2].map((src, i) => (
+          <img
+            key={i}
+            src={src}
+            alt=""
+            style={{
+              position: 'absolute', top: 0, left: 0,
+              width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: 'center',
+              opacity: currentImageIndex % 2 === i ? 1 : 0,
+              transition: 'opacity 1.5s ease-in-out',
+              zIndex: 0
+            }}
+          />
+        ))}
+
+        {/* Dark overlay so text is readable */}
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 1,
+          background: 'linear-gradient(to right, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.2) 100%)'
+        }} />
+
+        {/* Content on top */}
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: 1600, margin: '0 auto', width: '100%', padding: '5rem 5%' }} className="hero-left-content">
+
+          {/* Trust Badge */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex' }}>
+              <img src={pushkarAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', objectFit: 'cover' }} />
+              <img src={jayantAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', objectFit: 'cover', marginLeft: -12 }} />
+              <img src={vaibhavAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', objectFit: 'cover', marginLeft: -12 }} />
+              <div style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', marginLeft: -12, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#fff' }}>+</div>
             </div>
-
-            <h1 className="hero-heading" style={{ fontWeight: 800, color: '#0f172a', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2.5rem' }}>
-              We are here to help<br />you stay healthy.
-            </h1>
-
-            <button onClick={() => setShowLoginModal(true)} className="hero-cta" style={{ padding: '1.25rem 2.5rem', borderRadius: 99, background: 'var(--primary)', color: '#fff', fontSize: '1.125rem', fontWeight: 700, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', transition: 'transform 0.2s', boxShadow: '0 12px 32px rgba(13, 148, 136, 0.25)' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
-              Make an appointment
-            </button>
-
-            {/* Bottom Stats */}
-            <div style={{ display: 'flex', gap: '3rem', mt: '4rem', marginTop: '4rem', flexWrap: 'wrap' }}>
-              <div>
-                <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8, lineHeight: 1 }}>
-                  4.9 <span style={{ color: '#f59e0b', fontSize: '1.75rem' }}>★</span>
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0f172a', lineHeight: 1, marginBottom: 4 }}>20+</div>
-                <div style={{ color: '#64748b', fontSize: '0.9375rem', fontWeight: 600, lineHeight: 1.4 }}>years of successful<br />experience</div>
-              </div>
+            <div style={{ fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontSize: '0.875rem', lineHeight: 1.3 }}>
+              <span style={{ color: '#fff', fontWeight: 800, fontSize: '1rem' }}>10,000+</span><br />healthy patients
             </div>
           </div>
 
-          {/* Right Content - Full Bleed Image Fade */}
-          <div style={{ flex: '1 1 500px', alignSelf: 'stretch', position: 'relative', minHeight: '600px' }} className="hero-image-pane">
-            <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, left: 0, overflow: 'hidden', borderTopLeftRadius: 64, borderBottomLeftRadius: 64 }} className="hero-image-wrapper">
-              {[img1, img2].map((src, i) => (
-                <img
-                  key={i}
-                  src={src}
-                  alt={`Care provider ${i + 1}`}
-                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: currentImageIndex % 2 === i ? 1 : 0, transition: 'opacity 1.5s ease-in-out' }}
-                />
-              ))}
+          <h1 className="hero-heading" style={{ fontWeight: 800, color: '#ffffff', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2.5rem', maxWidth: 700, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
+            We are here to help<br />you stay healthy.
+          </h1>
+
+          <button
+            onClick={() => setShowLoginModal(true)}
+            className="hero-cta"
+            style={{ padding: '1.25rem 2.5rem', borderRadius: 99, background: 'var(--primary)', color: '#fff', fontSize: '1.125rem', fontWeight: 700, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', transition: 'transform 0.2s', boxShadow: '0 12px 32px rgba(13,148,136,0.35)' }}
+            onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+            onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+          >
+            Make an appointment
+          </button>
+
+          {/* Stats */}
+          <div style={{ display: 'flex', gap: '3rem', marginTop: '4rem', flexWrap: 'wrap' }}>
+            <div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, lineHeight: 1 }}>
+                4.9 <span style={{ color: '#f59e0b', fontSize: '1.75rem' }}>★</span>
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', lineHeight: 1, marginBottom: 4 }}>20+</div>
+              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.9375rem', fontWeight: 600, lineHeight: 1.4 }}>years of successful<br />experience</div>
             </div>
           </div>
         </div>
