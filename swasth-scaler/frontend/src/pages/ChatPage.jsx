@@ -301,11 +301,11 @@ export default function ChatPage() {
 
       {/* Mobile media queries + drawer */}
       <style>{`
-        @media (max-width: 768px) {
+        @media (max-width: 1100px) {
           .chat-sidebar { display: none !important; }
-          .chat-messages-area { padding: 1rem !important; }
-          .chat-input-area { padding: 0.5rem 1rem 0.75rem !important; }
-          .chat-quick-replies { padding: 0.5rem 1rem 0 !important; }
+          .chat-messages-area { padding: 1.5rem !important; }
+          .chat-input-area { padding: 0.75rem 1.5rem 1rem !important; }
+          .chat-quick-replies { padding: 0.75rem 1.5rem 0 !important; }
           .chat-patient-header .badge { display: none; }
           .chat-info-btn { display: flex !important; }
         }
@@ -477,7 +477,7 @@ export default function ChatPage() {
                 type="button"
                 onClick={() => sendMessage(chip.english)}
                 disabled={loading}
-                style={{ padding: '0.4rem 0.75rem', borderRadius: 99, border: '1.5px solid var(--color-primary)', background: 'transparent', color: 'var(--color-primary)', fontSize: '0.8125rem', fontWeight: 600, cursor: loading ? 'default' : 'pointer', fontFamily: "'Noto Sans Devanagari', sans-serif", minHeight: 44 }}
+                style={{ padding: '0.625rem 1.25rem', borderRadius: '999px', border: '1px solid var(--color-primary)', background: 'var(--color-surface)', color: 'var(--color-primary)', fontSize: '0.875rem', fontWeight: 600, cursor: loading ? 'default' : 'pointer', fontFamily: "'Noto Sans Devanagari', sans-serif", whiteSpace: 'nowrap', transition: 'all 0.2s', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
               >
                 {chip.marathi}
               </button>
