@@ -31,14 +31,6 @@ export default function RoleSelectionPage() {
       path: '/login/dmo',
       color: '#0a5040'
     },
-    {
-      id: 'citizen',
-      title: 'Citizen',
-      titleOdia: 'ନାଗରିକ',
-      icon: '👤',
-      path: '/login/citizen',
-      color: '#1a9e7e'
-    }
   ]
 
   return (

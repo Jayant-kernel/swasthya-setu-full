@@ -34,20 +34,6 @@ const slides = [
     accent: '#99f6e4',
     badge: '🏛️',
   },
-  {
-    id: 'citizen',
-    role: 'Citizen',
-    roleOdia: 'ନାଗରିକ',
-    tagline: 'Your Health, Simplified',
-    description: 'Book appointments, view health records, receive vaccination reminders, and connect with certified doctors.',
-    cta: 'Sign in as Citizen',
-    path: '/login/citizen',
-    image: loginImg1,
-    gradient: 'linear-gradient(135deg, #064e3b 0%, #059669 50%, #10b981 100%)',
-    overlay: 'linear-gradient(to right, rgba(3,40,28,0.96) 0%, rgba(3,40,28,0.78) 50%, rgba(3,40,28,0.18) 100%)',
-    accent: '#6ee7b7',
-    badge: '👤',
-  },
 ];
 
 export default function HeroSlider() {

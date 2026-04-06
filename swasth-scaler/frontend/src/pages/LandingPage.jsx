@@ -16,6 +16,8 @@ export default function LandingPage() {
   const navigate = useNavigate()
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [mounted, setMounted] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
 
   const heroImages = [img1, img2]
 
@@ -34,54 +36,64 @@ export default function LandingPage() {
           observer.unobserve(entry.target)
         }
       })
-    }, { threshold: 0.2 })
+    }, { threshold: 0.15 })
 
     document.querySelectorAll('.observe-anim').forEach(el => observer.observe(el))
-    return () => observer.disconnect()
+
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 80)
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    setMounted(true)
+    return () => {
+      observer.disconnect()
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [])
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--surface)', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', 'Noto Sans', sans-serif" }}>
+    <div className={`page-fade-in ${mounted ? 'is-mounted' : ''}`} style={{ minHeight: '100dvh', background: 'var(--surface)', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', 'Noto Sans', sans-serif" }}>
 
-      {/* Navigation — transparent, sits over hero */}
+      {/* Navigation — fixed with conditional dark bg */}
       <nav
         style={{
-          position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100,
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '1.5rem 5%', maxWidth: 1600, margin: '0 auto', width: '100%',
-          background: 'transparent'
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
+          background: isScrolled ? '#080c16' : 'transparent',
+          boxShadow: isScrolled ? '0 1px 0 rgba(255,255,255,0.08)' : 'none',
+          transition: 'background 0.3s ease, box-shadow 0.3s ease',
         }}
         className="landing-nav"
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.5rem', color: '#ffffff', letterSpacing: '-0.02em' }}>
-          Swasthya Setu
-        </div>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '1.5rem 5%', maxWidth: 1600, margin: '0 auto', width: '100%',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '1.5rem', color: '#ffffff', letterSpacing: '-0.02em' }}>
+            Swasthya Setu
+          </div>
 
-        <div style={{ display: 'flex', gap: '2.5rem', fontSize: '0.9375rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }} className="hide-mobile">
-          <a href="#about" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>About Us</a>
-          <a href="#goal" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>Services</a>
-          <a href="#contact" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>Patient Resources</a>
-          <a href="#contact" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>Contact Us</a>
-        </div>
+          <div style={{ display: 'flex', gap: '2.5rem', fontSize: '0.9375rem', fontWeight: 400, color: 'rgba(255,255,255,0.85)' }} className="hide-mobile">
+            <a href="#about" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>About Us</a>
+            <a href="#goal" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>Services</a>
+          </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button
-            onClick={() => setShowLoginModal(true)}
-            className="landing-login-btn"
-            style={{ padding: '0.625rem 1.5rem', borderRadius: 99, border: '1.5px solid rgba(255,255,255,0.8)', background: 'transparent', color: '#ffffff', fontWeight: 700, fontSize: '0.9375rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-          >
-            Log in
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button
+              onClick={() => setShowLoginModal(true)}
+              className="landing-login-btn"
+              style={{ padding: '0.625rem 1.5rem', borderRadius: 99, border: '1.5px solid rgba(45,143,94,0.8)', background: 'transparent', color: '#ffffff', fontWeight: 700, fontSize: '0.9375rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(45,143,94,0.2)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+            >
+              Log in
+            </button>
+          </div>
         </div>
       </nav>
 
       {/* Hero Section — full bleed, image as background */}
-      <div
-        style={{ position: 'relative', width: '100%', minHeight: '100vh', overflow: 'hidden', display: 'flex', alignItems: 'center' }}
-        className="hero-section"
-      >
+      <div style={{ position: 'relative', width: '100%', minHeight: '100vh', overflow: 'hidden', display: 'flex', alignItems: 'center' }} className="hero-section">
         {/* Background Images */}
         {[img1, img2].map((src, i) => (
           <img
@@ -106,10 +118,7 @@ export default function LandingPage() {
         }} />
 
         {/* Content */}
-        <div
-          style={{ position: 'relative', zIndex: 2, maxWidth: 1600, margin: '0 auto', width: '100%', padding: '8rem 5% 5rem' }}
-          className="hero-left-content"
-        >
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: 1600, margin: '0 auto', width: '100%', padding: '8rem 5% 5rem' }} className="hero-left-content">
           {/* Trust Badge */}
           <div className="observe-anim animate-fade-up" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
             <div style={{ display: 'flex' }}>
@@ -118,14 +127,14 @@ export default function LandingPage() {
               <img src={vaibhavAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', objectFit: 'cover', marginLeft: -12 }} />
               <div style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', marginLeft: -12, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#fff' }}>+</div>
             </div>
-            <div style={{ fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontSize: '0.875rem', lineHeight: 1.3 }}>
-              <span style={{ color: '#fff', fontWeight: 800, fontSize: '1rem' }}>10,000+</span><br />healthy patients
+            <div style={{ fontWeight: 400, color: 'rgba(255,255,255,0.85)', fontSize: '0.875rem', lineHeight: 1.3 }}>
+              <span style={{ color: '#fff', fontWeight: 700, fontSize: '1rem' }}>10,000+</span><br />healthy patients
             </div>
           </div>
 
           <h1
             className="observe-anim animate-fade-up delay-150 hero-heading"
-            style={{ fontWeight: 800, color: '#ffffff', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2.5rem', maxWidth: 700, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}
+            style={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2.5rem', maxWidth: 700, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}
           >
             We are here to help<br />you stay healthy.
           </h1>
@@ -143,13 +152,13 @@ export default function LandingPage() {
           {/* Stats */}
           <div style={{ display: 'flex', gap: '3rem', marginTop: '4rem', flexWrap: 'wrap' }}>
             <div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, lineHeight: 1 }}>
+              <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, lineHeight: 1 }}>
                 4.9 <span style={{ color: '#f59e0b', fontSize: '1.75rem' }}>★</span>
               </div>
             </div>
             <div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', lineHeight: 1, marginBottom: 4 }}>20+</div>
-              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.9375rem', fontWeight: 600, lineHeight: 1.4 }}>years of successful<br />experience</div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fff', lineHeight: 1, marginBottom: 4 }}>20+</div>
+              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.9375rem', fontWeight: 400, lineHeight: 1.4 }}>years of successful<br />experience</div>
             </div>
           </div>
         </div>
@@ -160,10 +169,10 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 2 }}>
 
           <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 20px', borderRadius: 99, color: '#e2e8f0', fontSize: '0.9375rem', fontWeight: 600, marginBottom: '2rem', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-              <span style={{ color: '#a855f7' }}>✦</span> What we offer
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 20px', borderRadius: 99, color: 'rgba(255,255,255,0.35)', fontSize: '11px', fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2rem', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
+              <span style={{ color: 'var(--primary)' }}>✦</span> What we offer
             </span>
-            <h2 style={{ fontSize: 'clamp(2rem, 6vw, 3.5rem)', fontWeight: 800, color: '#fff', letterSpacing: '-0.03em' }}>One service</h2>
+            <h2 style={{ fontSize: 'clamp(2rem, 6vw, 3.5rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.03em' }}>Built for rural India</h2>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '1.5rem' }}>
@@ -193,8 +202,8 @@ export default function LandingPage() {
                   <path d="M 20,20 Q 60,80 100,50 T 180,80" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
                   <path d="M 20,80 Q 60,20 100,50 T 180,20" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
                   <circle cx="100" cy="50" r="3" fill="#fff" filter="drop-shadow(0 0 6px #fff)" />
-                  <circle cx="42" cy="36" r="1.5" fill="#fff" filter="drop-shadow(0 0 4px #fff)" />
-                  <circle cx="158" cy="64" r="2" fill="#fff" filter="drop-shadow(0 0 5px #fff)" />
+                  <circle cx="47" cy="50" r="1.5" fill="#fff" filter="drop-shadow(0 0 4px #fff)" />
+                  <circle cx="153" cy="50" r="2" fill="#fff" filter="drop-shadow(0 0 5px #fff)" />
                 </svg>
               </div>
               <div style={{ padding: '0 2.5rem' }}>
@@ -225,150 +234,107 @@ export default function LandingPage() {
       </div>
 
       {/* Meet the Founders */}
-      <div id="about" style={{ padding: '8rem 4%', background: 'var(--bg)', position: 'relative' }}>
+      <div id="about" style={{ padding: '8rem 4%', background: '#ffffff', position: 'relative' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <h2 style={{ fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.03em' }}>Meet the founders</h2>
+          <div style={{ textAlign: 'center', marginBottom: '4rem' }} className="observe-anim animate-fade-up">
+            <h2 style={{ fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', fontWeight: 700, color: '#111827', letterSpacing: '-0.03em' }}>Meet the founders</h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '2rem' }}>
-
             {[
-              { src: pushkarAvatar, name: 'Pushkar Kulkarni', role: 'Team Lead and Main Coder', bio: 'Architecting the scalable backend of Swasthya Setu, Pushkar leads the core development team, building the robust and secure infrastructure that guarantees uptime for remote healthcare centers.', quote: '"Energy and persistence conquer all things. Well done is better than well said."', attr: 'Benjamin Franklin', grad: 'linear-gradient(135deg, #181124 0%, #2a1b38 100%)' },
-              { src: jayantAvatar, name: 'Jayant Saxena', role: 'Frontend and UI/UX Dev', bio: 'Driven by a vision to create intuitive user experiences, Jayant leads the frontend architecture. His aesthetic UI/UX designs make Swasthya Setu accessible to thousands of people across rural districts.', quote: '"Everything that is really great and inspiring is created by individuals who can labor in freedom."', attr: 'Albert Einstein', grad: 'linear-gradient(135deg, #12182b 0%, #1e293b 100%)' },
-              { src: vaibhavAvatar, name: 'Vaibhav Mishra', role: 'The calling and major citizen worker', bio: 'Specializing in community outreach and ground-level engagement, Vaibhav champions the enablement of ASHA workers and manages direct citizen operations.', quote: '"The best way to find yourself is to lose yourself in the service of others."', attr: 'Mahatma Gandhi', grad: 'linear-gradient(135deg, #0f1c2e 0%, #1e1b4b 100%)' },
-            ].map(({ src, name, role, bio, quote, attr, grad }) => (
-              <div key={name} style={{ background: 'var(--surface)', borderRadius: 24, overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+              { src: pushkarAvatar, name: 'Pushkar Kulkarni', role: 'Team Lead and Main Coder', bio: 'Architecting the scalable backend of Swasthya Setu, Pushkar leads the core development team, building the robust and secure infrastructure that guarantees uptime for remote healthcare centers.', quote: `"Building systems that work without internet in remote villages is the hardest and most rewarding challenge I've taken on."`, grad: 'linear-gradient(135deg, #112822 0%, #0a1713 100%)' },
+              { src: jayantAvatar, name: 'Jayant Saxena', role: 'Frontend and UI/UX Dev', bio: 'Driven by a vision to create intuitive user experiences, Jayant leads the frontend architecture. His aesthetic UI/UX designs make Swasthya Setu accessible to thousands of people across rural districts.', quote: `"Designing for someone who has never used a smartphone before completely changed how I think about interfaces."`, grad: 'linear-gradient(135deg, #112822 0%, #0a1713 100%)' },
+              { src: vaibhavAvatar, name: 'Vaibhav Mishra', role: 'ASHA Operations Lead', bio: 'Specializing in community outreach and ground-level engagement, Vaibhav champions the enablement of ASHA workers and manages direct field operations.', quote: `"Every feature we ship has a real ASHA worker's workflow behind it. That keeps us honest."`, grad: 'linear-gradient(135deg, #112822 0%, #0a1713 100%)' },
+            ].map(({ src, name, role, bio, quote, grad }, index) => (
+              <div 
+                key={name} 
+                className="observe-anim animate-fade-up"
+                style={{ 
+                  background: '#fff', 
+                  borderRadius: 24, 
+                  overflow: 'hidden', 
+                  border: '1px solid rgba(0,0,0,0.06)', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)', 
+                  transition: 'transform 0.3s ease, opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+                  transitionDelay: `${index * 150}ms`
+                }} 
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} 
+                onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+              >
                 <div style={{ height: 380, background: '#2d2d2d', position: 'relative' }}>
                   <img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={name} />
                 </div>
                 <div style={{ padding: '2rem 2.5rem', background: '#fff' }}>
-                  <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>{name}</h3>
-                  <p style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>{role}</p>
-                  <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: 1.6 }}>{bio}</p>
+                  <h3 style={{ fontSize: '1.75rem', fontWeight: 700, color: '#111827', marginBottom: 4 }}>{name}</h3>
+                  <p style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 400, marginBottom: '1rem' }}>{role}</p>
+                  <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: 1.6, fontWeight: 400 }}>{bio}</p>
                 </div>
                 <div style={{ padding: '2rem 2.5rem', background: grad, color: '#e2e8f0', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                  <p style={{ fontSize: '0.9375rem', lineHeight: 1.6, textAlign: 'center', marginBottom: '1.5rem', fontStyle: 'italic', color: '#f1f5f9' }}>{quote}</p>
-                  <p style={{ fontSize: '0.8125rem', color: '#94a3b8', textAlign: 'center', fontWeight: 600 }}>{attr}</p>
+                  <p style={{ fontSize: '0.9375rem', lineHeight: 1.6, textAlign: 'center', color: '#f1f5f9', fontWeight: 400, margin: 0 }}>{quote}</p>
                 </div>
               </div>
             ))}
-
-          </div>
-        </div>
-      </div>
-
-      {/* Contact Section */}
-      <div id="contact" style={{ padding: '8rem 4%', background: 'var(--surface)', position: 'relative' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '2.5rem' }}>
-          <div style={{ flex: '1 1 280px' }}>
-            <span style={{ display: 'inline-block', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '1rem' }}>Get in Touch</span>
-            
-            <div className="observe-anim mask-container" style={{ marginBottom: '2rem' }}>
-              <h2 style={{ fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', lineHeight: 1.1, margin: 0 }}>
-                <div className="line-mask"><div className="line-mask-inner mask-delay-0">Let's build a</div></div>
-                <div className="line-mask"><div className="line-mask-inner mask-delay-100">healthier future</div></div>
-                <div className="line-mask"><div className="line-mask-inner mask-delay-200">together.</div></div>
-              </h2>
-            </div>
-            
-            <p style={{ fontSize: '1.125rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '3rem' }}>Have questions about the Swasthya Setu platform? Want to deploy it in your district? Reach out to our team instantly.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div className="observe-anim animate-slide-left slide-delay-0" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(16,185,129,0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
-                </div>
-                <div>
-                  <p style={{ fontWeight: 600, color: 'var(--text-main)', marginBottom: 2 }}>Phone</p>
-                  <p style={{ color: 'var(--text-muted)' }}>+91 1800-456-7890</p>
-                </div>
-              </div>
-              <div className="observe-anim animate-slide-left slide-delay-100" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(16,185,129,0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
-                </div>
-                <div>
-                  <p style={{ fontWeight: 600, color: 'var(--text-main)', marginBottom: 2 }}>Email</p>
-                  <p style={{ color: 'var(--text-muted)' }}>support@swasthyasetu.in</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="observe-anim animate-slide-right" style={{ flex: '1 1 300px', background: 'var(--bg)', padding: 'clamp(1.25rem, 4vw, 3.5rem)', borderRadius: 24, boxShadow: '0 24px 64px rgba(0,0,0,0.08)', border: '1px solid var(--border)' }}>
-            <form style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }} onSubmit={e => e.preventDefault()}>
-              <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-                <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>First Name</label>
-                  <input type="text" placeholder="John" style={{ width: '100%', padding: '1.25rem', borderRadius: 16, border: '1px solid var(--border)', background: 'var(--surface)', outline: 'none', transition: 'border-color 0.2s', color: 'var(--text-main)' }} />
-                </div>
-                <div style={{ flex: '1 1 200px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>Last Name</label>
-                  <input type="text" placeholder="Doe" style={{ width: '100%', padding: '1.25rem', borderRadius: 16, border: '1px solid var(--border)', background: 'var(--surface)', outline: 'none', transition: 'border-color 0.2s', color: 'var(--text-main)' }} />
-                </div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>Email Address</label>
-                <input type="email" placeholder="john@example.com" style={{ width: '100%', padding: '1.25rem', borderRadius: 16, border: '1px solid var(--border)', background: 'var(--surface)', outline: 'none', transition: 'border-color 0.2s', color: 'var(--text-main)' }} />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-main)' }}>Message</label>
-                <textarea placeholder="How can we help you?" rows="5" style={{ width: '100%', padding: '1.25rem', borderRadius: 16, border: '1px solid var(--border)', background: 'var(--surface)', outline: 'none', resize: 'vertical', transition: 'border-color 0.2s', color: 'var(--text-main)' }} />
-              </div>
-              <button style={{ background: 'linear-gradient(135deg, var(--primary) 0%, #0d9488 100%)', color: '#fff', border: 'none', padding: '1.25rem', borderRadius: 16, fontSize: '1rem', fontWeight: 700, cursor: 'pointer', marginTop: '1rem', boxShadow: '0 8px 16px rgba(16,185,129,0.2)', transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
-                Send Message
-              </button>
-            </form>
           </div>
         </div>
       </div>
 
       {/* Footer */}
-      <footer style={{ background: '#080c16', padding: '6rem 4% 3rem', color: '#94a3b8' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '4rem', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '4rem', marginBottom: '3rem' }}>
-          <div style={{ flex: '1 1 300px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: '1.5rem' }}>
-              <div style={{ background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)', width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ color: '#fff', fontSize: '1.25rem' }}>✚</span>
-              </div>
-              <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em' }}>Swasthya Setu</h1>
+      <footer style={{ background: '#080c16', borderTop: '1px solid rgba(255,255,255,0.1)', padding: '60px 4% 40px', color: '#94a3b8' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '4rem', marginBottom: '4rem' }}>
+          <div style={{ flex: '2 1 300px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 700, fontSize: '1.5rem', color: '#fff', letterSpacing: '-0.02em', marginBottom: '1.5rem' }}>
+              Swasthya Setu
             </div>
-            <p style={{ lineHeight: 1.6, marginBottom: '2rem', maxWidth: 300 }}>Bridging the healthcare gap in rural India with intelligent digital infrastructure.</p>
+            <p style={{ lineHeight: 1.6, marginBottom: '2rem', maxWidth: 300, color: 'rgba(255,255,255,0.6)', fontSize: '14px', fontWeight: 400 }}>Bridging the healthcare gap in rural India with intelligent digital infrastructure.</p>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              {['𝕏', 'I', 'F'].map(icon => (
-                <div key={icon} style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>{icon}</div>
+              <a href="#" style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s', color: '#fff' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" /></svg>
+              </a>
+              <a href="#" style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s', color: '#fff' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
+              </a>
+              <a href="#" style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s', color: '#fff' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
+              </a>
+            </div>
+          </div>
+          <div style={{ flex: '1 1 150px' }}>
+            <p style={{ fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: '20px', fontWeight: 400 }}>Platform</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {['ASHA Workers', 'Medical Officers', 'Admin Dashboard'].map(item => (
+                <a key={item} href="#" style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', fontWeight: 400, textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,1)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>{item}</a>
               ))}
             </div>
           </div>
           <div style={{ flex: '1 1 150px' }}>
-            <p style={{ fontWeight: 600, color: '#fff', marginBottom: '1.5rem', fontSize: '1.125rem' }}>Platform</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {['Citizens', 'ASHA Workers', 'Medical Officers', 'Admin Dashboard'].map(item => (
-                <a key={item} href="#" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>{item}</a>
-              ))}
-            </div>
-          </div>
-          <div style={{ flex: '1 1 150px' }}>
-            <p style={{ fontWeight: 600, color: '#fff', marginBottom: '1.5rem', fontSize: '1.125rem' }}>Company</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {[['About Us', '#about'], ['Our Service', '#goal'], ['Contact', '#contact'], ['Privacy Policy', '#']].map(([label, href]) => (
-                <a key={label} href={href} style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>{label}</a>
+            <p style={{ fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: '20px', fontWeight: 400 }}>Company</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              {[['About Us', '#about'], ['Our Service', '#goal'], ['Privacy Policy', '#']].map(([label, href]) => (
+                <a key={label} href={href} style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', fontWeight: 400, textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,1)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>{label}</a>
               ))}
             </div>
           </div>
         </div>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', fontSize: '0.875rem' }}>
-          <p>© {new Date().getFullYear()} Swasthya Setu Platform. All rights reserved.</p>
-          <p>Designed for Rural Health</p>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '24px', fontSize: '13px', color: 'rgba(255,255,255,0.4)', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>© 2026 Swasthya Setu.</div>
+          <div>Designed for Rural Health.</div>
         </div>
       </footer>
 
       {showLoginModal && <LoginRoleModal onClose={() => setShowLoginModal(false)} />}
 
       <style>{`
-        :root { --hero-g1: #e0f2fe; --hero-g2: #dcfce3; }
-        [data-theme='dark'] { --hero-g1: #020b1e; --hero-g2: #02241e; }
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
         
+        .page-fade-in {
+          opacity: 0;
+          transition: opacity 400ms ease;
+        }
+        .page-fade-in.is-mounted {
+          opacity: 1;
+        }
+
         /* Entrance Animations */
         .animate-fade-up {
           opacity: 0;
@@ -407,48 +373,6 @@ export default function LandingPage() {
           transform: scale(1);
         }
 
-        .line-mask {
-          overflow: hidden;
-          padding-bottom: 0.1em;
-          margin-bottom: -0.1em;
-        }
-        .line-mask-inner {
-          transform: translateY(110%);
-          will-change: transform;
-        }
-        .mask-container.is-visible .line-mask-inner {
-          transform: translateY(0);
-          transition: transform 1000ms cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .mask-delay-0 { transition-delay: 0ms; }
-        .mask-delay-100 { transition-delay: 150ms; }
-        .mask-delay-200 { transition-delay: 300ms; }
-
-        .animate-slide-left {
-          opacity: 0;
-          transform: translateX(-48px);
-          will-change: opacity, transform;
-        }
-        .animate-slide-left.is-visible {
-          opacity: 1;
-          transform: translateX(0);
-          transition: opacity 800ms cubic-bezier(0.16, 1, 0.3, 1), transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .slide-delay-0 { transition-delay: 0ms; }
-        .slide-delay-100 { transition-delay: 150ms; }
-
-        .animate-slide-right {
-          opacity: 0;
-          transform: translateX(48px);
-          will-change: opacity, transform;
-        }
-        .animate-slide-right.is-visible {
-          opacity: 1;
-          transform: translateX(0);
-          transition: opacity 800ms cubic-bezier(0.16, 1, 0.3, 1), transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
-          transition-delay: 350ms;
-        }
-
         .hero-heading { font-size: clamp(2.5rem, 8vw, 4.5rem); }
         .hero-cta { padding: 0.875rem 1.75rem; font-size: clamp(0.9375rem, 2.5vw, 1.125rem); }
         @media (max-width: 900px) { .hide-mobile { display: none !important; } }
@@ -457,12 +381,11 @@ export default function LandingPage() {
           .hero-left-content { padding: 7rem 5% 4rem !important; }
           #goal { padding: 4rem 5% !important; }
           #about { padding: 4rem 5% !important; }
-          #contact { padding: 4rem 5% !important; }
           footer { padding: 3rem 5% 2rem !important; }
         }
         @media (max-width: 480px) {
           .hero-heading { font-size: 2.5rem !important; letter-spacing: -0.02em !important; }
-          #goal, #about, #contact { padding: 3rem 5% !important; }
+          #goal, #about { padding: 3rem 5% !important; }
         }
       `}</style>
     </div>
