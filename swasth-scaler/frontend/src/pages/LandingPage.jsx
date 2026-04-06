@@ -372,34 +372,34 @@ export default function LandingPage() {
         /* Entrance Animations */
         .animate-fade-up {
           opacity: 0;
-          transform: translateY(24px);
+          transform: translateY(48px);
           will-change: opacity, transform;
         }
         .animate-fade-up.is-visible {
           opacity: 1;
           transform: translateY(0);
-          transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1), transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+          transition: opacity 800ms cubic-bezier(0.16, 1, 0.3, 1), transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
         }
-        .delay-150 { transition-delay: 150ms; }
-        .delay-300 { transition-delay: 300ms; }
+        .delay-150 { transition-delay: 200ms; }
+        .delay-300 { transition-delay: 400ms; }
 
         .animate-fade-up-card {
           opacity: 0;
-          transform: translateY(24px);
+          transform: translateY(60px);
           will-change: opacity, transform;
         }
         .animate-fade-up-card.is-visible {
           opacity: 1;
           transform: translateY(0);
-          transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1), transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+          transition: opacity 800ms cubic-bezier(0.16, 1, 0.3, 1), transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
         }
         .delay-c0 { transition-delay: 0ms; }
-        .delay-c200 { transition-delay: 200ms; }
-        .delay-c400 { transition-delay: 400ms; }
+        .delay-c200 { transition-delay: 250ms; }
+        .delay-c400 { transition-delay: 500ms; }
 
         .card-icon {
-          transform: scale(0.96);
-          transition: transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+          transform: scale(0.85);
+          transition: transform 900ms cubic-bezier(0.16, 1, 0.3, 1);
           transform-origin: center;
           will-change: transform;
         }
@@ -413,40 +413,40 @@ export default function LandingPage() {
           margin-bottom: -0.1em;
         }
         .line-mask-inner {
-          transform: translateY(100%);
+          transform: translateY(110%);
           will-change: transform;
         }
         .mask-container.is-visible .line-mask-inner {
           transform: translateY(0);
-          transition: transform 600ms cubic-bezier(0.16, 1, 0.3, 1);
+          transition: transform 1000ms cubic-bezier(0.16, 1, 0.3, 1);
         }
         .mask-delay-0 { transition-delay: 0ms; }
-        .mask-delay-100 { transition-delay: 100ms; }
-        .mask-delay-200 { transition-delay: 200ms; }
+        .mask-delay-100 { transition-delay: 150ms; }
+        .mask-delay-200 { transition-delay: 300ms; }
 
         .animate-slide-left {
           opacity: 0;
-          transform: translateX(-24px);
+          transform: translateX(-48px);
           will-change: opacity, transform;
         }
         .animate-slide-left.is-visible {
           opacity: 1;
           transform: translateX(0);
-          transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1), transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
+          transition: opacity 800ms cubic-bezier(0.16, 1, 0.3, 1), transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
         }
         .slide-delay-0 { transition-delay: 0ms; }
-        .slide-delay-100 { transition-delay: 100ms; }
+        .slide-delay-100 { transition-delay: 150ms; }
 
         .animate-slide-right {
           opacity: 0;
-          transform: translateX(20px);
+          transform: translateX(48px);
           will-change: opacity, transform;
         }
         .animate-slide-right.is-visible {
           opacity: 1;
           transform: translateX(0);
-          transition: opacity 500ms cubic-bezier(0.16, 1, 0.3, 1), transform 500ms cubic-bezier(0.16, 1, 0.3, 1);
-          transition-delay: 200ms;
+          transition: opacity 800ms cubic-bezier(0.16, 1, 0.3, 1), transform 800ms cubic-bezier(0.16, 1, 0.3, 1);
+          transition-delay: 350ms;
         }
 
         .hero-heading { font-size: clamp(2.5rem, 8vw, 4.5rem); }
