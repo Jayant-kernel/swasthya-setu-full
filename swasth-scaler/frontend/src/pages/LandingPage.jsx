@@ -18,7 +18,7 @@ export default function LandingPage() {
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
 
-  const heroImages = [img1, img2, img3]
+  const heroImages = [img1, img2]
 
   useEffect(() => {
     const timer = setInterval(() => {
