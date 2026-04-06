@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoginRoleModal from '../components/LoginRoleModal'
 
-import img1 from '../images/hero1.png'
-import img2 from '../images/hero2.png'
+import img1 from '../images/hero1.jpg'
+import img2 from '../images/hero2.jpg'
 
 import pushkarAvatar from '../images/pushkar.jpg'
 import jayantAvatar from '../images/jayant.png'
@@ -57,43 +57,29 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <div style={{ width: '100%', position: 'relative', overflow: 'hidden', minHeight: '85vh', display: 'flex', alignItems: 'center' }} className="hero-section">
-        
-        {/* Full Bleed Background Image Fade */}
-        <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, left: 0, zIndex: 0 }} className="hero-image-wrapper">
-          {[img1, img2].map((src, i) => (
-            <img
-              key={i}
-              src={src}
-              alt={`Care provider ${i + 1}`}
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', opacity: currentImageIndex % 2 === i ? 1 : 0, transition: 'opacity 1.5s ease-in-out' }}
-            />
-          ))}
-          {/* Gradient overlay to ensure text readability */}
-          <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, background: 'linear-gradient(90deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.8) 40%, rgba(255,255,255,0) 100%)' }} />
-        </div>
+      <div style={{ background: '#f8fafc', width: '100%', position: 'relative', overflow: 'hidden' }} className="hero-section">
+        <div style={{ maxWidth: 1600, margin: '0 auto', display: 'flex', alignItems: 'center', flexWrap: 'wrap', minHeight: '85vh' }}>
 
-        <div style={{ maxWidth: 1600, margin: '0 auto', width: '100%', position: 'relative', zIndex: 1 }}>
-          {/* Left Content overlayed on background */}
-          <div style={{ maxWidth: 650, padding: '4rem 5%' }} className="hero-left-content">
+          {/* Left Content */}
+          <div style={{ flex: '1 1 500px', padding: '4rem 5%', zIndex: 2 }} className="hero-left-content">
             {/* Trust Badge */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
               <div style={{ display: 'flex' }}>
-                <img src={pushkarAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #fff', objectFit: 'cover', background: '#e2e8f0' }} />
-                <img src={jayantAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #fff', objectFit: 'cover', marginLeft: -12, background: '#e2e8f0' }} />
-                <img src={vaibhavAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #fff', objectFit: 'cover', marginLeft: -12, background: '#e2e8f0' }} />
-                <div style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #fff', marginLeft: -12, background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>+</div>
+                <img src={pushkarAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #f8fafc', objectFit: 'cover', background: '#e2e8f0' }} />
+                <img src={jayantAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #f8fafc', objectFit: 'cover', marginLeft: -12, background: '#e2e8f0' }} />
+                <img src={vaibhavAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #f8fafc', objectFit: 'cover', marginLeft: -12, background: '#e2e8f0' }} />
+                <div style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #f8fafc', marginLeft: -12, background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>+</div>
               </div>
-              <div style={{ fontWeight: 600, color: '#4b5563', fontSize: '0.875rem', lineHeight: 1.3 }}>
+              <div style={{ fontWeight: 600, color: '#64748b', fontSize: '0.875rem', lineHeight: 1.3 }}>
                 <span style={{ color: '#111827', fontWeight: 800, fontSize: '1rem' }}>10,000+</span><br />healthy patients
               </div>
             </div>
 
-            <h1 className="hero-heading" style={{ fontWeight: 800, color: '#0f172a', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2.5rem', textShadow: '0 4px 24px rgba(255,255,255,0.6)' }}>
+            <h1 className="hero-heading" style={{ fontWeight: 800, color: '#0f172a', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2.5rem' }}>
               We are here to help<br />you stay healthy.
             </h1>
 
-            <button onClick={() => setShowLoginModal(true)} className="hero-cta" style={{ padding: '1.25rem 2.5rem', borderRadius: 99, background: 'var(--primary)', color: '#fff', fontSize: '1.125rem', fontWeight: 700, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', transition: 'transform 0.2s', boxShadow: '0 12px 32px rgba(13, 148, 136, 0.4)' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+            <button onClick={() => setShowLoginModal(true)} className="hero-cta" style={{ padding: '1.25rem 2.5rem', borderRadius: 99, background: 'var(--primary)', color: '#fff', fontSize: '1.125rem', fontWeight: 700, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', transition: 'transform 0.2s', boxShadow: '0 12px 32px rgba(13, 148, 136, 0.25)' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
               Make an appointment
             </button>
 
@@ -101,13 +87,27 @@ export default function LandingPage() {
             <div style={{ display: 'flex', gap: '3rem', mt: '4rem', marginTop: '4rem', flexWrap: 'wrap' }}>
               <div>
                 <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8, lineHeight: 1 }}>
-                  4.9 <span style={{ color: '#f59e0b', fontSize: '1.75rem', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }}>★</span>
+                  4.9 <span style={{ color: '#f59e0b', fontSize: '1.75rem' }}>★</span>
                 </div>
               </div>
               <div>
                 <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0f172a', lineHeight: 1, marginBottom: 4 }}>20+</div>
-                <div style={{ color: '#4b5563', fontSize: '0.9375rem', fontWeight: 700, lineHeight: 1.4 }}>years of successful<br />experience</div>
+                <div style={{ color: '#64748b', fontSize: '0.9375rem', fontWeight: 600, lineHeight: 1.4 }}>years of successful<br />experience</div>
               </div>
+            </div>
+          </div>
+
+          {/* Right Content - Full Bleed Image Fade */}
+          <div style={{ flex: '1 1 500px', alignSelf: 'stretch', position: 'relative', minHeight: '600px' }} className="hero-image-pane">
+            <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, left: 0, overflow: 'hidden', borderTopLeftRadius: 64, borderBottomLeftRadius: 64 }} className="hero-image-wrapper">
+              {[img1, img2].map((src, i) => (
+                <img
+                  key={i}
+                  src={src}
+                  alt={`Care provider ${i + 1}`}
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: currentImageIndex % 2 === i ? 1 : 0, transition: 'opacity 1.5s ease-in-out' }}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -401,10 +401,9 @@ export default function LandingPage() {
         @media (max-width: 768px) {
           .landing-nav { padding: 1rem 5% !important; }
           .hero-section { min-height: auto; }
-          .hero-left-content { padding: 4rem 5% 6rem !important; }
-          
-          /* Adjust gradient overlay for mobile to be mostly white so text is readable */
-          .hero-image-wrapper > div { background: linear-gradient(180deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.85) 60%, rgba(255,255,255,0.4) 100%) !important; }
+          .hero-left-content { padding: 3rem 5% 4rem !important; }
+          .hero-image-pane { min-height: 400px !important; }
+          .hero-image-wrapper { border-radius: 0 !important; }
           
           /* Goal + about sections: tighter vertical padding */
           #goal { padding: 4rem 5% !important; }
