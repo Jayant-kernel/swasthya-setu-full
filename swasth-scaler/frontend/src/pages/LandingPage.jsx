@@ -38,66 +38,79 @@ export default function LandingPage() {
     <div style={{ minHeight: '100dvh', background: 'var(--surface)', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', 'Noto Sans', sans-serif" }}>
 
       {/* Navigation */}
-      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 5%', maxWidth: 1400, margin: '0 auto', width: '100%' }} className="landing-nav">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.35rem', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem 5%', maxWidth: 1600, margin: '0 auto', width: '100%', background: '#ffffff' }} className="landing-nav">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.5rem', color: '#111827', letterSpacing: '-0.02em' }}>
           Swasthya Setu
         </div>
 
-        <div style={{ display: 'flex', gap: '2.5rem', fontSize: '0.9375rem', fontWeight: 600, color: 'var(--text-muted)' }} className="hide-mobile">
-          <a href="#goal" style={{ color: 'inherit', textDecoration: 'none' }}>Our Goal</a>
-
-          <a href="#about" style={{ color: 'inherit', textDecoration: 'none' }}>About us</a>
-
-          <a href="#about" style={{ color: 'inherit', textDecoration: 'none' }}>Contact us</a>
+        <div style={{ display: 'flex', gap: '2.5rem', fontSize: '0.9375rem', fontWeight: 600, color: '#4b5563' }} className="hide-mobile">
+          <a href="#about" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#111827'} onMouseLeave={e => e.target.style.color = 'inherit'}>About Us</a>
+          <a href="#goal" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#111827'} onMouseLeave={e => e.target.style.color = 'inherit'}>Services</a>
+          <a href="#contact" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#111827'} onMouseLeave={e => e.target.style.color = 'inherit'}>Patient Resources</a>
+          <a href="#contact" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#111827'} onMouseLeave={e => e.target.style.color = 'inherit'}>Contact Us</a>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button onClick={() => setShowLoginModal(true)} className="landing-login-btn" style={{ padding: '0.75rem 1.5rem', borderRadius: 99, border: '1.5px solid var(--border)', background: 'var(--text-main)', color: 'var(--bg)', fontWeight: 700, fontSize: '0.9375rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}>
-            <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" /></svg>
+          <button onClick={() => setShowLoginModal(true)} className="landing-login-btn" style={{ padding: '0.625rem 1.5rem', borderRadius: 99, border: '1.5px solid var(--primary)', background: 'transparent', color: 'var(--primary)', fontWeight: 700, fontSize: '0.9375rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = '#fff' }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--primary)' }}>
             Log in
           </button>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <div style={{ padding: '1rem 5%', maxWidth: 1400, margin: '0 auto', width: '100%' }}>
-        <div className="hero-gradient" style={{ borderRadius: 24, padding: '2.5rem 5%', display: 'flex', alignItems: 'center', gap: '2rem', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ background: '#f8fafc', width: '100%', position: 'relative', overflow: 'hidden' }} className="hero-section">
+        <div style={{ maxWidth: 1600, margin: '0 auto', display: 'flex', alignItems: 'center', flexWrap: 'wrap', minHeight: '85vh' }}>
 
-          <div style={{ flex: 1, zIndex: 2, minWidth: 0 }}>
-            <h1 className="hero-heading" style={{ fontWeight: 800, color: 'var(--text-main)', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '1.25rem' }}>
-              Empowering<br />Lives Through<br />Health
-              <span style={{ display: 'inline-flex', gap: 8, alignItems: 'center', verticalAlign: 'middle', background: 'var(--surface)', borderRadius: 99, padding: '6px 14px', border: '1px solid var(--border)', marginLeft: 12 }}>
-                <span style={{ fontSize: '1.25rem' }}>💊</span><span style={{ fontSize: '1.25rem' }}>🧬</span>
-              </span>
+          {/* Left Content */}
+          <div style={{ flex: '1 1 500px', padding: '4rem 5%', zIndex: 2 }} className="hero-left-content">
+            {/* Trust Badge */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+              <div style={{ display: 'flex' }}>
+                <img src={pushkarAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #f8fafc', objectFit: 'cover', background: '#e2e8f0' }} />
+                <img src={jayantAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #f8fafc', objectFit: 'cover', marginLeft: -12, background: '#e2e8f0' }} />
+                <img src={vaibhavAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #f8fafc', objectFit: 'cover', marginLeft: -12, background: '#e2e8f0' }} />
+                <div style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid #f8fafc', marginLeft: -12, background: '#e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#64748b' }}>+</div>
+              </div>
+              <div style={{ fontWeight: 600, color: '#64748b', fontSize: '0.875rem', lineHeight: 1.3 }}>
+                <span style={{ color: '#111827', fontWeight: 800, fontSize: '1rem' }}>10,000+</span><br />healthy patients
+              </div>
+            </div>
+
+            <h1 className="hero-heading" style={{ fontWeight: 800, color: '#0f172a', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2.5rem' }}>
+              We are here to help<br />you stay healthy.
             </h1>
-            <p className="hero-sub" style={{ color: 'var(--text-muted)', lineHeight: 1.6, maxWidth: 440, marginBottom: '2rem' }}>
-              Navigating Health Together: Your Trusted Rural Medical Resource network directly bridging communities and medical officers.
-            </p>
-            <button onClick={() => setShowLoginModal(true)} className="hero-cta" style={{ borderRadius: 99, background: 'var(--text-main)', color: 'var(--bg)', fontWeight: 700, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 10, transition: 'transform 0.2s' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.05)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-              Get started now <ArrowRight />
+
+            <button onClick={() => setShowLoginModal(true)} className="hero-cta" style={{ padding: '1.25rem 2.5rem', borderRadius: 99, background: 'var(--primary)', color: '#fff', fontSize: '1.125rem', fontWeight: 700, border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', transition: 'transform 0.2s', boxShadow: '0 12px 32px rgba(13, 148, 136, 0.25)' }} onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}>
+              Make an appointment
             </button>
+
+            {/* Bottom Stats */}
+            <div style={{ display: 'flex', gap: '3rem', mt: '4rem', marginTop: '4rem', flexWrap: 'wrap' }}>
+              <div>
+                <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 8, lineHeight: 1 }}>
+                  4.9 <span style={{ color: '#f59e0b', fontSize: '1.75rem' }}>★</span>
+                </div>
+              </div>
+              <div>
+                <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#0f172a', lineHeight: 1, marginBottom: 4 }}>20+</div>
+                <div style={{ color: '#64748b', fontSize: '0.9375rem', fontWeight: 600, lineHeight: 1.4 }}>years of successful<br />experience</div>
+              </div>
+            </div>
           </div>
 
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center', position: 'relative', minHeight: 320, transform: 'scale(0.96)', transformOrigin: 'right center' }} className="hide-mobile">
-            {/* SVG Abstract Backdrop */}
-            <div style={{ position: 'absolute', width: 440, height: 340, background: '#0099ffff', borderRadius: '40% 60% 70% 30% / 40% 50% 60% 50%', right: '5%', top: '50%', transform: 'translateY(-50%)', opacity: 0.7 }} />
-
-            {/* Hero Image Slider replacing the mock geometry */}
-            <div style={{ position: 'absolute', right: '12%', top: '10%', width: 340, height: 340, background: 'var(--surface)', borderRadius: 36, border: '6px solid var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,0.12)' }}>
-              {heroImages.map((src, i) => (
+          {/* Right Content - Full Bleed Image Fade */}
+          <div style={{ flex: '1 1 500px', alignSelf: 'stretch', position: 'relative', minHeight: '600px' }} className="hero-image-pane">
+            <div style={{ position: 'absolute', top: 0, bottom: 0, right: 0, left: 0, overflow: 'hidden', borderTopLeftRadius: 64, borderBottomLeftRadius: 64 }} className="hero-image-wrapper">
+              {/* Only use the first two images in the 1-2 rotation */}
+              {[img1, img2].map((src, i) => (
                 <img
                   key={i}
                   src={src}
-                  alt="Presentation frame"
-                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: currentImageIndex === i ? 1 : 0, transform: currentImageIndex === i ? 'scale(1.05)' : 'scale(1)', transition: 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)' }}
+                  alt={`Care provider ${i + 1}`}
+                  style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: currentImageIndex % 2 === i ? 1 : 0, transition: 'opacity 1.5s ease-in-out' }}
                 />
               ))}
             </div>
-
-            {/* Floating details */}
-            <div style={{ position: 'absolute', top: '10%', left: '20%', color: '#3b82f6', fontSize: '2rem' }}>✦</div>
-            <div style={{ position: 'absolute', bottom: '20%', left: '5%', color: 'var(--primary)', fontSize: '3rem' }}>✚</div>
-            <div style={{ position: 'absolute', top: '40%', right: '2%', color: '#f59e0b', fontSize: '1.5rem' }}>✧</div>
           </div>
         </div>
       </div>
@@ -388,17 +401,12 @@ export default function LandingPage() {
         }
 
         @media (max-width: 768px) {
-          .landing-nav { padding: 0.875rem 5% !important; }
-          .landing-login-btn { padding: 0.875rem 1.5rem !important; font-size: 1rem !important; }
-
-          /* Hero: stack vertically */
-          .hero-gradient {
-            border-radius: 16px !important;
-            padding: 2rem 6% !important;
-            flex-direction: column !important;
-          }
-          .hero-cta { width: 100%; justify-content: center; }
-
+          .landing-nav { padding: 1rem 5% !important; }
+          .hero-section { min-height: auto; }
+          .hero-left-content { padding: 3rem 5% 4rem !important; }
+          .hero-image-pane { min-height: 400px !important; }
+          .hero-image-wrapper { border-radius: 0 !important; }
+          
           /* Goal + about sections: tighter vertical padding */
           #goal { padding: 4rem 5% !important; }
           #about { padding: 4rem 5% !important; }
@@ -409,8 +417,7 @@ export default function LandingPage() {
         }
 
         @media (max-width: 480px) {
-          .landing-login-btn { gap: 6px !important; }
-          .hero-heading { letter-spacing: -0.02em !important; }
+          .hero-heading { font-size: 2.5rem !important; letter-spacing: -0.02em !important; }
           #goal, #about, #contact { padding: 3rem 5% !important; }
         }
        `}</style>
