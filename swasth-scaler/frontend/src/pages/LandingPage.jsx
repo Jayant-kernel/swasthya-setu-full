@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoginRoleModal from '../components/LoginRoleModal'
 
-import img1 from '../images/image_3.jpg'
-import img2 from '../images/image_1.webp'
-import img3 from '../images/image_2.jpg'
+import img1 from '../images/hero1.jpg'
+import img2 from '../images/hero2.jpg'
 
 import pushkarAvatar from '../images/pushkar.jpg'
 import jayantAvatar from '../images/jayant.png'

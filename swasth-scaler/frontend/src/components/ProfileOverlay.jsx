@@ -9,7 +9,7 @@ export default function ProfileOverlay({ onClose }) {
   const [banner, setBanner] = useState(null)
   const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
-  
+
   // Profile Editable State
   const [isEditing, setIsEditing] = useState(false)
   const [forceOnboard, setForceOnboard] = useState(false)
@@ -34,7 +34,7 @@ export default function ProfileOverlay({ onClose }) {
   }
 
   const { user: authUser, logout, setUserRole } = useAuth()
-  
+
   useEffect(() => {
     async function loadProfile() {
       if (!authUser) {
@@ -70,7 +70,7 @@ export default function ProfileOverlay({ onClose }) {
           const records = await response.json()
           setHistory(records)
         }
-      } catch(err) {
+      } catch (err) {
         console.error('Failed to load history', err)
       }
       setLoading(false)
@@ -103,7 +103,7 @@ export default function ProfileOverlay({ onClose }) {
         const ctx = canvas.getContext('2d')
         ctx.drawImage(img, 0, 0, width, height)
         const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
-        
+
         setAvatar(dataUrl)
         if (user) {
           const token = localStorage.getItem('access_token')
@@ -144,7 +144,7 @@ export default function ProfileOverlay({ onClose }) {
         const ctx = canvas.getContext('2d')
         ctx.drawImage(img, 0, 0, width, height)
         const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
-        
+
         setBanner(dataUrl)
         if (user) {
           const token = localStorage.getItem('access_token')
@@ -210,17 +210,17 @@ export default function ProfileOverlay({ onClose }) {
   }
 
   return (
-    <div 
+    <div
       onClick={handleClose}
-      style={{ 
-        position: 'fixed', inset: 0, zIndex: 9999, 
+      style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
         background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '1rem', transition: 'opacity 0.28s ease',
         opacity: mounted ? 1 : 0
       }}
     >
-      <div 
+      <div
         onClick={e => e.stopPropagation()}
         style={{
           background: '#0b0f19',
@@ -271,7 +271,7 @@ export default function ProfileOverlay({ onClose }) {
                   Complete your profile
                 </div>
               ) : (
-                <button onClick={handleClose} style={{ position: 'absolute', top: '0.875rem', right: '0.875rem', zIndex: 10, width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                <button onClick={handleClose} style={{ position: 'absolute', top: '0.875rem', right: '0.875rem', zIndex: 10, width: 34, height: 34, minWidth: 34, minHeight: 34, flexShrink: 0, borderRadius: '50%', background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, fontSize: '0.875rem', padding: 0 }}>✕</button>
               )}
             </div>
 
@@ -318,7 +318,7 @@ export default function ProfileOverlay({ onClose }) {
                       onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.13)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
                     >
-                      <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                      <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                       Edit Profile
                     </button>
                   )}
@@ -336,7 +336,7 @@ export default function ProfileOverlay({ onClose }) {
                   <div className="po-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', marginBottom: '1.5rem' }}>
                     <div>
                       <label style={{ display: 'block', color: '#94a3b8', fontSize: '0.8125rem', fontWeight: 600, marginBottom: 6 }}>Full Name</label>
-                      <input 
+                      <input
                         type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder="E.g., Anjali Sharma"
                         style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 12, background: '#0f172a', border: '1px solid #334155', color: '#f8fafc', outline: 'none', fontSize: '0.9375rem', boxSizing: 'border-box' }}
                         onFocus={e => e.target.style.borderColor = '#14b8a6'} onBlur={e => e.target.style.borderColor = '#334155'}
@@ -344,7 +344,7 @@ export default function ProfileOverlay({ onClose }) {
                     </div>
                     <div>
                       <label style={{ display: 'block', color: '#94a3b8', fontSize: '0.8125rem', fontWeight: 600, marginBottom: 6 }}>Location / Village</label>
-                      <input 
+                      <input
                         type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="E.g., Pune District"
                         style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 12, background: '#0f172a', border: '1px solid #334155', color: '#f8fafc', outline: 'none', fontSize: '0.9375rem', boxSizing: 'border-box' }}
                         onFocus={e => e.target.style.borderColor = '#14b8a6'} onBlur={e => e.target.style.borderColor = '#334155'}
@@ -355,7 +355,7 @@ export default function ProfileOverlay({ onClose }) {
                     {!forceOnboard && (
                       <button onClick={() => { setIsEditing(false); setFullName(user?.full_name || ''); setLocation(user?.location || ''); }} style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontWeight: 600, cursor: 'pointer', padding: '0.5rem 1rem' }}>Cancel</button>
                     )}
-                    <button 
+                    <button
                       onClick={handleSaveProfile} disabled={saveLoading}
                       style={{ background: '#14b8a6', color: '#111827', border: 'none', padding: '0.625rem 1.5rem', borderRadius: 99, fontWeight: 700, fontSize: '0.9375rem', cursor: saveLoading ? 'not-allowed' : 'pointer', opacity: saveLoading ? 0.7 : 1 }}
                     >
@@ -378,13 +378,13 @@ export default function ProfileOverlay({ onClose }) {
               {history.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '3rem 1rem', background: 'rgba(255,255,255,0.03)', borderRadius: 16, border: '1px dashed rgba(255,255,255,0.1)' }}>
                   <span style={{ fontSize: '2rem', opacity: 0.5 }}>📂</span>
-                  <div style={{ color: '#94a3b8', fontSize: '0.9375rem', marginTop: '0.75rem' }}>No patients triaged yet.<br/>Your submitted records will appear here.</div>
+                  <div style={{ color: '#94a3b8', fontSize: '0.9375rem', marginTop: '0.75rem' }}>No patients triaged yet.<br />Your submitted records will appear here.</div>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: 340, overflowY: 'auto', paddingRight: '0.5rem' }}>
                   {history.map(record => {
                     const date = new Date(record.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                    
+
                     let sevColor = '#34d399'; let sevBg = 'rgba(52, 211, 153, 0.1)'; let borderCol = 'rgba(52, 211, 153, 0.2)';
                     if (record.severity === 'red') { sevColor = '#f87171'; sevBg = 'rgba(248, 113, 113, 0.1)'; borderCol = 'rgba(248, 113, 113, 0.2)'; }
                     if (record.severity === 'yellow') { sevColor = '#fbbf24'; sevBg = 'rgba(251, 191, 36, 0.1)'; borderCol = 'rgba(251, 191, 36, 0.2)'; }
@@ -414,7 +414,7 @@ export default function ProfileOverlay({ onClose }) {
             {!forceOnboard && (
               <div style={{ padding: '0 2rem 2rem' }}>
                 <h3 style={{ margin: '0 0 1rem', fontSize: '0.9375rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Account Actions</h3>
-                
+
                 <div className="po-actions-grid" style={{ display: 'flex', gap: '1rem' }}>
                   <button
                     onClick={handleLogout}
