@@ -112,8 +112,8 @@ export default function HeroSlider() {
                   transform: isActive
                     ? 'translateX(0) scale(1)'
                     : isPrev
-                    ? `translateX(${direction === 'next' ? '-4%' : '4%'}) scale(0.98)`
-                    : `translateX(${direction === 'next' ? '4%' : '-4%'}) scale(0.98)`,
+                      ? `translateX(${direction === 'next' ? '-4%' : '4%'}) scale(0.98)`
+                      : `translateX(${direction === 'next' ? '4%' : '-4%'}) scale(0.98)`,
                   transition: 'opacity 0.6s ease, transform 0.6s ease',
                   zIndex: isActive ? 2 : 1,
                   pointerEvents: isActive ? 'auto' : 'none',
@@ -178,7 +178,7 @@ export default function HeroSlider() {
                   <h2 style={{
                     fontSize: 'clamp(2rem, 3.5vw, 2.75rem)',
                     fontWeight: 900,
-                    color: '#ffffff',
+                    color: 'transparent',
                     letterSpacing: '-0.03em',
                     lineHeight: 1.05,
                     marginBottom: '0.375rem',

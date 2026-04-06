@@ -9,7 +9,6 @@ import pushkarAvatar from '../images/pushkar.jpg'
 import jayantAvatar from '../images/jayant.png'
 import vaibhavAvatar from '../images/vaibhav.png'
 
-// Mock icons mapped to Lucide standard equivalents via raw SVG
 const ArrowRight = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-7-7 7 7-7 7" /></svg>
 const PlayCircle = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinejoin="round" d="m10 8 6 4-6 4z" /></svg>
 
@@ -27,38 +26,48 @@ export default function LandingPage() {
     return () => clearInterval(timer)
   }, [])
 
-  const roles = [
-    { id: 'asha', title: 'ASHA Worker', icon: '🏥', path: '/login/asha', bg: '#ecfdf5', color: '#059669' },
-    { id: 'dmo', title: 'District Medical Officer', icon: '🏛️', path: '/login/dmo', bg: '#eff6ff', color: '#2563eb' },
-    { id: 'citizen', title: 'Citizen / Patient', icon: '👤', path: '/login/citizen', bg: '#fef2f2', color: '#dc2626' }
-  ]
-
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--surface)', display: 'flex', flexDirection: 'column', fontFamily: "'Inter', 'Noto Sans', sans-serif" }}>
 
-      {/* Navigation */}
-      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.5rem 5%', maxWidth: 1600, margin: '0 auto', width: '100%', background: '#ffffff' }} className="landing-nav">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.5rem', color: '#111827', letterSpacing: '-0.02em' }}>
+      {/* Navigation — transparent, sits over hero */}
+      <nav
+        style={{
+          position: 'absolute', top: 0, left: 0, right: 0, zIndex: 100,
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '1.5rem 5%', maxWidth: 1600, margin: '0 auto', width: '100%',
+          background: 'transparent'
+        }}
+        className="landing-nav"
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 800, fontSize: '1.5rem', color: '#ffffff', letterSpacing: '-0.02em' }}>
           Swasthya Setu
         </div>
 
-        <div style={{ display: 'flex', gap: '2.5rem', fontSize: '0.9375rem', fontWeight: 600, color: '#4b5563' }} className="hide-mobile">
-          <a href="#about" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#111827'} onMouseLeave={e => e.target.style.color = 'inherit'}>About Us</a>
-          <a href="#goal" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#111827'} onMouseLeave={e => e.target.style.color = 'inherit'}>Services</a>
-          <a href="#contact" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#111827'} onMouseLeave={e => e.target.style.color = 'inherit'}>Patient Resources</a>
-          <a href="#contact" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#111827'} onMouseLeave={e => e.target.style.color = 'inherit'}>Contact Us</a>
+        <div style={{ display: 'flex', gap: '2.5rem', fontSize: '0.9375rem', fontWeight: 600, color: 'rgba(255,255,255,0.85)' }} className="hide-mobile">
+          <a href="#about" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>About Us</a>
+          <a href="#goal" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>Services</a>
+          <a href="#contact" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>Patient Resources</a>
+          <a href="#contact" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>Contact Us</a>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button onClick={() => setShowLoginModal(true)} className="landing-login-btn" style={{ padding: '0.625rem 1.5rem', borderRadius: 99, border: '1.5px solid var(--primary)', background: 'transparent', color: 'var(--primary)', fontWeight: 700, fontSize: '0.9375rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }} onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = '#fff' }} onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--primary)' }}>
+          <button
+            onClick={() => setShowLoginModal(true)}
+            className="landing-login-btn"
+            style={{ padding: '0.625rem 1.5rem', borderRadius: 99, border: '1.5px solid rgba(255,255,255,0.8)', background: 'transparent', color: '#ffffff', fontWeight: 700, fontSize: '0.9375rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, transition: 'all 0.2s' }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.15)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+          >
             Log in
           </button>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <div style={{ position: 'relative', width: '100%', minHeight: '90vh', overflow: 'hidden', display: 'flex', alignItems: 'center' }} className="hero-section">
-
+      {/* Hero Section — full bleed, image as background */}
+      <div
+        style={{ position: 'relative', width: '100%', minHeight: '100vh', overflow: 'hidden', display: 'flex', alignItems: 'center' }}
+        className="hero-section"
+      >
         {/* Background Images */}
         {[img1, img2].map((src, i) => (
           <img
@@ -76,15 +85,17 @@ export default function LandingPage() {
           />
         ))}
 
-        {/* Dark overlay so text is readable */}
+        {/* Dark overlay */}
         <div style={{
           position: 'absolute', inset: 0, zIndex: 1,
           background: 'linear-gradient(to right, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.2) 100%)'
         }} />
 
-        {/* Content on top */}
-        <div style={{ position: 'relative', zIndex: 2, maxWidth: 1600, margin: '0 auto', width: '100%', padding: '5rem 5%' }} className="hero-left-content">
-
+        {/* Content */}
+        <div
+          style={{ position: 'relative', zIndex: 2, maxWidth: 1600, margin: '0 auto', width: '100%', padding: '8rem 5% 5rem' }}
+          className="hero-left-content"
+        >
           {/* Trust Badge */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
             <div style={{ display: 'flex' }}>
@@ -98,7 +109,10 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <h1 className="hero-heading" style={{ fontWeight: 800, color: '#ffffff', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2.5rem', maxWidth: 700, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}>
+          <h1
+            className="hero-heading"
+            style={{ fontWeight: 800, color: '#ffffff', lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '2.5rem', maxWidth: 700, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }}
+          >
             We are here to help<br />you stay healthy.
           </h1>
 
@@ -164,11 +178,6 @@ export default function LandingPage() {
                 <svg viewBox="0 0 200 100" style={{ width: '100%', height: '100%', fill: 'none' }}>
                   <path d="M 20,20 Q 60,80 100,50 T 180,80" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" />
                   <path d="M 20,80 Q 60,20 100,50 T 180,20" stroke="rgba(255,255,255,0.15)" strokeWidth="1.5" />
-                  <line x1="42" y1="36" x2="42" y2="64" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-                  <line x1="60" y1="50" x2="60" y2="50" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-                  <line x1="78" y1="36" x2="78" y2="64" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-                  <line x1="122" y1="64" x2="122" y2="36" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
-                  <line x1="158" y1="64" x2="158" y2="36" stroke="rgba(255,255,255,0.2)" strokeWidth="1" />
                   <circle cx="100" cy="50" r="3" fill="#fff" filter="drop-shadow(0 0 6px #fff)" />
                   <circle cx="42" cy="36" r="1.5" fill="#fff" filter="drop-shadow(0 0 4px #fff)" />
                   <circle cx="158" cy="64" r="2" fill="#fff" filter="drop-shadow(0 0 5px #fff)" />
@@ -188,10 +197,6 @@ export default function LandingPage() {
                   <circle cx="100" cy="50" r="25" stroke="rgba(255,255,255,0.25)" strokeWidth="1" strokeDasharray="4 4" />
                   <circle cx="100" cy="50" r="40" stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
                   <path d="M 94,35 h 12 v 10 h 10 v 10 h -10 v 10 h -12 v -10 h -10 v -10 h 10 z" fill="#fff" filter="drop-shadow(0 0 8px #fff)" opacity="0.9" />
-                  <circle cx="100" cy="10" r="2" fill="#fff" filter="drop-shadow(0 0 4px #fff)" />
-                  <circle cx="100" cy="90" r="2" fill="#fff" filter="drop-shadow(0 0 4px #fff)" />
-                  <circle cx="60" cy="50" r="1.5" fill="#fff" filter="drop-shadow(0 0 4px #fff)" />
-                  <circle cx="140" cy="50" r="1.5" fill="#fff" filter="drop-shadow(0 0 4px #fff)" />
                 </svg>
               </div>
               <div style={{ padding: '0 2.5rem' }}>
@@ -202,74 +207,37 @@ export default function LandingPage() {
 
           </div>
         </div>
-
-        {/* Giant background glow */}
         <div style={{ position: 'absolute', top: '-10%', left: '50%', transform: 'translateX(-50%)', width: '100%', height: 600, background: 'radial-gradient(ellipse, rgba(168,85,247,0.1) 0%, rgba(0,0,0,0) 60%)', filter: 'blur(60px)', zIndex: 1, pointerEvents: 'none' }} />
       </div>
 
-      {/* Contact Us / Founders Section */}
+      {/* Meet the Founders */}
       <div id="about" style={{ padding: '8rem 4%', background: 'var(--bg)', position: 'relative' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto' }}>
-
           <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
             <h2 style={{ fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.03em' }}>Meet the founders</h2>
           </div>
-
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '2rem' }}>
 
-            {/* Pushkar Kulkarni */}
-            <div style={{ background: 'var(--surface)', borderRadius: 24, overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-              <div style={{ height: 380, background: '#2d2d2d', position: 'relative' }}>
-                <img src={pushkarAvatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Pushkar Kulkarni" />
+            {[
+              { src: pushkarAvatar, name: 'Pushkar Kulkarni', role: 'Team Lead and Main Coder', bio: 'Architecting the scalable backend of Swasthya Setu, Pushkar leads the core development team, building the robust and secure infrastructure that guarantees uptime for remote healthcare centers.', quote: '"Energy and persistence conquer all things. Well done is better than well said."', attr: 'Benjamin Franklin', grad: 'linear-gradient(135deg, #181124 0%, #2a1b38 100%)' },
+              { src: jayantAvatar, name: 'Jayant Saxena', role: 'Frontend and UI/UX Dev', bio: 'Driven by a vision to create intuitive user experiences, Jayant leads the frontend architecture. His aesthetic UI/UX designs make Swasthya Setu accessible to thousands of people across rural districts.', quote: '"Everything that is really great and inspiring is created by individuals who can labor in freedom."', attr: 'Albert Einstein', grad: 'linear-gradient(135deg, #12182b 0%, #1e293b 100%)' },
+              { src: vaibhavAvatar, name: 'Vaibhav Mishra', role: 'The calling and major citizen worker', bio: 'Specializing in community outreach and ground-level engagement, Vaibhav champions the enablement of ASHA workers and manages direct citizen operations.', quote: '"The best way to find yourself is to lose yourself in the service of others."', attr: 'Mahatma Gandhi', grad: 'linear-gradient(135deg, #0f1c2e 0%, #1e1b4b 100%)' },
+            ].map(({ src, name, role, bio, quote, attr, grad }) => (
+              <div key={name} style={{ background: 'var(--surface)', borderRadius: 24, overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                <div style={{ height: 380, background: '#2d2d2d', position: 'relative' }}>
+                  <img src={src} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt={name} />
+                </div>
+                <div style={{ padding: '2rem 2.5rem', background: '#fff' }}>
+                  <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>{name}</h3>
+                  <p style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>{role}</p>
+                  <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: 1.6 }}>{bio}</p>
+                </div>
+                <div style={{ padding: '2rem 2.5rem', background: grad, color: '#e2e8f0', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                  <p style={{ fontSize: '0.9375rem', lineHeight: 1.6, textAlign: 'center', marginBottom: '1.5rem', fontStyle: 'italic', color: '#f1f5f9' }}>{quote}</p>
+                  <p style={{ fontSize: '0.8125rem', color: '#94a3b8', textAlign: 'center', fontWeight: 600 }}>{attr}</p>
+                </div>
               </div>
-              <div style={{ padding: '2rem 2.5rem', background: '#fff' }}>
-                <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>Pushkar Kulkarni</h3>
-                <p style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>Team Lead and Main Coder</p>
-                <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: 1.6 }}>Architecting the scalable backend of Swasthya Setu, Pushkar leads the core development team, building the robust and secure infrastructure that guarantees uptime for remote healthcare centers.</p>
-              </div>
-              <div style={{ padding: '2rem 2.5rem', background: 'linear-gradient(135deg, #181124 0%, #2a1b38 100%)', color: '#e2e8f0', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <p style={{ fontSize: '0.9375rem', lineHeight: 1.6, textAlign: 'center', marginBottom: '1.5rem', fontStyle: 'italic', color: '#f1f5f9' }}>
-                  "Energy and persistence conquer all things. Well done is better than well said."
-                </p>
-                <p style={{ fontSize: '0.8125rem', color: '#94a3b8', textAlign: 'center', fontWeight: 600 }}>Benjamin Franklin</p>
-              </div>
-            </div>
-
-            {/* Jayant Saxena */}
-            <div style={{ background: 'var(--surface)', borderRadius: 24, overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-              <div style={{ height: 380, background: '#2d2d2d', position: 'relative' }}>
-                <img src={jayantAvatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Jayant Saxena" />
-              </div>
-              <div style={{ padding: '2rem 2.5rem', background: '#fff' }}>
-                <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>Jayant Saxena</h3>
-                <p style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>Frontend and UI/UX Dev</p>
-                <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: 1.6 }}>Driven by a vision to create intuitive user experiences, Jayant leads the frontend architecture. His aesthetic UI/UX designs make Swasthya Setu accessible to thousands of people across rural districts.</p>
-              </div>
-              <div style={{ padding: '2rem 2.5rem', background: 'linear-gradient(135deg, #12182b 0%, #1e293b 100%)', color: '#e2e8f0', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <p style={{ fontSize: '0.9375rem', lineHeight: 1.6, textAlign: 'center', marginBottom: '1.5rem', fontStyle: 'italic', color: '#f1f5f9' }}>
-                  "Everything that is really great and inspiring is created by individuals who can labor in freedom."
-                </p>
-                <p style={{ fontSize: '0.8125rem', color: '#94a3b8', textAlign: 'center', fontWeight: 600 }}>Albert Einstein</p>
-              </div>
-            </div>
-
-            {/* Vaibhav Mishra */}
-            <div style={{ background: 'var(--surface)', borderRadius: 24, overflow: 'hidden', border: '1px solid var(--border)', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.05)', transition: 'transform 0.3s ease' }} onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'} onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-              <div style={{ height: 380, background: '#2d2d2d', position: 'relative' }}>
-                <img src={vaibhavAvatar} style={{ width: '100%', height: '100%', objectFit: 'cover' }} alt="Vaibhav Mishra" />
-              </div>
-              <div style={{ padding: '2rem 2.5rem', background: '#fff' }}>
-                <h3 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#111827', marginBottom: 4 }}>Vaibhav Mishra</h3>
-                <p style={{ fontSize: '1rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>The calling and major citizen worker</p>
-                <p style={{ fontSize: '0.9375rem', color: '#4b5563', lineHeight: 1.6 }}>Specializing in community outreach and ground-level engagement, Vaibhav champions the enablement of ASHA workers and manages direct citizen operations.</p>
-              </div>
-              <div style={{ padding: '2rem 2.5rem', background: 'linear-gradient(135deg, #0f1c2e 0%, #1e1b4b 100%)', color: '#e2e8f0', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                <p style={{ fontSize: '0.9375rem', lineHeight: 1.6, textAlign: 'center', marginBottom: '1.5rem', fontStyle: 'italic', color: '#f1f5f9' }}>
-                  "The best way to find yourself is to lose yourself in the service of others."
-                </p>
-                <p style={{ fontSize: '0.8125rem', color: '#94a3b8', textAlign: 'center', fontWeight: 600 }}>Mahatma Gandhi</p>
-              </div>
-            </div>
+            ))}
 
           </div>
         </div>
@@ -282,7 +250,6 @@ export default function LandingPage() {
             <span style={{ display: 'inline-block', color: 'var(--primary)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: '1rem' }}>Get in Touch</span>
             <h2 style={{ fontSize: 'clamp(1.75rem, 5vw, 3.5rem)', fontWeight: 800, color: 'var(--text-main)', letterSpacing: '-0.02em', marginBottom: '2rem', lineHeight: 1.1 }}>Let's build a healthier future together.</h2>
             <p style={{ fontSize: '1.125rem', color: 'var(--text-muted)', lineHeight: 1.6, marginBottom: '3rem' }}>Have questions about the Swasthya Setu platform? Want to deploy it in your district? Reach out to our team instantly.</p>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(16,185,129,0.1)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -345,29 +312,25 @@ export default function LandingPage() {
             </div>
             <p style={{ lineHeight: 1.6, marginBottom: '2rem', maxWidth: 300 }}>Bridging the healthcare gap in rural India with intelligent digital infrastructure.</p>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>𝕏</div>
-              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>I</div>
-              <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>F</div>
+              {['𝕏', 'I', 'F'].map(icon => (
+                <div key={icon} style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>{icon}</div>
+              ))}
             </div>
           </div>
-
           <div style={{ flex: '1 1 150px' }}>
             <p style={{ fontWeight: 600, color: '#fff', marginBottom: '1.5rem', fontSize: '1.125rem' }}>Platform</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <a href="#" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>Citizens</a>
-              <a href="#" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>ASHA Workers</a>
-              <a href="#" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>Medical Officers</a>
-              <a href="#" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>Admin Dashboard</a>
+              {['Citizens', 'ASHA Workers', 'Medical Officers', 'Admin Dashboard'].map(item => (
+                <a key={item} href="#" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>{item}</a>
+              ))}
             </div>
           </div>
-
           <div style={{ flex: '1 1 150px' }}>
             <p style={{ fontWeight: 600, color: '#fff', marginBottom: '1.5rem', fontSize: '1.125rem' }}>Company</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <a href="#about" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>About Us</a>
-              <a href="#goal" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>Our Service</a>
-              <a href="#contact" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>Contact</a>
-              <a href="#" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>Privacy Policy</a>
+              {[['About Us', '#about'], ['Our Service', '#goal'], ['Contact', '#contact'], ['Privacy Policy', '#']].map(([label, href]) => (
+                <a key={label} href={href} style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = '#fff'} onMouseLeave={e => e.currentTarget.style.color = 'inherit'}>{label}</a>
+              ))}
             </div>
           </div>
         </div>
@@ -377,62 +340,28 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      {/* Login Role Modal */}
-      {showLoginModal && (
-        <LoginRoleModal onClose={() => setShowLoginModal(false)} />
-      )}
+      {showLoginModal && <LoginRoleModal onClose={() => setShowLoginModal(false)} />}
 
-      {/* Global Embedded Styles */}
       <style>{`
-        :root {
-          --hero-g1: #e0f2fe;
-          --hero-g2: #dcfce3;
-        }
-        [data-theme='dark'] {
-          --hero-g1: #020b1e;
-          --hero-g2: #02241e;
-        }
-        .hero-gradient {
-          background: linear-gradient(270deg, var(--hero-g1), var(--hero-g2), var(--hero-g1));
-          background-size: 200% 200%;
-          animation: heroGradientPulse 15s ease infinite;
-        }
-        @keyframes heroGradientPulse {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
+        :root { --hero-g1: #e0f2fe; --hero-g2: #dcfce3; }
+        [data-theme='dark'] { --hero-g1: #020b1e; --hero-g2: #02241e; }
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-
-        .hero-heading { font-size: clamp(2rem, 8vw, 3.5rem); }
-        .hero-sub { font-size: clamp(0.9375rem, 2.5vw, 1.125rem); }
+        .hero-heading { font-size: clamp(2.5rem, 8vw, 4.5rem); }
         .hero-cta { padding: 0.875rem 1.75rem; font-size: clamp(0.9375rem, 2.5vw, 1.125rem); }
-
-        @media (max-width: 900px) {
-          .hide-mobile { display: none !important; }
-        }
-
+        @media (max-width: 900px) { .hide-mobile { display: none !important; } }
         @media (max-width: 768px) {
           .landing-nav { padding: 1rem 5% !important; }
-          .hero-section { min-height: auto; }
-          .hero-left-content { padding: 3rem 5% 4rem !important; }
-          .hero-image-pane { min-height: 400px !important; }
-          .hero-image-wrapper { border-radius: 0 !important; }
-          
-          /* Goal + about sections: tighter vertical padding */
+          .hero-left-content { padding: 7rem 5% 4rem !important; }
           #goal { padding: 4rem 5% !important; }
           #about { padding: 4rem 5% !important; }
           #contact { padding: 4rem 5% !important; }
-
-          /* Footer */
           footer { padding: 3rem 5% 2rem !important; }
         }
-
         @media (max-width: 480px) {
           .hero-heading { font-size: 2.5rem !important; letter-spacing: -0.02em !important; }
           #goal, #about, #contact { padding: 3rem 5% !important; }
         }
-       `}</style>
+      `}</style>
     </div>
   )
 }
