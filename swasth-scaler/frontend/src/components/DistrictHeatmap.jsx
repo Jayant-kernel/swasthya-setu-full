@@ -3,12 +3,11 @@ import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaf
 import 'leaflet/dist/leaflet.css'
 import L from 'leaflet'
 
-// Fix Leaflet's broken default icon paths in Vite
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
 function getSeverityColor(point) {
@@ -21,10 +20,12 @@ function MapController({ center, zoom, bounds }) {
   const map = useMap()
   useEffect(() => {
     if (bounds) {
+      // Use setView with the district center + zoom — no fitBounds (that's what caused world view)
+      map.setView(center, zoom, { animate: true })
       map.setMaxBounds(bounds)
-      map.fitBounds(bounds, { animate: true, duration: 1.2 })
-    } else if (center) {
-      map.flyTo(center, zoom, { animate: true, duration: 1.2 })
+      map.setMinZoom(9)
+    } else {
+      map.setView(center, zoom, { animate: true })
     }
   }, [center, zoom, bounds, map])
   return null
@@ -36,9 +37,9 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
       center={center}
       zoom={zoom}
       minZoom={bounds ? 9 : 5}
-      maxZoom={13}
-      maxBounds={bounds}
-      maxBoundsViscosity={1.0}
+      maxZoom={14}
+      maxBounds={bounds || undefined}
+      maxBoundsViscosity={bounds ? 1.0 : 0}
       style={{ height, width: '100%', borderRadius: '10px', zIndex: 0 }}
       scrollWheelZoom={true}
     >
@@ -53,10 +54,10 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
           center={[pt.lat, pt.lng]}
           radius={Math.max(10, Math.min(40, pt.total * 5))}
           pathOptions={{
-            fillColor: getSeverityColor(pt),
-            fillOpacity: 0.75,
-            color: getSeverityColor(pt),
-            weight: 2,
+            fillColor:    getSeverityColor(pt),
+            fillOpacity:  0.75,
+            color:        getSeverityColor(pt),
+            weight:       2,
           }}
         >
           <Popup>
