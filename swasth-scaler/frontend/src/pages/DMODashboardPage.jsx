@@ -53,8 +53,9 @@ class MapErrorBoundary extends React.Component {
 export default function DMODashboardPage() {
   const { logout } = useAuth()
   const navigate    = useNavigate()
-  const dmoName     = localStorage.getItem('dmoName')     || 'DMO'
-  const dmoDistrict = localStorage.getItem('dmoDistrict') || 'Puri'
+  const _savedUser  = (() => { try { return JSON.parse(localStorage.getItem('user') || '{}') } catch { return {} } })()
+  const dmoName     = _savedUser.full_name || localStorage.getItem('dmoName') || 'DMO'
+  const dmoDistrict = _savedUser.district  || localStorage.getItem('dmoDistrict') || 'Pune'
   const center      = getDefaultCenter(dmoDistrict)
 
   const [patients,    setPatients]    = useState([])
