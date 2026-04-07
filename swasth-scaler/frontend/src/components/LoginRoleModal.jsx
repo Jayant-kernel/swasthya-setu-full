@@ -315,12 +315,12 @@ export default function LoginRoleModal({ onClose }) {
                 <div style={{ position: 'relative', zIndex: 2 }}>
                   <span style={{ fontSize: '2.25rem' }}>{selected.icon}</span>
                   <div style={{
-                    display: 'inline-block', background: `${selected.accent}22`,
+                    display: 'block', background: `${selected.accent}22`,
                     border: `1px solid ${selected.accent}44`, borderRadius: '99px',
                     padding: '0.25rem 0.75rem', color: selected.accent,
                     fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.06em',
                     textTransform: 'uppercase', marginTop: '0.875rem', marginBottom: '0.875rem',
-                    display: 'block', width: 'fit-content',
+                    width: 'fit-content',
                   }}>
                     {selected.title} Portal
                   </div>

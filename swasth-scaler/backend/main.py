@@ -1,12 +1,22 @@
 import os
+import sys
 import json
+import base64
 import logging
 import httpx
+import numpy as np
+import cv2
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
+from fastapi.websockets import WebSocket, WebSocketDisconnect
 from openai import OpenAI
 from dotenv import load_dotenv
+
+# ISL detector — path relative to backend/
+_ISL_PATH = os.path.join(os.path.dirname(__file__), "..", "isl_feature", "inference")
+if _ISL_PATH not in sys.path:
+    sys.path.insert(0, os.path.abspath(_ISL_PATH))
 
 from database import engine, Base, AsyncSessionLocal
 from models import TriageRecord
@@ -310,4 +320,67 @@ Text: {original_transcript}"""
         return PlainTextResponse(content=twiml, media_type="application/xml")
 
 
+# ── ISL WebSocket endpoint ────────────────────────────────────────────────────
+@app.websocket("/ws/isl")
+async def isl_detect(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time ISL detection.
 
+    Client sends JSON:
+      { "type": "frame",  "image": "<base64 JPEG>" }
+      { "type": "reset" }
+
+    Server replies JSON:
+      {
+        "sign":            "fever" | null,
+        "confidence":      0.0-1.0,
+        "confirmed":       true/false,
+        "fill":            0.0-1.0,
+        "odia":            "ଜ୍ୱର" | null,
+        "english":         "Fever" | null,
+        "has_hand":        true/false,
+        "all_confidences": { "fever": 0.92, ... }
+      }
+    """
+    await websocket.accept()
+    logger.info("ISL WebSocket connected")
+
+    # Lazy-load detector (only when first client connects)
+    try:
+        from isl_detector import ISLDetector
+        detector = ISLDetector()
+    except Exception as e:
+        logger.error(f"ISLDetector load failed: {e}")
+        await websocket.send_json({"error": str(e)})
+        await websocket.close()
+        return
+
+    try:
+        while True:
+            data    = await websocket.receive_text()
+            payload = json.loads(data)
+
+            if payload.get("type") == "reset":
+                detector.reset()
+                await websocket.send_json({"reset": True})
+                continue
+
+            if payload.get("type") == "frame":
+                try:
+                    img_bytes = base64.b64decode(payload["image"])
+                    np_arr    = np.frombuffer(img_bytes, np.uint8)
+                    frame     = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+                    if frame is None:
+                        continue
+                    result = detector.process_frame(frame)
+                    await websocket.send_json(result)
+                except Exception as e:
+                    logger.error(f"ISL frame error: {e}")
+                    await websocket.send_json({"error": str(e)})
+
+    except WebSocketDisconnect:
+        logger.info("ISL WebSocket disconnected")
+        detector.close()
+    except Exception as e:
+        logger.error(f"ISL WebSocket error: {e}")
+        detector.close()

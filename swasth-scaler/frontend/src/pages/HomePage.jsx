@@ -223,6 +223,13 @@ export default function HomePage() {
         {/* Filter bar */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.625rem', marginBottom: '1rem', alignItems: 'center' }}>
 
+          {/* New Patient */}
+          <button
+            onClick={() => navigate('/patient')}
+            style={{ minHeight: 44, padding: '0 1rem', background: TEAL, color: 'var(--surface)', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', whiteSpace: 'nowrap', flexShrink: 0 }}
+          >
+            <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>+</span> New Patient
+          </button>
 
           {/* Sort */}
           <div style={{ display: 'flex', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
