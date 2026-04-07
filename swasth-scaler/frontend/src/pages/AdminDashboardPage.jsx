@@ -88,26 +88,30 @@ function IndiaHeatmap({ points }) {
   )
 }
 
+const API = 'https://swasthya-setu-full.onrender.com/api/v1'
+const SEV_COLOR = { red: '#f87171', yellow: '#fbbf24', green: '#34d399' }
+const SEV_BG    = { red: 'rgba(239,68,68,0.2)', yellow: 'rgba(245,158,11,0.2)', green: 'rgba(34,197,94,0.2)' }
+const SEV_LABEL = { red: 'Emergency', yellow: 'Moderate', green: 'Mild' }
+
 export default function AdminDashboardPage() {
   const navigate = useNavigate()
-  const [allPatients,  setAllPatients]  = useState([])
-  const [mapPoints,    setMapPoints]    = useState([])
-  const [lastRefresh,  setLastRefresh]  = useState(new Date())
-  const [loading,      setLoading]      = useState(true)
+  const [triageRecords, setTriageRecords] = useState([])
+  const [mapPoints,     setMapPoints]     = useState([])
+  const [lastRefresh,   setLastRefresh]   = useState(new Date())
+  const [loading,       setLoading]       = useState(true)
   const [districtFilter, setDistrictFilter] = useState('All')
+  const [severityFilter, setSeverityFilter] = useState('all')
 
   const fetchAll = useCallback(async () => {
     try {
       const token = localStorage.getItem('access_token')
-      const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      if (!res.ok) throw new Error('Failed to fetch patients')
-      const data = await res.json()
-      const rows = data || []
-      setAllPatients(rows)
+      const headers = { 'Authorization': `Bearer ${token}` }
+
+      // Triage records are NOT district-filtered for DMO/admin — gives us all data
+      const res = await fetch(`${API}/triage_records/`, { headers })
+      if (!res.ok) throw new Error('Failed to fetch triage records')
+      const rows = (await res.json()) || []
+      setTriageRecords(rows)
 
       // Group by district → one dot per district on the map
       const groups = {}
@@ -115,9 +119,9 @@ export default function AdminDashboardPage() {
         const d = r.district || 'Unknown'
         if (!groups[d]) groups[d] = { village: d, total: 0, critical: 0, moderate: 0, mild: 0, lastReported: r.created_at, ashaWorker: '—' }
         groups[d].total++
-        if (r.age < 18 || r.age > 60) groups[d].critical++
-        else if (r.age > 40)           groups[d].moderate++
-        else                            groups[d].mild++
+        if (r.severity === 'red')         groups[d].critical++
+        else if (r.severity === 'yellow') groups[d].moderate++
+        else                              groups[d].mild++
         if (r.created_at > groups[d].lastReported) groups[d].lastReported = r.created_at
       })
 
@@ -147,14 +151,15 @@ export default function AdminDashboardPage() {
     navigate('/dashboard/dmo')
   }
 
-  // Stats
-  const totalPatients = allPatients.length
-  const districts     = [...new Set(allPatients.map(p => p.district).filter(Boolean))]
-  const highRisk      = allPatients.filter(p => p.age < 18 || p.age > 60).length
-  const thisWeek      = allPatients.filter(p => (Date.now() - new Date(p.created_at)) < 7*24*60*60*1000).length
-
-  // Filtered table
-  const filtered = districtFilter === 'All' ? allPatients : allPatients.filter(p => p.district === districtFilter)
+  const districts   = [...new Set(triageRecords.map(r => r.district).filter(Boolean))].sort()
+  const redCount    = triageRecords.filter(r => r.severity === 'red').length
+  const yellowCount = triageRecords.filter(r => r.severity === 'yellow').length
+  const greenCount  = triageRecords.filter(r => r.severity === 'green').length
+  const sickleCount = triageRecords.filter(r => r.sickle_cell_risk).length
+  const thisWeek    = triageRecords.filter(r => (Date.now() - new Date(r.created_at)) < 7*24*60*60*1000).length
+  const filtered    = triageRecords
+    .filter(r => districtFilter === 'All' || r.district === districtFilter)
+    .filter(r => severityFilter === 'all'  || r.severity === severityFilter)
 
   return (
     <div style={{ minHeight:'100dvh', background:'#0f172a', padding:'1.5rem' }}>
@@ -187,16 +192,19 @@ export default function AdminDashboardPage() {
       </header>
 
       {/* Stat cards */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(180px,1fr))', gap:'1rem', marginBottom:'1.5rem' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(160px,1fr))', gap:'1rem', marginBottom:'1.5rem' }}>
         {[
-          { label:'Total Patients',    value: loading ? '…' : totalPatients, color:'#818cf8' },
-          { label:'Districts Active',  value: loading ? '…' : districts.length, color:'#34d399' },
-          { label:'High Risk Cases',   value: loading ? '…' : highRisk,      color:'#f87171' },
-          { label:'This Week',         value: loading ? '…' : thisWeek,      color:'#fbbf24' },
+          { label:'Total Records',    value: triageRecords.length, color:'#818cf8' },
+          { label:'Districts Active', value: districts.length,     color:'#34d399' },
+          { label:'Emergency (RED)',  value: redCount,             color:'#f87171' },
+          { label:'Moderate (YLW)',   value: yellowCount,          color:'#fbbf24' },
+          { label:'Mild (GREEN)',     value: greenCount,           color:'#34d399' },
+          { label:'Sickle Cell Risk', value: sickleCount,          color:'#a78bfa' },
+          { label:'This Week',        value: thisWeek,             color:'#38bdf8' },
         ].map((s, i) => (
-          <div key={s.label} className="admin-card" style={{ textAlign:'center', animationDelay:`${i*0.07}s` }}>
-            <div style={{ fontSize:'2.1rem', fontWeight:800, color:s.color }}>{s.value}</div>
-            <div style={{ fontWeight:600, fontSize:'0.9rem', color:'#cbd5e1' }}>{s.label}</div>
+          <div key={s.label} className="admin-card" style={{ textAlign:'center', animationDelay:`${i*0.05}s` }}>
+            <div style={{ fontSize:'2rem', fontWeight:800, color:s.color }}>{loading ? '…' : s.value}</div>
+            <div style={{ fontWeight:600, fontSize:'0.85rem', color:'#cbd5e1' }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -217,12 +225,12 @@ export default function AdminDashboardPage() {
         </div>
 
         <div style={{ display:'flex', gap:'1.25rem', marginBottom:'0.75rem', flexWrap:'wrap' }}>
-          {[['#ef4444','High Risk (<18 or >60)'],['#f59e0b','Moderate (41–60)'],['#22c55e','Low Risk (18–40)']].map(([c,l]) => (
+          {[['#ef4444','RED — Emergency'],['#f59e0b','YELLOW — Moderate'],['#22c55e','GREEN — Mild']].map(([c,l]) => (
             <span key={l} style={{ display:'flex', alignItems:'center', gap:6, fontSize:'0.82rem', color:'#94a3b8', fontWeight:600 }}>
               <span style={{ display:'inline-block', width:12, height:12, borderRadius:'50%', background:c }} />{l}
             </span>
           ))}
-          <span style={{ fontSize:'0.82rem', color:'#475569', marginLeft:'auto' }}>Dot size = patient count · Click for details</span>
+          <span style={{ fontSize:'0.82rem', color:'#475569', marginLeft:'auto' }}>Dot size = case count · Click for details</span>
         </div>
 
         {loading ? (
@@ -235,19 +243,34 @@ export default function AdminDashboardPage() {
         )}
       </div>
 
-      {/* District filter + table */}
+      {/* Filters + triage records table */}
       <div className="admin-card">
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem', flexWrap:'wrap', gap:'0.75rem' }}>
-          <h3 style={{ margin:0, fontSize:'1rem', color:'#f1f5f9' }}>Patient Records</h3>
-          <select
-            value={districtFilter}
-            onChange={e => setDistrictFilter(e.target.value)}
-            style={{ padding:'0.5rem 1rem', borderRadius:'8px', border:'1px solid rgba(255,255,255,0.15)',
-              background:'#1e293b', color:'#cbd5e1', fontSize:'0.875rem', cursor:'pointer' }}
-          >
-            <option value="All">All Districts</option>
-            {districts.sort().map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
+          <h3 style={{ margin:0, fontSize:'1rem', color:'#f1f5f9' }}>
+            Triage Records
+            {!loading && (
+              <span style={{ marginLeft:10, background:'rgba(99,102,241,0.2)', color:'#818cf8',
+                padding:'2px 10px', borderRadius:'999px', fontSize:'0.76rem', fontWeight:700 }}>
+                {filtered.length} shown / {triageRecords.length} total
+              </span>
+            )}
+          </h3>
+          <div style={{ display:'flex', gap:'0.5rem', flexWrap:'wrap' }}>
+            <select value={districtFilter} onChange={e => setDistrictFilter(e.target.value)}
+              style={{ padding:'0.45rem 0.9rem', borderRadius:'8px', border:'1px solid rgba(255,255,255,0.15)',
+                background:'#1e293b', color:'#cbd5e1', fontSize:'0.82rem', cursor:'pointer' }}>
+              <option value="All">All Districts</option>
+              {districts.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
+            <select value={severityFilter} onChange={e => setSeverityFilter(e.target.value)}
+              style={{ padding:'0.45rem 0.9rem', borderRadius:'8px', border:'1px solid rgba(255,255,255,0.15)',
+                background:'#1e293b', color:'#cbd5e1', fontSize:'0.82rem', cursor:'pointer' }}>
+              <option value="all">All Severities</option>
+              <option value="red">Emergency (RED)</option>
+              <option value="yellow">Moderate (YELLOW)</option>
+              <option value="green">Mild (GREEN)</option>
+            </select>
+          </div>
         </div>
 
         {loading ? (
@@ -259,26 +282,48 @@ export default function AdminDashboardPage() {
             <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'0.875rem' }}>
               <thead>
                 <tr style={{ borderBottom:'1px solid rgba(255,255,255,0.1)', textAlign:'left' }}>
-                  {['Name','Age','Gender','District','Registered'].map(h => (
+                  {['Patient','Symptoms','Severity','Sickle Cell','District','Date'].map(h => (
                     <th key={h} style={{ padding:'0.65rem 0.75rem', color:'#64748b', fontWeight:600, fontSize:'0.8rem' }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
-                {filtered.map((p, i) => (
-                  <tr key={p.id} style={{ borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
-                    <td style={{ padding:'0.75rem', fontWeight:600, color:'#e2e8f0' }}>{p.name}</td>
+                {filtered.map((r, i) => (
+                  <tr key={r.id} style={{ borderBottom:'1px solid rgba(255,255,255,0.05)' }}>
+                    <td style={{ padding:'0.75rem', fontWeight:600, color:'#e2e8f0' }}>
+                      {r.patient_name || '—'}
+                      <div style={{ fontSize:'0.72rem', color:'#475569', fontWeight:400 }}>
+                        {r.source === 'helpline_call' ? '📞 Helpline' : '📱 App'}
+                      </div>
+                    </td>
+                    <td style={{ padding:'0.75rem', maxWidth:180 }}>
+                      {Array.isArray(r.symptoms) && r.symptoms.length > 0 ? (
+                        <div style={{ display:'flex', flexWrap:'wrap', gap:3 }}>
+                          {r.symptoms.slice(0,3).map(s => (
+                            <span key={s} style={{ background:'rgba(255,255,255,0.07)', color:'#94a3b8',
+                              padding:'1px 7px', borderRadius:'999px', fontSize:'0.7rem' }}>{s}</span>
+                          ))}
+                          {r.symptoms.length > 3 && <span style={{ color:'#475569', fontSize:'0.7rem' }}>+{r.symptoms.length-3}</span>}
+                        </div>
+                      ) : (
+                        <span style={{ color:'#475569', fontSize:'0.78rem' }}>{r.brief || '—'}</span>
+                      )}
+                    </td>
                     <td style={{ padding:'0.75rem' }}>
-                      <span style={{ padding:'2px 8px', borderRadius:'999px', fontSize:'0.75rem', fontWeight:700,
-                        background: (p.age<18||p.age>60)?'rgba(239,68,68,0.2)': p.age>40?'rgba(245,158,11,0.2)':'rgba(34,197,94,0.2)',
-                        color:      (p.age<18||p.age>60)?'#f87171': p.age>40?'#fbbf24':'#34d399' }}>
-                        {p.age}
+                      <span style={{ padding:'3px 10px', borderRadius:'999px', fontSize:'0.75rem', fontWeight:700,
+                        background: SEV_BG[r.severity]    || 'rgba(255,255,255,0.07)',
+                        color:      SEV_COLOR[r.severity] || '#94a3b8' }}>
+                        {SEV_LABEL[r.severity] || r.severity || '—'}
                       </span>
                     </td>
-                    <td style={{ padding:'0.75rem', color:'#94a3b8' }}>{p.gender}</td>
-                    <td style={{ padding:'0.75rem', color:'#94a3b8' }}>{p.district}</td>
-                    <td style={{ padding:'0.75rem', color:'#475569', fontSize:'0.8rem' }}>
-                      {new Date(p.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}
+                    <td style={{ padding:'0.75rem' }}>
+                      {r.sickle_cell_risk
+                        ? <span style={{ background:'rgba(167,139,250,0.2)', color:'#a78bfa', padding:'2px 9px', borderRadius:'999px', fontSize:'0.73rem', fontWeight:700 }}>YES</span>
+                        : <span style={{ color:'#334155' }}>—</span>}
+                    </td>
+                    <td style={{ padding:'0.75rem', color:'#64748b' }}>{r.district || '—'}</td>
+                    <td style={{ padding:'0.75rem', color:'#475569', fontSize:'0.78rem', whiteSpace:'nowrap' }}>
+                      {new Date(r.created_at).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}
                     </td>
                   </tr>
                 ))}

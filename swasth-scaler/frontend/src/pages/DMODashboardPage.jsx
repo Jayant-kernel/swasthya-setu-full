@@ -51,14 +51,13 @@ class MapErrorBoundary extends React.Component {
   }
 }
 
-// Build heatmap points from triage records grouped by village
-function buildMapPoints(records, district, center) {
-  const districtRecords = records.filter(r => r.district === district)
-  if (districtRecords.length === 0) return []
+// Build heatmap points from triage records grouped by patient name
+function buildMapPoints(records, center) {
+  if (!records.length) return []
 
-  // Group by patient_name as village proxy (or use district as fallback)
+  // Group by patient_name as location proxy
   const groups = {}
-  districtRecords.forEach(r => {
+  records.forEach(r => {
     const village = r.patient_name || 'Unknown'
     if (!groups[village]) {
       groups[village] = { village, total: 0, critical: 0, moderate: 0, mild: 0,
@@ -117,12 +116,11 @@ export default function DMODashboardPage() {
       const allTriage   = triRes.ok   ? await triRes.json()   : []
       const allPatients = patRes.ok   ? await patRes.json()   : []
 
-      const myTriage   = (allTriage   || []).filter(r => r.district === dmoDistrict)
-      const myPatients = (allPatients || []).filter(p => p.district === dmoDistrict)
-
-      setTriageRecords(myTriage)
-      setPatients(myPatients)
-      setMapPoints(buildMapPoints(allTriage || [], dmoDistrict, center))
+      // Backend already filters patients by district for DMO role.
+      // Triage records: backend returns all — show everything (district may be null on older records).
+      setTriageRecords(allTriage   || [])
+      setPatients(allPatients || [])
+      setMapPoints(buildMapPoints(allTriage || [], center))
     } catch (err) {
       console.error('DMO fetch error:', err)
     } finally {
