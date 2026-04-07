@@ -24,8 +24,27 @@ const DISTRICT_CENTERS = {
   'Sangli':        [16.8524, 74.5815],
 }
 
+// Bounding boxes [southWest, northEast] for each district — restricts map panning
+const DISTRICT_BOUNDS = {
+  'Pune':       [[17.85, 73.20], [19.20, 74.70]],
+  'Mumbai':     [[18.85, 72.70], [19.35, 73.10]],
+  'Nagpur':     [[20.60, 78.40], [21.70, 79.80]],
+  'Nashik':     [[19.40, 73.20], [20.60, 74.60]],
+  'Ahmednagar': [[18.40, 74.00], [19.70, 75.40]],
+  'Aurangabad': [[19.30, 74.70], [20.40, 76.00]],
+  'Solapur':    [[17.00, 75.30], [18.20, 76.60]],
+  'Kolhapur':   [[15.90, 73.60], [17.00, 75.00]],
+  'Thane':      [[18.80, 72.70], [19.80, 73.50]],
+  'Satara':     [[17.00, 73.50], [18.20, 74.80]],
+  'Sangli':     [[16.40, 73.90], [17.40, 75.20]],
+}
+
 function getDefaultCenter(district) {
   return DISTRICT_CENTERS[district] || [19.7515, 75.7139] // Maharashtra center
+}
+
+function getDistrictBounds(district) {
+  return DISTRICT_BOUNDS[district] || null
 }
 
 // Scatter demo dots around a center when no real data
@@ -57,6 +76,7 @@ export default function DMODashboardPage() {
   const dmoName     = _savedUser.full_name || localStorage.getItem('dmoName') || 'DMO'
   const dmoDistrict = _savedUser.district  || localStorage.getItem('dmoDistrict') || 'Pune'
   const center      = getDefaultCenter(dmoDistrict)
+  const bounds      = getDistrictBounds(dmoDistrict)
 
   const [patients,    setPatients]    = useState([])
   const [mapPoints,   setMapPoints]   = useState([])
@@ -262,7 +282,7 @@ export default function DMODashboardPage() {
           <MapErrorBoundary>
             <Suspense fallback={<div style={{ height:420, display:'flex', alignItems:'center', justifyContent:'center',
               background:'#f8fafc', borderRadius:10, color:'#94a3b8' }}>Loading map…</div>}>
-              <DistrictHeatmap district={dmoDistrict} points={mapPoints} center={center} />
+              <DistrictHeatmap district={dmoDistrict} points={mapPoints} center={center} bounds={bounds} />
             </Suspense>
           </MapErrorBoundary>
         )}
