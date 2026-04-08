@@ -106,26 +106,26 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
     bg:      isDark 
                ? 'linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%)' 
                : '#f8fafc',
-    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(2, 44, 34, 0.85)',
+    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(209, 250, 229, 0.4)', // Very faint green
     blur:    'blur(24px) saturate(150%)',
-    border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.15)',
-    borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.25)',
+    border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.2)',
+    borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.35)',
     
-    topText: '#f8fafc',
-    topMuted: isDark ? '#cbd5e1' : '#a7f3d0',
+    topText: isDark ? '#f8fafc' : '#022c22',
+    topMuted: isDark ? '#cbd5e1' : '#047857',
     
     text:    isDark ? '#f8fafc' : '#0f172a',
     muted:   isDark ? '#cbd5e1' : '#475569',
     
-    activeBg: isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(16, 185, 129, 0.35)',
-    activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : 'inset 0 0 12px rgba(16, 185, 129, 0.5), 0 4px 12px rgba(16, 185, 129, 0.2)',
-    activeBorder: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(16, 185, 129, 0.6)',
-    activeText: isDark ? '#60a5fa' : '#6ee7b7',
+    activeBg: isDark ? 'rgba(59, 130, 246, 0.2)' : 'linear-gradient(135deg, #065f46, #064e3b)',
+    activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : '0 4px 12px rgba(6, 78, 59, 0.3)',
+    activeBorder: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(6, 78, 59, 0.6)',
+    activeText: isDark ? '#60a5fa' : '#ffffff',
     
-    iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(16, 185, 129, 0.4)',
-    iconColor: isDark ? '#93c5fd' : '#a7f3d0',
+    iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.15)',
+    iconColor: isDark ? '#93c5fd' : '#ffffff',
     
-    hover:   isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(16, 185, 129, 0.2)',
+    hover:   isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(16, 185, 129, 0.15)',
 
     primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #059669)',
     primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
@@ -257,7 +257,14 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
           <div style={{ flex: 1, position: 'relative', maxWidth: 280 }}>
             <span style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: clr.topMuted, pointerEvents: 'none' }}><SearchIcon /></span>
             <input placeholder="Search patients…"
-              style={{ width: '100%', height: 34, paddingLeft: '2rem', paddingRight: '0.625rem', borderRadius: 8, border: `1px solid ${clr.borderSolid}`, background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: clr.topText, fontSize: '0.8125rem', outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)', transition: 'all 0.2s' }}
+              style={{
+                width: '100%', height: 34, paddingLeft: '2rem', paddingRight: '0.625rem',
+                borderRadius: 8, border: `1px solid ${clr.borderSolid}`,
+                background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255, 255, 255, 0.65)',
+                backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                color: clr.topText, fontSize: '0.8125rem', outline: 'none',
+                boxShadow: isDark ? 'inset 0 2px 4px rgba(0,0,0,0.05)' : '0 2px 6px rgba(0,0,0,0.04)', transition: 'all 0.2s',
+              }}
               onFocus={e => e.target.style.borderColor = isDark ? '#3b82f6' : '#10b981'}
               onBlur={e => e.target.style.borderColor = clr.borderSolid}
             />

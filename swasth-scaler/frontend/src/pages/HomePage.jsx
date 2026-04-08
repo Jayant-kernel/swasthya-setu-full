@@ -276,26 +276,26 @@ export default function HomePage() {
     bg:      isDark 
                ? 'linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%)' 
                : '#f8fafc',
-    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(2, 44, 34, 0.85)', // Deep Green glass in light mode
+    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(209, 250, 229, 0.4)', // Very very faint green
     blur:    'blur(24px) saturate(150%)',
-    border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.15)',
-    borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.25)',
+    border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.2)', // Subtle green border
+    borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.35)',
     
-    topText: '#f8fafc',
-    topMuted: isDark ? '#cbd5e1' : '#a7f3d0',
+    topText: isDark ? '#f8fafc' : '#022c22', // Almost black
+    topMuted: isDark ? '#cbd5e1' : '#047857',
     
     text:    isDark ? '#f8fafc' : '#0f172a',
     muted:   isDark ? '#cbd5e1' : '#475569',
     
-    activeBg: isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(16, 185, 129, 0.35)',
-    activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : 'inset 0 0 12px rgba(16, 185, 129, 0.5), 0 4px 12px rgba(16, 185, 129, 0.2)',
-    activeBorder: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(16, 185, 129, 0.6)',
-    activeText: isDark ? '#60a5fa' : '#6ee7b7',
+    activeBg: isDark ? 'rgba(59, 130, 246, 0.2)' : 'linear-gradient(135deg, #065f46, #064e3b)', // Dark green
+    activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : '0 4px 12px rgba(6, 78, 59, 0.3)',
+    activeBorder: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(6, 78, 59, 0.6)',
+    activeText: isDark ? '#60a5fa' : '#ffffff',
     
-    iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(16, 185, 129, 0.4)',
-    iconText: isDark ? '#93c5fd' : '#a7f3d0',
+    iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.15)',
+    iconText: isDark ? '#93c5fd' : '#ffffff',
     
-    hover:   isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(16, 185, 129, 0.2)',
+    hover:   isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(16, 185, 129, 0.15)',
 
     primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #059669)',
     primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
@@ -489,15 +489,16 @@ export default function HomePage() {
               style={{
                 width: '100%', height: 36, paddingLeft: '2.25rem', paddingRight: '0.75rem',
                 borderRadius: 8, border: `1px solid ${clr.borderSolid}`,
-                background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255, 255, 255, 0.15)', // Lighter glass for green topbar
-                backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255, 255, 255, 0.65)', // Very visible blurry bg
+                backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
                 color: clr.topText, fontSize: '0.875rem', outline: 'none',
-                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)', transition: 'all 0.2s',
+                boxShadow: isDark ? 'inset 0 2px 4px rgba(0,0,0,0.05)' : '0 2px 6px rgba(0,0,0,0.04)',
+                transition: 'all 0.2s',
               }}
               onFocus={e => e.target.style.borderColor = isDark ? '#3b82f6' : '#10b981'}
               onBlur={e => e.target.style.borderColor = clr.borderSolid}
             />
-            <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: clr.topMuted, fontWeight: 600, background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)', padding: '2px 5px', borderRadius: 4, pointerEvents: 'none' }}>⌘ K</span>
+            <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: clr.topMuted, fontWeight: 600, background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)', padding: '2px 5px', borderRadius: 4, pointerEvents: 'none' }}>⌘ K</span>
           </div>
 
           <div style={{ flex: 1 }} />
