@@ -105,14 +105,31 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
   const clr = {
     bg:      isDark 
                ? 'linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%)' 
-               : 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #bfdbfe 100%)',
-    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255, 255, 255, 0.5)',
+               : '#f8fafc',
+    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(2, 44, 34, 0.85)',
     blur:    'blur(24px) saturate(150%)',
-    border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.6)',
-    borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.6)',
+    border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.15)',
+    borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.25)',
+    
+    topText: '#f8fafc',
+    topMuted: isDark ? '#cbd5e1' : '#a7f3d0',
+    
     text:    isDark ? '#f8fafc' : '#0f172a',
     muted:   isDark ? '#cbd5e1' : '#475569',
-    hover:   isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.4)',
+    
+    activeBg: isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(16, 185, 129, 0.35)',
+    activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : 'inset 0 0 12px rgba(16, 185, 129, 0.5), 0 4px 12px rgba(16, 185, 129, 0.2)',
+    activeBorder: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(16, 185, 129, 0.6)',
+    activeText: isDark ? '#60a5fa' : '#6ee7b7',
+    
+    iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(16, 185, 129, 0.4)',
+    iconColor: isDark ? '#93c5fd' : '#a7f3d0',
+    
+    hover:   isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(16, 185, 129, 0.2)',
+
+    primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #059669)',
+    primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
+    primaryColor: isDark ? '#3b82f6' : '#10b981',
   }
 
   return (
@@ -147,13 +164,13 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
                 <span style={{ color: '#fff', fontSize: '1rem' }}>🏥</span>
               </div>
               <div>
-                <div style={{ fontWeight: 800, fontSize: '0.9375rem', color: clr.text, letterSpacing: '-0.02em' }}>Swasthya Setu</div>
-                <div style={{ fontSize: '0.65rem', color: clr.muted, fontWeight: 500 }}>ASHA Dashboard</div>
+                <div style={{ fontWeight: 800, fontSize: '0.9375rem', color: clr.topText, letterSpacing: '-0.02em' }}>Swasthya Setu</div>
+                <div style={{ fontSize: '0.65rem', color: clr.topMuted, fontWeight: 500 }}>ASHA Dashboard</div>
               </div>
             </div>
             {/* The new "downward arrow" dropdown button */}
             <button className="dl-action" onClick={() => setSidebarOpen(o => !o)}
-              style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${clr.border}`, background: clr.surface, boxShadow: isDark ? '0 2px 5px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.muted }}>
+              style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${clr.border}`, background: clr.surface, boxShadow: isDark ? '0 2px 5px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.topMuted }}>
               <ChevronDownIcon />
             </button>
           </div>
@@ -170,18 +187,20 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
                   style={{
                     width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem',
                     padding: '0.5rem 0.75rem', borderRadius: 10,
-                    background: isActive ? (isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.6)') : 'transparent',
-                    boxShadow: isActive ? (isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : '0 4px 12px rgba(59, 130, 246, 0.15)') : 'none',
-                    border: isActive ? `1px solid ${isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(255, 255, 255, 0.8)'}` : '1px solid transparent',
-                    color: isActive ? (isDark ? '#60a5fa' : '#2563eb') : clr.muted,
+                    background: isActive ? clr.activeBg : 'transparent',
+                    boxShadow: isActive ? clr.activeShadow : 'none',
+                    border: isActive ? `1px solid ${clr.activeBorder}` : '1px solid transparent',
+                    color: isActive ? clr.activeText : clr.topText,
                     fontWeight: isActive ? 600 : 500, fontSize: '0.875rem',
                     cursor: 'pointer', textAlign: 'left', marginBottom: 4, transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
+                  onMouseEnter={(e) => { if(!isActive) e.currentTarget.style.background = clr.hover }}
+                  onMouseLeave={(e) => { if(!isActive) e.currentTarget.style.background = 'transparent' }}
                 >
                   <div style={{
                     width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: isActive ? (isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.1)') : 'transparent',
-                    color: isActive ? (isDark ? '#93c5fd' : '#1d4ed8') : 'inherit',
+                    background: isActive ? clr.iconBg : 'transparent',
+                    color: isActive ? clr.iconColor : 'inherit',
                     transition: 'all 0.2s'
                   }}>
                     <item.Icon active={isActive} />
@@ -226,7 +245,7 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
           {/* Re-expand Sidebar Button */}
           {!sidebarOpen && (
             <button className="dl-action" onClick={() => setSidebarOpen(true)}
-              style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.text }}>
+              style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.topText }}>
               <HamburgerIcon />
             </button>
           )}
@@ -236,10 +255,10 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
 
           {/* Search — only on non-mobile */}
           <div style={{ flex: 1, position: 'relative', maxWidth: 280 }}>
-            <span style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: clr.muted, pointerEvents: 'none' }}><SearchIcon /></span>
+            <span style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: clr.topMuted, pointerEvents: 'none' }}><SearchIcon /></span>
             <input placeholder="Search patients…"
-              style={{ width: '100%', height: 34, paddingLeft: '2rem', paddingRight: '0.625rem', borderRadius: 8, border: `1px solid ${clr.borderSolid}`, background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: clr.text, fontSize: '0.8125rem', outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)', transition: 'all 0.2s' }}
-              onFocus={e => e.target.style.borderColor = '#3b82f6'}
+              style={{ width: '100%', height: 34, paddingLeft: '2rem', paddingRight: '0.625rem', borderRadius: 8, border: `1px solid ${clr.borderSolid}`, background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255, 255, 255, 0.15)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', color: clr.topText, fontSize: '0.8125rem', outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)', transition: 'all 0.2s' }}
+              onFocus={e => e.target.style.borderColor = isDark ? '#3b82f6' : '#10b981'}
               onBlur={e => e.target.style.borderColor = clr.borderSolid}
             />
           </div>
@@ -248,19 +267,19 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
 
           {/* Theme */}
           <button className="dl-action" onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
-            style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', flexShrink: 0, transition: 'all 0.15s' }}>
+            style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', flexShrink: 0, transition: 'all 0.15s', color: clr.topText }}>
             {isDark ? '☀️' : '🌙'}
           </button>
 
           {/* Bell */}
           <button className="dl-action"
-            style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: clr.muted, position: 'relative', flexShrink: 0, transition: 'all 0.15s' }}>
+            style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: clr.topMuted, position: 'relative', flexShrink: 0, transition: 'all 0.15s' }}>
             <BellIcon />
           </button>
 
           {/* New Patient CTA */}
           <button className="dl-primary" onClick={() => navigate('/patient')}
-            style={{ height: 34, padding: '0 0.875rem', borderRadius: 8, border: `1px solid rgba(255,255,255,0.15)`, background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: '#fff', fontWeight: 600, fontSize: '0.8125rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0, transition: 'all 0.15s', boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)' }}>
+            style={{ height: 34, padding: '0 0.875rem', borderRadius: 8, border: `1px solid rgba(255,255,255,0.15)`, background: clr.primaryBg, color: '#fff', fontWeight: 600, fontSize: '0.8125rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0, transition: 'all 0.15s', boxShadow: clr.primaryShadow }}>
             + New Patient
           </button>
         </div>

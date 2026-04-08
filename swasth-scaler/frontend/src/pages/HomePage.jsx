@@ -275,14 +275,31 @@ export default function HomePage() {
   const clr = {
     bg:      isDark 
                ? 'linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%)' 
-               : 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #bfdbfe 100%)',
-    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255, 255, 255, 0.5)',
+               : '#f8fafc',
+    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(2, 44, 34, 0.85)', // Deep Green glass in light mode
     blur:    'blur(24px) saturate(150%)',
-    border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.6)',
-    borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.6)',
+    border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.15)',
+    borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.25)',
+    
+    topText: '#f8fafc',
+    topMuted: isDark ? '#cbd5e1' : '#a7f3d0',
+    
     text:    isDark ? '#f8fafc' : '#0f172a',
     muted:   isDark ? '#cbd5e1' : '#475569',
-    hover:   isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.4)',
+    
+    activeBg: isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(16, 185, 129, 0.35)',
+    activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : 'inset 0 0 12px rgba(16, 185, 129, 0.5), 0 4px 12px rgba(16, 185, 129, 0.2)',
+    activeBorder: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(16, 185, 129, 0.6)',
+    activeText: isDark ? '#60a5fa' : '#6ee7b7',
+    
+    iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(16, 185, 129, 0.4)',
+    iconText: isDark ? '#93c5fd' : '#a7f3d0',
+    
+    hover:   isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(16, 185, 129, 0.2)',
+
+    primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #059669)',
+    primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
+    primaryColor: isDark ? '#3b82f6' : '#10b981',
   }
 
   const S = {
@@ -345,19 +362,19 @@ export default function HomePage() {
                 <span style={{ color: '#fff', fontSize: '1rem' }}>🏥</span>
               </div>
               <div>
-                <div style={{ fontWeight: 800, fontSize: '0.9375rem', color: isDark ? '#f9fafb' : '#111827', lineHeight: 1.2, letterSpacing: '-0.02em' }}>Swasthya Setu</div>
-                <div style={{ fontSize: '0.65rem', color: isDark ? '#6b7280' : '#9ca3af', fontWeight: 500 }}>ASHA Dashboard</div>
+                <div style={{ fontWeight: 800, fontSize: '0.9375rem', color: clr.topText, lineHeight: 1.2, letterSpacing: '-0.02em' }}>Swasthya Setu</div>
+                <div style={{ fontSize: '0.65rem', color: clr.topMuted, fontWeight: 500 }}>ASHA Dashboard</div>
               </div>
             </div>
             <button className="action-btn" onClick={() => setSidebarOpen(o => !o)}
-              style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${isDark ? '#374151' : '#e5e7eb'}`, background: isDark ? '#1f2230' : '#ffffff', boxShadow: isDark ? '0 2px 5px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: isDark ? '#6b7280' : '#9ca3af' }}>
+              style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${clr.border}`, background: clr.surface, boxShadow: isDark ? '0 2px 5px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.topMuted }}>
               <ChevronIcon size={14} dir="down" />
             </button>
           </div>
 
           {/* Nav */}
           <div style={{ padding: '0.75rem 0.625rem', flex: 1, overflowY: 'auto' }}>
-            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: isDark ? '#4b5563' : '#9ca3af', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem' }}>Menu</div>
+            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: clr.topMuted, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem' }}>Menu</div>
 
             {NAV_ITEMS.map(item => {
               const isActive = location.pathname.startsWith(item.path)
@@ -368,18 +385,20 @@ export default function HomePage() {
                   style={{
                     width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem',
                     padding: '0.5rem 0.75rem', borderRadius: 10, border: 'none',
-                    background: isActive ? (isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.6)') : 'transparent',
-                    boxShadow: isActive ? (isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : '0 4px 12px rgba(59, 130, 246, 0.15)') : 'none',
-                    border: isActive ? `1px solid ${isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(255, 255, 255, 0.8)'}` : '1px solid transparent',
-                    color: isActive ? (isDark ? '#60a5fa' : '#2563eb') : clr.muted,
+                    background: isActive ? clr.activeBg : 'transparent',
+                    boxShadow: isActive ? clr.activeShadow : 'none',
+                    border: isActive ? `1px solid ${clr.activeBorder}` : '1px solid transparent',
+                    color: isActive ? clr.activeText : clr.topText,
                     fontWeight: isActive ? 600 : 500, fontSize: '0.875rem',
                     cursor: 'pointer', textAlign: 'left', marginBottom: 4, transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
+                  onMouseEnter={(e) => { if(!isActive) e.currentTarget.style.background = clr.hover }}
+                  onMouseLeave={(e) => { if(!isActive) e.currentTarget.style.background = 'transparent' }}
                 >
                   <div style={{
                     width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: isActive ? (isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.1)') : 'transparent',
-                    color: isActive ? (isDark ? '#93c5fd' : '#1d4ed8') : 'inherit',
+                    background: isActive ? clr.iconBg : 'transparent',
+                    color: isActive ? clr.iconText : 'inherit',
                     transition: 'all 0.2s'
                   }}>
                     <Icon size={16} active={isActive} />
@@ -391,7 +410,7 @@ export default function HomePage() {
             })}
 
             {/* District shortcuts */}
-            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: isDark ? '#4b5563' : '#9ca3af', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', marginTop: '1.25rem' }}>Districts</div>
+            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: clr.topMuted, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', marginTop: '1.25rem' }}>Districts</div>
             {DISTRICT_GROUPS.map(d => {
               const active = districtFilter === d.label;
               return (
@@ -402,10 +421,12 @@ export default function HomePage() {
                     padding: '0.4rem 0.75rem', borderRadius: 10, border: 'none',
                     background: active ? `${d.color}15` : 'transparent',
                     boxShadow: active ? `inset 3px 0 0 ${d.color}` : 'none',
-                    color: active ? d.color : '#cbd5e1',
+                    color: active ? d.color : clr.topText,
                     fontWeight: active ? 600 : 500, fontSize: '0.875rem', cursor: 'pointer', textAlign: 'left', marginBottom: 4,
                     transition: 'all 0.2s',
                   }}
+                  onMouseEnter={(e) => { if(!active) e.currentTarget.style.background = clr.hover }}
+                  onMouseLeave={(e) => { if(!active) e.currentTarget.style.background = 'transparent' }}
                 >
                   <div style={{ width: 24, height: 24, borderRadius: 6, background: `${d.color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <span style={{ width: 8, height: 8, borderRadius: 4, background: d.color, boxShadow: active ? `0 0 8px ${d.color}` : 'none', transition: 'all 0.2s' }} />
@@ -418,17 +439,20 @@ export default function HomePage() {
           </div>
 
           {/* User profile bottom */}
-          <div style={{ padding: '0.875rem 1rem', borderTop: `1px solid ${isDark ? '#1f2230' : '#f3f4f6'}` }}>
+          <div style={{ padding: '0.875rem 1rem', borderTop: `1px solid ${clr.border}` }}>
             <button className="nav-btn" onClick={() => setShowProfile(true)}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.5rem 0.5rem', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.5rem 0.5rem', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left',  color: clr.topText, transition: 'all 0.15s' }}
+              onMouseEnter={(e) => e.currentTarget.style.background = clr.hover}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            >
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #0F6E56, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <span style={{ color: '#fff', fontSize: '0.875rem', fontWeight: 700 }}>{(user?.full_name || user?.employee_id || 'A')[0].toUpperCase()}</span>
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 600, fontSize: '0.8125rem', color: isDark ? '#f9fafb' : '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.full_name || 'ASHA Worker'}</div>
-                <div style={{ fontSize: '0.6875rem', color: isDark ? '#6b7280' : '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.employee_id}</div>
+                <div style={{ fontWeight: 600, fontSize: '0.8125rem', color: clr.topText, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.full_name || 'ASHA Worker'}</div>
+                <div style={{ fontSize: '0.6875rem', color: clr.topMuted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.employee_id}</div>
               </div>
-              <ChevronIcon size={12} />
+              <ChevronIcon size={12} color={clr.topMuted} />
             </button>
           </div>
         </div>
@@ -443,7 +467,10 @@ export default function HomePage() {
           {/* Re-expand Sidebar Button (only visible if sidebar is collapsed) */}
           {!sidebarOpen && (
             <button className="action-btn" onClick={() => setSidebarOpen(true)}
-              style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.text }}>
+              style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.topText }}
+              onMouseEnter={(e) => e.currentTarget.style.background = clr.hover}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
               </svg>
@@ -452,7 +479,7 @@ export default function HomePage() {
 
           {/* Search */}
           <div style={{ flex: 1, position: 'relative', maxWidth: 340 }}>
-            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: clr.muted, pointerEvents: 'none' }}>
+            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: clr.topMuted, pointerEvents: 'none' }}>
               <SearchIcon size={15} />
             </span>
             <input
@@ -462,35 +489,41 @@ export default function HomePage() {
               style={{
                 width: '100%', height: 36, paddingLeft: '2.25rem', paddingRight: '0.75rem',
                 borderRadius: 8, border: `1px solid ${clr.borderSolid}`,
-                background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255, 255, 255, 0.4)',
+                background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255, 255, 255, 0.15)', // Lighter glass for green topbar
                 backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-                color: clr.text, fontSize: '0.875rem', outline: 'none',
+                color: clr.topText, fontSize: '0.875rem', outline: 'none',
                 boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)', transition: 'all 0.2s',
               }}
-              onFocus={e => e.target.style.borderColor = '#3b82f6'}
+              onFocus={e => e.target.style.borderColor = isDark ? '#3b82f6' : '#10b981'}
               onBlur={e => e.target.style.borderColor = clr.borderSolid}
             />
-            <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: clr.muted, fontWeight: 600, background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)', padding: '2px 5px', borderRadius: 4, pointerEvents: 'none' }}>⌘ K</span>
+            <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: clr.topMuted, fontWeight: 600, background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)', padding: '2px 5px', borderRadius: 4, pointerEvents: 'none' }}>⌘ K</span>
           </div>
 
           <div style={{ flex: 1 }} />
 
           {/* Theme toggle */}
           <button className="action-btn" onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
-            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', transition: 'all 0.15s', flexShrink: 0 }}>
+            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', transition: 'all 0.15s', flexShrink: 0, color: clr.topText }}
+            onMouseEnter={(e) => e.currentTarget.style.background = clr.hover}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
             {isDark ? '☀️' : '🌙'}
           </button>
 
           {/* Bell */}
           <button className="action-btn"
-            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: clr.muted, position: 'relative', transition: 'all 0.15s', flexShrink: 0 }}>
+            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: clr.topMuted, position: 'relative', transition: 'all 0.15s', flexShrink: 0 }}
+            onMouseEnter={(e) => e.currentTarget.style.background = clr.hover}
+            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          >
             <BellIcon size={17} />
             {summaryCounts.red > 0 && <span style={{ position: 'absolute', top: 7, right: 8, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid transparent' }} />}
           </button>
 
           {/* New Patient CTA */}
           <button onClick={() => navigate('/patient')}
-            style={{ height: 36, padding: '0 1rem', borderRadius: 8, border: `1px solid rgba(255,255,255,0.15)`, background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: '#fff', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', flexShrink: 0, transition: 'all 0.15s', boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)' }}>
+            style={{ height: 36, padding: '0 1rem', borderRadius: 8, border: `1px solid rgba(255,255,255,0.15)`, background: clr.primaryBg, color: '#fff', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', flexShrink: 0, transition: 'all 0.15s', boxShadow: clr.primaryShadow }}>
             + New Patient
           </button>
         </div>
@@ -503,8 +536,8 @@ export default function HomePage() {
             <button
               onClick={() => setActiveTab('ALL')}
               style={{
-                padding: '0.375rem 0.875rem', borderRadius: 99, border: `1.5px solid ${activeTab === 'ALL' ? '#3b82f6' : (isDark ? '#1f2230' : '#e5e7eb')}`,
-                background: activeTab === 'ALL' ? '#3b82f6' : (isDark ? '#1a1d27' : '#fff'),
+                padding: '0.375rem 0.875rem', borderRadius: 99, border: `1.5px solid ${activeTab === 'ALL' ? clr.primaryColor : (isDark ? '#1f2230' : '#e5e7eb')}`,
+                background: activeTab === 'ALL' ? clr.primaryColor : (isDark ? '#1a1d27' : '#fff'),
                 color: activeTab === 'ALL' ? '#fff' : (isDark ? '#9ca3af' : '#4b5563'),
                 fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
               }}>
@@ -573,7 +606,7 @@ export default function HomePage() {
               <button key={t} onClick={() => setViewTab(t)}
                 style={{
                   padding: '0.375rem 1rem', borderRadius: 8, border: 'none',
-                  background: viewTab === t ? '#3b82f6' : (isDark ? '#1a1d27' : '#f3f4f6'),
+                  background: viewTab === t ? clr.primaryColor : (isDark ? '#1a1d27' : '#f3f4f6'),
                   color: viewTab === t ? '#fff' : (isDark ? '#9ca3af' : '#6b7280'),
                   fontWeight: viewTab === t ? 700 : 500, fontSize: '0.875rem', cursor: 'pointer',
                   transition: 'all 0.15s',
@@ -584,7 +617,7 @@ export default function HomePage() {
           {/* ── Error ── */}
           {dashError && (
             <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '1rem', color: '#dc2626', marginBottom: '1rem', fontSize: '0.875rem' }}>
-              {dashError} — <button onClick={() => { setDashError(null); fetchRecords() }} style={{ color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Retry</button>
+              {dashError} — <button onClick={() => { setDashError(null); fetchRecords() }} style={{ color: clr.primaryColor, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Retry</button>
             </div>
           )}
 
