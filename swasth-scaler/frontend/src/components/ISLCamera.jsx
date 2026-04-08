@@ -1,7 +1,7 @@
 /**
  * ISLCamera.jsx
  * =============
- * Browser-side ISL detection using MediaPipe Hands (JS) + Random Forest (JSON).
+ * Browser-side ISL detection using MediaPipe Tasks Vision (HandLandmarker) + Random Forest (JSON).
  * No WebSocket or backend required — everything runs locally in the browser.
  *
  * Props:
@@ -94,19 +94,20 @@ class TemporalSmoother {
 }
 
 export default function ISLCamera({ onSymptomDetected }) {
-  const videoRef     = useRef(null)
-  const handsRef     = useRef(null)
-  const modelRef     = useRef(null)
-  const smootherRef  = useRef(new TemporalSmoother())
-  const cooldownRef  = useRef(false)
-  const animFrameRef = useRef(null)
-  const activeRef    = useRef(true)   // tracks if component is still mounted
+  const videoRef        = useRef(null)
+  const landmarkerRef   = useRef(null)
+  const modelRef        = useRef(null)
+  const smootherRef     = useRef(new TemporalSmoother())
+  const cooldownRef     = useRef(false)
+  const animFrameRef    = useRef(null)
+  const activeRef       = useRef(true)
+  const lastVideoTimeRef = useRef(-1)
 
-  const [phase, setPhase]           = useState('init')   // init|cam|running|error
+  const [phase, setPhase]             = useState('init')   // init|cam|running|error
   const [cameraError, setCameraError] = useState(null)
-  const [result, setResult]         = useState(null)
-  const [confirmed, setConfirmed]   = useState(null)
-  const [hasHand, setHasHand]       = useState(false)
+  const [result, setResult]           = useState(null)
+  const [confirmed, setConfirmed]     = useState(null)
+  const [hasHand, setHasHand]         = useState(false)
 
   const onSymptomRef = useRef(onSymptomDetected)
   useEffect(() => { onSymptomRef.current = onSymptomDetected }, [onSymptomDetected])
@@ -116,7 +117,7 @@ export default function ISLCamera({ onSymptomDetected }) {
     let stream = null
 
     async function start() {
-      // 1. Load model
+      // 1. Load RF model
       let model
       try {
         const r = await fetch('/isl_model.json')
@@ -128,13 +129,14 @@ export default function ISLCamera({ onSymptomDetected }) {
       }
       if (!activeRef.current) return
 
-      // 2. Check MediaPipe
-      if (!window.Hands) {
+      // 2. Check MediaPipe Tasks Vision CDN loaded
+      const MP = window.MediaPipeTasksVision
+      if (!MP || !MP.HandLandmarker || !MP.FilesetResolver) {
         if (activeRef.current) { setCameraError('MediaPipe not loaded — refresh'); setPhase('error') }
         return
       }
 
-      // 3. Start camera FIRST — get stream before initialising MediaPipe
+      // 3. Start camera
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 640, height: 480, facingMode: 'user' },
@@ -145,13 +147,13 @@ export default function ISLCamera({ onSymptomDetected }) {
       }
       if (!activeRef.current) { stream.getTracks().forEach(t => t.stop()); return }
 
-      // 4. Attach stream to video element
+      // 4. Attach stream to video
       const vid = videoRef.current
       if (!vid) return
       vid.srcObject = stream
-      setPhase('cam')   // show camera (video element is now live)
+      setPhase('cam')
 
-      // 5. Wait for video to actually have frames
+      // 5. Wait for video to have frames
       await new Promise(resolve => {
         if (vid.readyState >= 2) { resolve(); return }
         vid.addEventListener('canplay', resolve, { once: true })
@@ -161,71 +163,88 @@ export default function ISLCamera({ onSymptomDetected }) {
       try { await vid.play() } catch (_) {}
       if (!activeRef.current) return
 
-      // 6. Extra settle time so first frame has real pixels
-      await new Promise(r => setTimeout(r, 500))
+      // 6. Settle time
+      await new Promise(r => setTimeout(r, 300))
       if (!activeRef.current) return
 
-      // 7. Init MediaPipe Hands
-      const hands = new window.Hands({
-        locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${f}`,
-      })
-      hands.setOptions({
-        maxNumHands: 1,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5,
-      })
-      hands.onResults(results => {
-        if (!activeRef.current) return
-        if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
-          setHasHand(false)
-          smootherRef.current.reset()
-          setResult(null)
-          return
-        }
-        setHasHand(true)
-        const landmarks = results.multiHandLandmarks[0]
-        const features  = extractFeatures(landmarks)
-        const { sign, confidence, allConf } = predictRF(modelRef.current, features)
+      // 7. Init HandLandmarker (Tasks Vision stable API)
+      try {
+        const filesetResolver = await MP.FilesetResolver.forVisionTasks(
+          'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.3/wasm'
+        )
+        const handLandmarker = await MP.HandLandmarker.createFromOptions(filesetResolver, {
+          baseOptions: {
+            modelAssetPath:
+              'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task',
+            delegate: 'GPU',
+          },
+          runningMode: 'VIDEO',
+          numHands: 1,
+        })
+        if (!activeRef.current) { handLandmarker.close(); return }
+        landmarkerRef.current = handLandmarker
+      } catch (err) {
+        console.error('[ISL] HandLandmarker init failed:', err)
+        if (activeRef.current) { setCameraError('MediaPipe init failed — refresh'); setPhase('error') }
+        return
+      }
 
-        if (confidence < CONFIDENCE_THRESHOLD) {
-          setResult({ sign: null, confidence, allConf, fill: 0 })
-          return
-        }
-
-        const confirmed_now = smootherRef.current.update(sign)
-        const fill = Math.min(smootherRef.current.fill, 1)
-        setResult({ sign, confidence, allConf, fill })
-
-        if (confirmed_now && !cooldownRef.current) {
-          cooldownRef.current = true
-          playChime()
-          const odia = ODIA_LABELS[sign] || sign
-          setConfirmed({ english: sign, odia })
-          onSymptomRef.current?.(sign)
-          smootherRef.current.reset()
-          setTimeout(() => {
-            if (activeRef.current) { setConfirmed(null); cooldownRef.current = false }
-          }, CONFIRM_COOLDOWN_MS)
-        }
-      })
-      // Wait for MediaPipe WASM to fully load before sending frames
-      await hands.initialize()
-      if (!activeRef.current) return
-
-      handsRef.current = hands
       setPhase('running')
 
-      // 8. Frame loop
-      async function loop() {
+      // 8. Frame loop — detectForVideo is synchronous
+      function loop() {
         if (!activeRef.current) return
         const v = videoRef.current
-        if (v && handsRef.current && v.videoWidth > 0 && v.videoHeight > 0 && !v.paused) {
-          try { await handsRef.current.send({ image: v }) } catch (_) {}
+        if (
+          v && landmarkerRef.current &&
+          v.videoWidth > 0 && v.videoHeight > 0 &&
+          !v.paused && !v.ended &&
+          v.currentTime !== lastVideoTimeRef.current
+        ) {
+          lastVideoTimeRef.current = v.currentTime
+          try {
+            const results = landmarkerRef.current.detectForVideo(v, performance.now())
+            handleResults(results)
+          } catch (_) {}
         }
         animFrameRef.current = requestAnimationFrame(loop)
       }
       animFrameRef.current = requestAnimationFrame(loop)
+    }
+
+    function handleResults(results) {
+      if (!activeRef.current) return
+      if (!results.landmarks || results.landmarks.length === 0) {
+        setHasHand(false)
+        smootherRef.current.reset()
+        setResult(null)
+        return
+      }
+      setHasHand(true)
+      const landmarks = results.landmarks[0]
+      const features  = extractFeatures(landmarks)
+      const { sign, confidence, allConf } = predictRF(modelRef.current, features)
+
+      if (confidence < CONFIDENCE_THRESHOLD) {
+        setResult({ sign: null, confidence, allConf, fill: 0 })
+        return
+      }
+
+      const confirmed_now = smootherRef.current.update(sign)
+      const fill = Math.min(smootherRef.current.fill, 1)
+      setResult({ sign, confidence, allConf, fill })
+
+      if (confirmed_now && !cooldownRef.current) {
+        cooldownRef.current = true
+        playChime()
+        const odia = ODIA_LABELS[sign] || sign
+        setConfirmed({ english: sign, odia })
+        onSymptomRef.current?.(sign)
+        smootherRef.current.reset()
+        setTimeout(() => {
+          if (activeRef.current) { setConfirmed(null); cooldownRef.current = false }
+        }, CONFIRM_COOLDOWN_MS)
+      }
     }
 
     start()
@@ -235,9 +254,9 @@ export default function ISLCamera({ onSymptomDetected }) {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
       if (stream) stream.getTracks().forEach(t => t.stop())
       if (videoRef.current) videoRef.current.srcObject = null
-      if (handsRef.current) { handsRef.current.close(); handsRef.current = null }
+      if (landmarkerRef.current) { landmarkerRef.current.close(); landmarkerRef.current = null }
     }
-  }, [])   // ← runs ONCE, no status in deps
+  }, [])
 
   const fill        = result?.fill ?? 0
   const previewSign = result?.sign
