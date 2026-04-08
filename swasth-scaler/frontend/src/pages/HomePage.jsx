@@ -320,7 +320,7 @@ export default function HomePage() {
   const clr = {
     bg:      isDark 
                ? 'linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%)' 
-               : 'linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%)', // Very light green background
+               : 'linear-gradient(135deg, #ffffff 0%, #f0fbf5 100%)', // Almost white with a tiny hint of green
     surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(209, 250, 229, 0.4)',
     blur:    'blur(24px) saturate(150%)',
     border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.2)',

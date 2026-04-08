@@ -80,6 +80,51 @@ function ChevronDownIcon() {
  *   topbarContent  — optional JSX to inject into the top bar (e.g. patient badge)
  *   contentStyle   — extra style overrides for the scrollable content area
  */
+const ThemeMorphIcon = ({ isDark, color, idSuffix }) => (
+  <svg 
+    width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+    style={{
+      color: color,
+      transform: isDark ? 'rotate(-45deg)' : 'rotate(0deg)',
+      transition: 'transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)'
+    }}
+  >
+    <mask id={`moon-mask-${idSuffix}`}>
+      <rect x="0" y="0" width="100%" height="100%" fill="white" />
+      <circle 
+        cx={isDark ? "15" : "28"} 
+        cy={isDark ? "6" : "-8"} 
+        r="8" fill="black" 
+        style={{ transition: 'cx 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), cy 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)' }} 
+      />
+    </mask>
+    <circle 
+      cx="12" cy="12" 
+      r={isDark ? "9" : "5"} 
+      mask={`url(#moon-mask-${idSuffix})`}
+      fill={isDark ? "currentColor" : "transparent"}
+      style={{ 
+        transition: 'r 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), fill 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)' 
+      }} 
+    />
+    <g style={{
+      transform: isDark ? 'scale(0)' : 'scale(1)',
+      transformOrigin: '12px 12px',
+      transition: 'transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)',
+      opacity: isDark ? 0 : 1
+    }}>
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </g>
+  </svg>
+)
+
 export default function DashboardLayout({ children, topbarContent, contentStyle = {} }) {
   const navigate  = useNavigate()
   const location  = useLocation()
@@ -105,7 +150,7 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
   const clr = {
     bg:      isDark 
                ? 'linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%)' 
-               : 'linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%)', // Very light green bg
+               : 'linear-gradient(135deg, #ffffff 0%, #f0fbf5 100%)', // Almost white with a tiny hint of green
     surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(209, 250, 229, 0.4)',
     blur:    'blur(24px) saturate(150%)',
     border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.2)',
