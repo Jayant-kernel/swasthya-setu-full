@@ -1,51 +1,17 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
+import ProfileOverlay from '../components/ProfileOverlay.jsx'
 
-import TopNav from '../components/TopNav.jsx'
-import GlobalHeader from '../components/GlobalHeader.jsx'
-
+/* ── Constants ─────────────────────────────────────────── */
 const ALL_DISTRICTS = [
-  "Ahilyanagar",
-  "Akola",
-  "Amravati",
-  "Beed",
-  "Bhandara",
-  "Buldhana",
-  "Chandrapur",
-  "Chhatrapati Sambhajinagar",
-  "Dharashiv",
-  "Dhule",
-  "Gadchiroli",
-  "Gondia",
-  "Hingoli",
-  "Jalgaon",
-  "Jalna",
-  "Kolhapur",
-  "Latur",
-  "Mumbai City",
-  "Mumbai Suburban",
-  "Nagpur",
-  "Nanded",
-  "Nandurbar",
-  "Nashik",
-  "Palghar",
-  "Parbhani",
-  "Pune",
-  "Raigad",
-  "Ratnagiri",
-  "Sangli",
-  "Satara",
-  "Sindhudurg",
-  "Solapur",
-  "Thane",
-  "Wardha",
-  "Washim",
-  "Yavatmal"
+  "Ahilyanagar","Akola","Amravati","Beed","Bhandara","Buldhana","Chandrapur",
+  "Chhatrapati Sambhajinagar","Dharashiv","Dhule","Gadchiroli","Gondia","Hingoli",
+  "Jalgaon","Jalna","Kolhapur","Latur","Mumbai City","Mumbai Suburban","Nagpur",
+  "Nanded","Nandurbar","Nashik","Palghar","Parbhani","Pune","Raigad","Ratnagiri",
+  "Sangli","Satara","Sindhudurg","Solapur","Thane","Wardha","Washim","Yavatmal",
 ]
-
 const SEVERITY_ORDER = { red: 0, yellow: 1, green: 2 }
-const TEAL = 'var(--primary)'   // eSanjeevani teal-green
-const BLUE_BG = 'var(--bg)' // Responsive dashboard background
 
 function timeAgo(iso) {
   const diff = Date.now() - new Date(iso).getTime()
@@ -57,46 +23,184 @@ function timeAgo(iso) {
   return `${Math.floor(hrs / 24)}d ago`
 }
 
-// Utility removed as Triage counts now reflect the full patient list, not just today's.
+function formatDate(iso) {
+  if (!iso) return '—'
+  return new Date(iso).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })
+}
 
+/* ── Sidebar nav items ─────────────────────────────────── */
+const NAV_ITEMS = [
+  { id: 'home',    label: 'Dashboard',     icon: GridIcon,    path: '/home' },
+  { id: 'patient', label: 'New Patient',   icon: UserPlusIcon, path: '/patient' },
+  { id: 'visits',  label: 'My Visit List', icon: ListIcon,    path: '/home', active: true },
+  { id: 'chat',    label: 'AI Chat',       icon: ChatIcon,    path: '/chat' },
+  { id: 'isl',     label: 'Sign Language', icon: HandIcon,    path: '/isl' },
+]
+
+const DISTRICT_GROUPS = [
+  { label: 'Pune', color: '#6366f1' },
+  { label: 'Nagpur', color: '#f59e0b' },
+  { label: 'Nashik', color: '#10b981' },
+]
+
+/* ── SVG Icon helpers ──────────────────────────────────── */
+function GridIcon({ size = 16, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+      <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+    </svg>
+  )
+}
+function UserPlusIcon({ size = 16, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/>
+    </svg>
+  )
+}
+function ListIcon({ size = 16, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+      <circle cx="3" cy="6" r="1" fill={color}/><circle cx="3" cy="12" r="1" fill={color}/><circle cx="3" cy="18" r="1" fill={color}/>
+    </svg>
+  )
+}
+function ChatIcon({ size = 16, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+  )
+}
+function HandIcon({ size = 16, color = 'currentColor' }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
+      <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
+      <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
+      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+    </svg>
+  )
+}
+function SearchIcon({ size = 16 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  )
+}
+function BellIcon({ size = 20 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
+  )
+}
+function ChevronIcon({ size = 14, dir = 'right' }) {
+  const r = dir === 'right' ? 0 : dir === 'down' ? 90 : 180
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: `rotate(${r}deg)` }}>
+      <polyline points="9 18 15 12 9 6"/>
+    </svg>
+  )
+}
+function FilterIcon({ size = 15 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+    </svg>
+  )
+}
+function TrashIcon({ size = 13 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+    </svg>
+  )
+}
+
+/* ── Severity helpers ──────────────────────────────────── */
+const SEV_META = {
+  red:    { label: 'Emergency', color: '#ef4444', bg: '#fef2f2', border: '#fecaca' },
+  yellow: { label: 'Moderate',  color: '#f59e0b', bg: '#fffbeb', border: '#fde68a' },
+  green:  { label: 'Stable',    color: '#10b981', bg: '#f0fdf4', border: '#bbf7d0' },
+}
+
+function SeverityPill({ severity }) {
+  const m = SEV_META[severity]
+  if (!m) return null
+  return (
+    <span style={{
+      display: 'inline-flex', alignItems: 'center', gap: 4,
+      padding: '3px 10px', borderRadius: 99,
+      background: m.bg, border: `1px solid ${m.border}`,
+      fontSize: '0.72rem', fontWeight: 700, color: m.color, letterSpacing: '0.02em',
+    }}>
+      <span style={{ width: 6, height: 6, borderRadius: '50%', background: m.color, display: 'inline-block' }} />
+      {m.label}
+    </span>
+  )
+}
+
+function PriorityBadge({ severity }) {
+  const labels = { red: 'High', yellow: 'Medium', green: 'Low' }
+  const colors = { red: '#ef4444', yellow: '#f59e0b', green: '#10b981' }
+  const bgs    = { red: '#fef2f2', yellow: '#fffbeb', green: '#f0fdf4' }
+  const label = labels[severity] || '—'
+  return (
+    <span style={{
+      display: 'inline-block', padding: '3px 12px', borderRadius: 99,
+      background: bgs[severity] || '#f3f4f6',
+      color: colors[severity] || '#6b7280',
+      fontSize: '0.72rem', fontWeight: 700,
+    }}>{label}</span>
+  )
+}
+
+/* ══════════════════════════════════════════════════════════
+   Main Page
+   ══════════════════════════════════════════════════════════ */
 export default function HomePage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const { user, logout } = useAuth()
 
-  const [activeTab, setActiveTab] = useState('ALL')
-  const [sortMode, setSortMode] = useState('latest')
-  const [query, setQuery] = useState('')
+  const [activeTab,      setActiveTab]      = useState('ALL')
+  const [viewTab,        setViewTab]        = useState('Table')   // Table | Board
+  const [sortMode,       setSortMode]       = useState('latest')
+  const [query,          setQuery]          = useState('')
   const [districtFilter, setDistrictFilter] = useState('')
+  const [sidebarOpen,    setSidebarOpen]    = useState(true)
+  const [showProfile,    setShowProfile]    = useState(false)
+  const [theme,          setTheme]          = useState(localStorage.getItem('theme') || 'light')
   const debounceRef = useRef(null)
-  const [isOnline, setIsOnline] = useState(navigator.onLine)
 
-  // State declarations — all must be before any useEffect that references them
   const [patientResults, setPatientResults] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [totalCount, setTotalCount] = useState(0)
-  const [showCount, setShowCount] = useState(6)
-  const [dashError, setDashError] = useState(null)
+  const [loading,        setLoading]        = useState(false)
+  const [totalCount,     setTotalCount]     = useState(0)
+  const [showCount,      setShowCount]      = useState(50)
+  const [dashError,      setDashError]      = useState(null)
+  const [summaryCounts,  setSummaryCounts]  = useState({ red: 0, yellow: 0, green: 0 })
 
-  // Summary counts per severity
-  const [summaryCounts, setSummaryCounts] = useState({ red: 0, yellow: 0, green: 0 })
-
-  // Online/offline listener
+  // Theme sync
   useEffect(() => {
-    const on = () => setIsOnline(true)
-    const off = () => setIsOnline(false)
-    window.addEventListener('online', on)
-    window.addEventListener('offline', off)
-    return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off) }
-  }, [])
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('theme', theme)
+  }, [theme])
 
-  // Update summary counts whenever patient list changes
+  // Prompt profile if missing
+  useEffect(() => {
+    if (user && (!user.full_name || !user.location)) setShowProfile(true)
+  }, [user])
+
+  // Summary counts
   useEffect(() => {
     const counts = { red: 0, yellow: 0, green: 0 }
-    patientResults.forEach(p => {
-      // Use latestSeverity which is pre-calculated in fetchRecords
-      if (p.latestSeverity && counts[p.latestSeverity] !== undefined) {
-        counts[p.latestSeverity]++
-      }
-    })
+    patientResults.forEach(p => { if (p.latestSeverity && counts[p.latestSeverity] !== undefined) counts[p.latestSeverity]++ })
     setSummaryCounts(counts)
   }, [patientResults])
 
@@ -104,38 +208,20 @@ export default function HomePage() {
     setLoading(true)
     try {
       const token = localStorage.getItem('access_token')
-
       const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       })
-      
-      let records = []
-      if (res.ok) {
-        records = await res.json()
-      }
-
+      let records = res.ok ? await res.json() : []
       let rows = records || []
-
-      // Client side filtering for demo purposes 
       if (activeTab !== 'ALL') rows = rows.filter(r => r.severity === activeTab.toLowerCase())
       if (query.trim().length >= 2) rows = rows.filter(r => r.patient_name?.toLowerCase().includes(query.trim().toLowerCase()))
       if (districtFilter) rows = rows.filter(r => r.district === districtFilter)
 
-      // Group by patient key (name+age+district)
       const grouped = new Map()
       for (const r of rows) {
         const key = `${(r.patient_name || '').toLowerCase()}_${r.age}_${r.district}`
         if (!grouped.has(key)) {
-          grouped.set(key, {
-            id: r.patient_id || key,
-            name: r.patient_name,
-            age: r.age,
-            gender: r.gender,
-            district: r.district,
-            triage_records: [],
-          })
+          grouped.set(key, { id: r.patient_id || key, name: r.patient_name, age: r.age, gender: r.gender, district: r.district, triage_records: [] })
         }
         grouped.get(key).triage_records.push({ id: r.id, severity: r.severity, brief: r.brief, created_at: r.created_at, district: r.district })
       }
@@ -145,16 +231,12 @@ export default function HomePage() {
         p.latestSeverity = p.triage_records[0]?.severity || null
         return p
       })
-
-      if (sortMode === 'critical') {
-        patients.sort((a, b) => (SEVERITY_ORDER[a.latestSeverity] ?? 3) - (SEVERITY_ORDER[b.latestSeverity] ?? 3))
-      }
+      if (sortMode === 'critical') patients.sort((a, b) => (SEVERITY_ORDER[a.latestSeverity] ?? 3) - (SEVERITY_ORDER[b.latestSeverity] ?? 3))
 
       setPatientResults(patients)
       setTotalCount(patients.length)
-      setShowCount(6)
+      setShowCount(50)
     } catch (err) {
-      console.error('fetchRecords error:', err)
       setDashError(err?.message || 'Unknown error')
       setPatientResults([])
       setTotalCount(0)
@@ -165,9 +247,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
-    debounceRef.current = setTimeout(() => {
-      fetchRecords()
-    }, query ? 400 : 0)
+    debounceRef.current = setTimeout(fetchRecords, query ? 400 : 0)
     return () => clearTimeout(debounceRef.current)
   }, [activeTab, query, districtFilter, sortMode, fetchRecords])
 
@@ -178,233 +258,416 @@ export default function HomePage() {
   async function handleDeletePatient(e, patientId) {
     e.stopPropagation()
     if (!window.confirm('Delete ALL records for this patient? This cannot be undone.')) return
-    const token = localStorage.getItem('access_token')
-    // In a real app we'd have a DELETE /api/v1/patients/patientId endpoint.
-    // For now, simulating the frontend state removal.
-    // await fetch(`https://swasthya-setu-full.onrender.com/api/v1/patients/${patientId}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } })
     setPatientResults(prev => prev.filter(p => p.id !== patientId))
     setTotalCount(prev => prev - 1)
   }
 
   const visiblePatients = patientResults.slice(0, showCount)
 
+  // Group patients by severity for the table sections
+  const groups = [
+    { key: 'red',    label: '🔴 Emergency',   dot: '#ef4444', patients: visiblePatients.filter(p => p.latestSeverity === 'red') },
+    { key: 'yellow', label: '🟡 Moderate',    dot: '#f59e0b', patients: visiblePatients.filter(p => p.latestSeverity === 'yellow') },
+    { key: 'green',  label: '🟢 Stable',      dot: '#10b981', patients: visiblePatients.filter(p => p.latestSeverity === 'green') },
+    { key: 'none',   label: '⚪ Unclassified', dot: '#9ca3af', patients: visiblePatients.filter(p => !p.latestSeverity) },
+  ].filter(g => g.patients.length > 0)
+
+  const isDark = theme === 'dark'
+
+  /* ── Styles ─── */
+  const S = {
+    root: {
+      display: 'flex', height: '100dvh', overflow: 'hidden',
+      fontFamily: "'Inter', 'Noto Sans', sans-serif",
+      background: isDark ? '#0f1117' : '#f5f6fa',
+      color: isDark ? '#e5e7eb' : '#111827',
+    },
+    /* Sidebar */
+    sidebar: {
+      width: sidebarOpen ? 220 : 0,
+      minWidth: sidebarOpen ? 220 : 0,
+      overflow: 'hidden',
+      background: isDark ? '#16181f' : '#ffffff',
+      borderRight: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`,
+      display: 'flex', flexDirection: 'column',
+      transition: 'width 0.25s ease, min-width 0.25s ease',
+      flexShrink: 0,
+    },
+    sidebarInner: { width: 220, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' },
+    /* Main */
+    main: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+    topbar: {
+      background: isDark ? '#16181f' : '#ffffff',
+      borderBottom: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`,
+      padding: '0 1.5rem', height: 60,
+      display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0,
+    },
+    content: { flex: 1, overflowY: 'auto', padding: '1.5rem' },
+  }
+
   return (
-    <div style={{ minHeight: '100dvh', background: BLUE_BG, display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
-      <GlobalHeader />
+    <div style={S.root}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: ${isDark ? '#2d3148' : '#e5e7eb'}; border-radius: 99px; }
+        .nav-btn:hover { background: ${isDark ? '#1e2030' : '#f3f4f6'} !important; }
+        .row-btn:hover { background: ${isDark ? '#1e2030' : '#f9fafb'} !important; cursor: pointer; }
+        .action-btn:hover { background: ${isDark ? '#2d3148' : '#f3f4f6'} !important; }
+        .del-btn:hover { background: #fef2f2 !important; color: #ef4444 !important; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important; }
+      `}</style>
 
-      <TopNav />
+      {/* ══ SIDEBAR ══════════════════════════════════════════ */}
+      <aside style={S.sidebar}>
+        <div style={S.sidebarInner}>
+          {/* Logo */}
+          <div style={{ padding: '1.25rem 1rem 0.75rem', borderBottom: `1px solid ${isDark ? '#1f2230' : '#f3f4f6'}` }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+              <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #0F6E56, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ color: '#fff', fontSize: '1rem' }}>🏥</span>
+              </div>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: '0.9375rem', color: isDark ? '#f9fafb' : '#111827', lineHeight: 1.2, letterSpacing: '-0.02em' }}>Swasthya Setu</div>
+                <div style={{ fontSize: '0.65rem', color: isDark ? '#6b7280' : '#9ca3af', fontWeight: 500 }}>ASHA Dashboard</div>
+              </div>
+            </div>
+          </div>
 
-      <main style={{ flex: 1, padding: '1rem', maxWidth: 1100, width: '100%', margin: '0 auto' }}>
+          {/* Nav */}
+          <div style={{ padding: '0.75rem 0.625rem', flex: 1, overflowY: 'auto' }}>
+            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: isDark ? '#4b5563' : '#9ca3af', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem' }}>Menu</div>
 
-        {/* Today's summary bar */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
-          {[
-             { sev: 'red', label: 'तातडीने', sub: 'Emergency', accent: '#C0392B', count: summaryCounts.red },
-            { sev: 'yellow', label: 'मध्यम', sub: 'Moderate', accent: '#B7791F', count: summaryCounts.yellow },
-            { sev: 'green', label: 'स्थिर', sub: 'Stable', accent: 'var(--primary)', count: summaryCounts.green },
-          ].map(item => (
-            <button key={item.sev}
-              onClick={() => setActiveTab(activeTab === item.sev.toUpperCase() ? 'ALL' : item.sev.toUpperCase())}
-              style={{
-                background: activeTab === item.sev.toUpperCase() ? item.accent : 'var(--surface)',
-                border: `1.5px solid ${activeTab === item.sev.toUpperCase() ? item.accent : 'var(--border)'}`,
-                borderRadius: 10, padding: '0.875rem 0.5rem', textAlign: 'center',
-                cursor: 'pointer', minHeight: 72, transition: 'all 0.15s',
-              }}
-            >
-              <div style={{ fontSize: '1.75rem', fontWeight: 800, lineHeight: 1, color: activeTab === item.sev.toUpperCase() ? 'var(--surface)' : item.accent }}>{item.count}</div>
-              <div style={{ fontSize: '0.8125rem', fontWeight: 600, marginTop: 3, color: activeTab === item.sev.toUpperCase() ? 'rgba(255,255,255,0.9)' : 'var(--text-main)', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>{item.label}</div>
-              <div style={{ fontSize: '0.6875rem', color: activeTab === item.sev.toUpperCase() ? 'rgba(255,255,255,0.65)' : 'var(--text-muted)', marginTop: 1 }}>{item.sub}</div>
+            {NAV_ITEMS.map(item => {
+              const isActive = location.pathname === item.path && item.active
+              const Icon = item.icon
+              return (
+                <button key={item.id} className="nav-btn"
+                  onClick={() => navigate(item.path)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem',
+                    padding: '0.5rem 0.75rem', borderRadius: 8, border: 'none',
+                    background: isActive ? (isDark ? '#1e2942' : '#eff6ff') : 'transparent',
+                    color: isActive ? '#3b82f6' : (isDark ? '#9ca3af' : '#6b7280'),
+                    fontWeight: isActive ? 600 : 500, fontSize: '0.875rem',
+                    cursor: 'pointer', textAlign: 'left', marginBottom: 2,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <Icon size={16} color={isActive ? '#3b82f6' : (isDark ? '#6b7280' : '#9ca3af')} />
+                  {item.label}
+                  {item.id === 'visits' && <ChevronIcon size={12} />}
+                </button>
+              )
+            })}
+
+            {/* District shortcuts */}
+            <div style={{ fontSize: '0.65rem', fontWeight: 700, color: isDark ? '#4b5563' : '#9ca3af', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', marginTop: '1.25rem' }}>Districts</div>
+            {DISTRICT_GROUPS.map(d => (
+              <button key={d.label} className="nav-btn"
+                onClick={() => setDistrictFilter(districtFilter === d.label ? '' : d.label)}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem',
+                  padding: '0.5rem 0.75rem', borderRadius: 8, border: 'none',
+                  background: districtFilter === d.label ? `${d.color}15` : 'transparent',
+                  color: districtFilter === d.label ? d.color : (isDark ? '#9ca3af' : '#6b7280'),
+                  fontWeight: 500, fontSize: '0.875rem', cursor: 'pointer', textAlign: 'left', marginBottom: 2,
+                  transition: 'all 0.15s',
+                }}
+              >
+                <span style={{ width: 10, height: 10, borderRadius: 3, background: d.color, flexShrink: 0 }} />
+                {d.label}
+              </button>
+            ))}
+          </div>
+
+          {/* User profile bottom */}
+          <div style={{ padding: '0.875rem 1rem', borderTop: `1px solid ${isDark ? '#1f2230' : '#f3f4f6'}` }}>
+            <button className="nav-btn" onClick={() => setShowProfile(true)}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.5rem 0.5rem', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', transition: 'all 0.15s' }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'linear-gradient(135deg, #0F6E56, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ color: '#fff', fontSize: '0.875rem', fontWeight: 700 }}>{(user?.full_name || user?.employee_id || 'A')[0].toUpperCase()}</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 600, fontSize: '0.8125rem', color: isDark ? '#f9fafb' : '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.full_name || 'ASHA Worker'}</div>
+                <div style={{ fontSize: '0.6875rem', color: isDark ? '#6b7280' : '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.employee_id}</div>
+              </div>
+              <ChevronIcon size={12} />
             </button>
-          ))}
+          </div>
         </div>
+      </aside>
 
-        {/* Filter bar */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.625rem', marginBottom: '1rem', alignItems: 'center' }}>
+      {/* ══ MAIN ═════════════════════════════════════════════ */}
+      <div style={S.main}>
 
-          {/* New Patient */}
-          <button
-            onClick={() => navigate('/patient')}
-            style={{ minHeight: 44, padding: '0 1rem', background: TEAL, color: 'var(--surface)', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', whiteSpace: 'nowrap', flexShrink: 0 }}
-          >
-            <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>+</span> New Patient
+        {/* Top bar */}
+        <div style={S.topbar}>
+          {/* Hamburger */}
+          <button className="action-btn" onClick={() => setSidebarOpen(o => !o)}
+            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+            </svg>
           </button>
 
-          {/* Sort */}
-          <div style={{ display: 'flex', background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 10, overflow: 'hidden' }}>
-            {[{ key: 'latest', label: 'Latest' }, { key: 'critical', label: 'Critical first' }].map(s => (
-              <button key={s.key} onClick={() => setSortMode(s.key)}
-                style={{
-                  minHeight: 44, padding: '0 0.875rem', border: 'none',
-                  borderRight: s.key === 'latest' ? '1px solid var(--border)' : 'none',
-                  background: sortMode === s.key ? TEAL : 'transparent',
-                  color: sortMode === s.key ? 'var(--surface)' : 'var(--text-main)',
-                  fontWeight: sortMode === s.key ? 700 : 500,
-                  fontSize: '0.875rem', cursor: 'pointer',
-                }}
-              >{s.label}</button>
-            ))}
-          </div>
-
-          {/* District */}
-          <select value={districtFilter} onChange={e => setDistrictFilter(e.target.value)}
-            style={{ minHeight: 44, padding: '0 2rem 0 0.75rem', fontSize: '0.875rem', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--surface)', color: 'var(--text-main)', flex: '1 1 140px', minWidth: 0 }}>
-            <option value="">All Districts</option>
-            {ALL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
-          </select>
-
           {/* Search */}
-          <div style={{ position: 'relative', flex: '1 1 140px', minWidth: 0 }}>
-            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', pointerEvents: 'none' }}>🔍</span>
-            <input type="text"
-              style={{ minHeight: 44, paddingLeft: '2rem', paddingRight: '0.75rem', width: '100%', fontSize: '0.875rem', border: '1px solid var(--border)', borderRadius: 10, background: 'var(--surface)', color: 'var(--text-main)', outline: 'none', boxSizing: 'border-box' }}
-              placeholder="Search by name…"
+          <div style={{ flex: 1, position: 'relative', maxWidth: 340 }}>
+            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: isDark ? '#4b5563' : '#9ca3af', pointerEvents: 'none' }}>
+              <SearchIcon size={15} />
+            </span>
+            <input
+              placeholder="Search patients…"
               value={query}
               onChange={e => setQuery(e.target.value)}
-              autoComplete="off"
+              style={{
+                width: '100%', height: 36, paddingLeft: '2.25rem', paddingRight: '0.75rem',
+                borderRadius: 8, border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`,
+                background: isDark ? '#1a1d27' : '#f9fafb',
+                color: isDark ? '#e5e7eb' : '#111827', fontSize: '0.875rem', outline: 'none',
+              }}
             />
+            <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: isDark ? '#374151' : '#d1d5db', fontWeight: 600, background: isDark ? '#1f2230' : '#f3f4f6', padding: '2px 5px', borderRadius: 4, pointerEvents: 'none' }}>⌘ K</span>
           </div>
+
+          <div style={{ flex: 1 }} />
+
+          {/* Theme toggle */}
+          <button className="action-btn" onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
+            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', transition: 'all 0.15s', flexShrink: 0 }}>
+            {isDark ? '☀️' : '🌙'}
+          </button>
+
+          {/* Bell */}
+          <button className="action-btn"
+            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#9ca3af' : '#6b7280', position: 'relative', transition: 'all 0.15s', flexShrink: 0 }}>
+            <BellIcon size={17} />
+            {summaryCounts.red > 0 && <span style={{ position: 'absolute', top: 7, right: 8, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #fff' }} />}
+          </button>
+
+          {/* New Patient CTA */}
+          <button onClick={() => navigate('/patient')}
+            style={{ height: 36, padding: '0 1rem', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', flexShrink: 0, transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = '#2563eb'}
+            onMouseLeave={e => e.currentTarget.style.background = '#3b82f6'}>
+            + New Patient
+          </button>
         </div>
 
-        {/* Patient count */}
-        <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
-          {loading ? 'Loading…' : `${totalCount} patient${totalCount !== 1 ? 's' : ''} found`}
-        </div>
+        {/* Content */}
+        <div style={S.content}>
 
-        {/* Error state */}
-        {dashError && (
-          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
-            <div style={{ fontSize: '1rem', marginBottom: '0.75rem', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>काहीतरी चूक झाली / Something went wrong</div>
-            <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)', marginBottom: '1rem' }}>{dashError}</div>
-            <button onClick={() => { setDashError(null); fetchRecords() }}
-              style={{ minHeight: 44, padding: '0 1.5rem', background: TEAL, color: 'var(--surface)', border: 'none', borderRadius: 10, fontWeight: 700, cursor: 'pointer' }}>
-              पुन्हा प्रयत्न करा / Retry
-            </button>
-          </div>
-        )}
-
-        {/* Skeleton */}
-        {loading && patientResults.length === 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '0.75rem' }}>
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 12, padding: '1rem', opacity: 0.5 }}>
-                <div style={{ height: 16, background: 'var(--border)', borderRadius: 4, marginBottom: 8, width: '60%' }} />
-                <div style={{ height: 12, background: 'var(--border)', borderRadius: 4, marginBottom: 8, width: '40%' }} />
-                <div style={{ height: 12, background: 'var(--border)', borderRadius: 4, width: '80%' }} />
-              </div>
+          {/* ── Stat summary cards ── */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+            {[
+              { sev: 'red',    emoji: '🚨', label: 'Emergency',  count: summaryCounts.red,    color: '#ef4444', bg: isDark ? '#2d1515' : '#fef2f2' },
+              { sev: 'yellow', emoji: '⚠️', label: 'Moderate',   count: summaryCounts.yellow, color: '#f59e0b', bg: isDark ? '#2d2210' : '#fffbeb' },
+              { sev: 'green',  emoji: '✅', label: 'Stable',     count: summaryCounts.green,  color: '#10b981', bg: isDark ? '#0d2520' : '#f0fdf4' },
+            ].map(s => (
+              <button key={s.sev} className="stat-card"
+                onClick={() => setActiveTab(activeTab === s.sev.toUpperCase() ? 'ALL' : s.sev.toUpperCase())}
+                style={{
+                  background: s.bg,
+                  border: `1.5px solid ${activeTab === s.sev.toUpperCase() ? s.color : (isDark ? '#1f2230' : '#e5e7eb')}`,
+                  borderRadius: 12, padding: '1rem 1.25rem',
+                  cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s',
+                  boxShadow: activeTab === s.sev.toUpperCase() ? `0 0 0 3px ${s.color}22` : 'none',
+                }}>
+                <div style={{ fontSize: '1.5rem', marginBottom: '0.375rem' }}>{s.emoji}</div>
+                <div style={{ fontSize: '2rem', fontWeight: 800, color: s.color, lineHeight: 1 }}>{s.count}</div>
+                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: isDark ? '#9ca3af' : '#6b7280', marginTop: 3 }}>{s.label}</div>
+              </button>
             ))}
           </div>
-        )}
 
-        {/* Empty state */}
-        {!loading && patientResults.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)', fontSize: '1rem' }}>
-            कोणतेही रुग्ण आढळले नाहीत<br /><span style={{ fontSize: '0.875rem' }}>No patients found.</span>
+          {/* ── Page header ── */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <h1 style={{ fontSize: '1.375rem', fontWeight: 800, color: isDark ? '#f9fafb' : '#111827', margin: 0, letterSpacing: '-0.02em' }}>
+              Your Patient List
+            </h1>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              {/* District filter */}
+              <select value={districtFilter} onChange={e => setDistrictFilter(e.target.value)}
+                style={{ height: 34, padding: '0 0.75rem', fontSize: '0.8125rem', border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, borderRadius: 8, background: isDark ? '#16181f' : '#fff', color: isDark ? '#e5e7eb' : '#111827', outline: 'none' }}>
+                <option value="">All Districts</option>
+                {ALL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+
+              {/* Sort */}
+              <select value={sortMode} onChange={e => setSortMode(e.target.value)}
+                style={{ height: 34, padding: '0 0.75rem', fontSize: '0.8125rem', border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, borderRadius: 8, background: isDark ? '#16181f' : '#fff', color: isDark ? '#e5e7eb' : '#111827', outline: 'none' }}>
+                <option value="latest">Latest first</option>
+                <option value="critical">Critical first</option>
+              </select>
+
+              {/* Filter pill */}
+              <button className="action-btn"
+                style={{ height: 34, padding: '0 0.75rem', border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, borderRadius: 8, background: isDark ? '#16181f' : '#fff', color: isDark ? '#9ca3af' : '#6b7280', fontSize: '0.8125rem', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s' }}>
+                <FilterIcon size={13} /> Filter
+              </button>
+            </div>
           </div>
-        )}
 
-        {/* ── Patient cards (grouped by patient) ───────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '0.75rem' }}>
-          {visiblePatients.map(p => {
-            const last = p.triage_records?.[0]
-            const sev = last?.severity
-            const sevColor = sev === 'red' ? '#C0392B' : sev === 'yellow' ? '#B7791F' : 'var(--primary)'
-            const sevLabel = sev === 'red' ? 'EMERGENCY' : sev === 'yellow' ? 'MODERATE' : sev ? 'STABLE' : null
-            const visits = p.triage_records || []
-            // Severity trend: last 3 visits (oldest → newest for left-to-right reading)
-            const trendDots = visits.slice(0, 3).reverse()
-            return (
-              <div key={p.id}
-                style={{ background: 'var(--surface)', border: '1px solid #d1e8e2', borderLeft: `5px solid ${sevColor}`, borderRadius: 10, padding: '1rem', transition: 'box-shadow 0.15s', boxShadow: '0 1px 3px rgba(26,110,92,0.06)' }}
-                onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(26,110,92,0.12)' }}
-                onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 1px 3px rgba(26,110,92,0.06)' }}
-              >
-                {/* Top row: name + delete */}
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '0.375rem' }}>
-                  <button onClick={() => handlePatientCardClick(p)}
-                    style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', flex: 1 }}
-                  >
-                    <div style={{ width: 9, height: 9, borderRadius: '50%', background: sevColor, flexShrink: 0 }} />
-                    <span style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-main)' }}>{p.name}</span>
-                  </button>
-                  <button onClick={(e) => handleDeletePatient(e, p.id)}
-                    title="Delete patient"
-                    style={{ background: 'transparent', border: '1px solid var(--border)', borderRadius: 6, padding: '0.2rem 0.5rem', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '0.75rem', flexShrink: 0, marginLeft: '0.5rem', display: 'flex', alignItems: 'center', gap: 3, transition: 'all 0.15s' }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--error-bg)'; e.currentTarget.style.color = 'var(--error-text)'; e.currentTarget.style.borderColor = '#FCA5A5' }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" />
-                    </svg>
-                    Delete
-                  </button>
+          {/* ── View tabs ── */}
+          <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '1rem' }}>
+            {['Table', 'Board'].map(t => (
+              <button key={t} onClick={() => setViewTab(t)}
+                style={{
+                  padding: '0.375rem 1rem', borderRadius: 8, border: 'none',
+                  background: viewTab === t ? '#3b82f6' : (isDark ? '#1a1d27' : '#f3f4f6'),
+                  color: viewTab === t ? '#fff' : (isDark ? '#9ca3af' : '#6b7280'),
+                  fontWeight: viewTab === t ? 700 : 500, fontSize: '0.875rem', cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}>{t}</button>
+            ))}
+          </div>
+
+          {/* ── Error ── */}
+          {dashError && (
+            <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: 10, padding: '1rem', color: '#dc2626', marginBottom: '1rem', fontSize: '0.875rem' }}>
+              {dashError} — <button onClick={() => { setDashError(null); fetchRecords() }} style={{ color: '#3b82f6', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 600 }}>Retry</button>
+            </div>
+          )}
+
+          {/* ── Skeleton ── */}
+          {loading && patientResults.length === 0 && (
+            <div style={{ background: isDark ? '#16181f' : '#fff', border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, borderRadius: 12, overflow: 'hidden' }}>
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} style={{ display: 'flex', gap: '1rem', padding: '1rem 1.5rem', borderBottom: `1px solid ${isDark ? '#1f2230' : '#f3f4f6'}`, opacity: 0.5 }}>
+                  {[30, 20, 15, 12, 10].map((w, j) => <div key={j} style={{ height: 12, background: isDark ? '#1f2230' : '#e5e7eb', borderRadius: 4, flex: `0 0 ${w}%` }} />)}
                 </div>
+              ))}
+            </div>
+          )}
 
-                {/* Clickable body */}
-                <button onClick={() => handlePatientCardClick(p)}
-                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'left', width: '100%' }}
-                >
-                  {/* Severity pill + meta + visit count */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.375rem', flexWrap: 'wrap' }}>
-                    {sevLabel && (
-                      <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: sevColor, background: `color-mix(in srgb, ${sevColor} 15%, transparent)`, border: `1px solid ${sevColor}40`, borderRadius: 4, padding: '0.1rem 0.4rem', letterSpacing: '0.04em' }}>
-                        {sevLabel}
-                      </span>
-                    )}
-                    <span style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
-                      {[p.age && `${p.age} yrs`, p.gender, p.district].filter(Boolean).join(' · ')}
-                    </span>
-                    <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: TEAL, background: `color-mix(in srgb, ${TEAL} 12%, transparent)`, border: `1px solid ${TEAL}30`, borderRadius: 4, padding: '0.1rem 0.4rem' }}>
-                      {visits.length} visit{visits.length !== 1 ? 's' : ''}
-                    </span>
+          {/* ── Empty ── */}
+          {!loading && patientResults.length === 0 && !dashError && (
+            <div style={{ textAlign: 'center', padding: '4rem', color: isDark ? '#4b5563' : '#9ca3af', background: isDark ? '#16181f' : '#fff', borderRadius: 12, border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}` }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🏥</div>
+              <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.25rem', color: isDark ? '#9ca3af' : '#6b7280' }}>No patients found</div>
+              <div style={{ fontSize: '0.875rem' }}>Add a new patient to get started.</div>
+            </div>
+          )}
+
+          {/* ── TABLE VIEW ── */}
+          {viewTab === 'Table' && groups.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+              {groups.map(group => (
+                <div key={group.key} style={{ background: isDark ? '#16181f' : '#fff', border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, borderRadius: 12, overflow: 'hidden' }}>
+                  {/* Group header */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1.5rem', background: isDark ? '#1a1d27' : '#f9fafb', borderBottom: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}` }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 700, color: isDark ? '#e5e7eb' : '#111827' }}>
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: group.dot, display: 'inline-block' }} />
+                      {group.label}
+                      <span style={{ fontWeight: 500, color: isDark ? '#4b5563' : '#9ca3af', fontSize: '0.8125rem' }}>({group.patients.length})</span>
+                    </div>
+                    <button onClick={() => navigate('/patient')}
+                      style={{ width: 24, height: 24, borderRadius: 6, border: `1px solid ${isDark ? '#2d3148' : '#e5e7eb'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#6b7280' : '#9ca3af', fontSize: '1rem', lineHeight: 1 }}>+</button>
                   </div>
 
-                  {/* Severity trend dots (if >1 visit) */}
-                  {trendDots.length > 1 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem', marginBottom: '0.375rem' }}>
-                      <span style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', marginRight: '0.25rem' }}>Trend:</span>
-                      {trendDots.map((t, i) => {
-                        const dotColor = t.severity === 'red' ? '#C0392B' : t.severity === 'yellow' ? '#B7791F' : 'var(--primary)'
-                        return (
-                          <React.Fragment key={t.id}>
-                            <div style={{ width: 10, height: 10, borderRadius: '50%', background: dotColor, border: `1.5px solid ${dotColor}` }} title={`${t.severity} — ${new Date(t.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`} />
-                            {i < trendDots.length - 1 && <span style={{ fontSize: '0.6rem', color: 'var(--border)' }}>→</span>}
-                          </React.Fragment>
-                        )
-                      })}
-                    </div>
-                  )}
+                  {/* Table header */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1.2fr 1fr 1fr 0.5fr', padding: '0.5rem 1.5rem', borderBottom: `1px solid ${isDark ? '#1f2230' : '#f3f4f6'}` }}>
+                    {['Name', 'Last Visit', 'District', 'Priority', 'Status', ''].map(col => (
+                      <div key={col} style={{ fontSize: '0.7rem', fontWeight: 700, color: isDark ? '#4b5563' : '#9ca3af', letterSpacing: '0.05em', textTransform: 'uppercase' }}>{col}</div>
+                    ))}
+                  </div>
 
-                  {/* Brief */}
-                  {last?.brief && (
-                    <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', marginBottom: '0.375rem' }}>
-                      {last.brief}
-                    </div>
-                  )}
+                  {/* Rows */}
+                  {group.patients.map((p, idx) => {
+                    const last = p.triage_records?.[0]
+                    return (
+                      <div key={p.id} className="row-btn"
+                        onClick={() => handlePatientCardClick(p)}
+                        style={{
+                          display: 'grid', gridTemplateColumns: '2fr 1.2fr 1.2fr 1fr 1fr 0.5fr',
+                          padding: '0.75rem 1.5rem', alignItems: 'center',
+                          borderBottom: idx < group.patients.length - 1 ? `1px solid ${isDark ? '#1a1d27' : '#f9fafb'}` : 'none',
+                          transition: 'background 0.12s',
+                        }}>
+                        {/* Name */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                          <span style={{ fontWeight: 700, fontSize: '0.9rem', color: isDark ? '#f9fafb' : '#111827' }}>{p.name}</span>
+                          <span style={{ fontSize: '0.75rem', color: isDark ? '#4b5563' : '#9ca3af' }}>
+                            {[p.age && `${p.age} yrs`, p.gender].filter(Boolean).join(' · ')}
+                            {last?.brief ? ` · ${last.brief.slice(0, 30)}${last.brief.length > 30 ? '…' : ''}` : ''}
+                          </span>
+                        </div>
+                        {/* Last visit */}
+                        <div style={{ fontSize: '0.8125rem', color: isDark ? '#9ca3af' : '#374151', fontWeight: 500 }}>
+                          {last ? timeAgo(last.created_at) : '—'}
+                        </div>
+                        {/* District */}
+                        <div style={{ fontSize: '0.8125rem', color: isDark ? '#9ca3af' : '#374151', fontWeight: 500 }}>
+                          {p.district || '—'}
+                        </div>
+                        {/* Priority */}
+                        <div><PriorityBadge severity={p.latestSeverity} /></div>
+                        {/* Status */}
+                        <div><SeverityPill severity={p.latestSeverity} /></div>
+                        {/* Delete */}
+                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                          <button className="del-btn"
+                            onClick={(e) => handleDeletePatient(e, p.id)}
+                            style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${isDark ? '#2d3148' : '#e5e7eb'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#6b7280' : '#9ca3af', transition: 'all 0.15s' }}>
+                            <TrashIcon size={12} />
+                          </button>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              ))}
+            </div>
+          )}
 
-                  {/* Time */}
-                  {last && (
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      Last visit: {timeAgo(last.created_at)}
-                    </div>
-                  )}
-                </button>
-              </div>
-            )
-          })}
+          {/* ── BOARD VIEW ── */}
+          {viewTab === 'Board' && groups.length > 0 && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+              {groups.map(group => (
+                <div key={group.key} style={{ background: isDark ? '#16181f' : '#fff', border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, borderRadius: 12, overflow: 'hidden' }}>
+                  <div style={{ padding: '0.75rem 1rem', background: isDark ? '#1a1d27' : '#f9fafb', borderBottom: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: group.dot }} />
+                    <span style={{ fontWeight: 700, fontSize: '0.875rem', color: isDark ? '#f9fafb' : '#111827' }}>{group.label}</span>
+                    <span style={{ fontWeight: 500, color: isDark ? '#4b5563' : '#9ca3af', fontSize: '0.8125rem' }}>({group.patients.length})</span>
+                  </div>
+                  <div style={{ padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {group.patients.map(p => {
+                      const last = p.triage_records?.[0]
+                      return (
+                        <div key={p.id} className="row-btn"
+                          onClick={() => handlePatientCardClick(p)}
+                          style={{ padding: '0.75rem', borderRadius: 8, border: `1px solid ${isDark ? '#1f2230' : '#f3f4f6'}`, background: isDark ? '#1a1d27' : '#fafafa', transition: 'all 0.15s' }}>
+                          <div style={{ fontWeight: 700, fontSize: '0.875rem', color: isDark ? '#f9fafb' : '#111827', marginBottom: 4 }}>{p.name}</div>
+                          <div style={{ fontSize: '0.75rem', color: isDark ? '#6b7280' : '#9ca3af', marginBottom: 8 }}>{[p.age && `${p.age} yrs`, p.gender, p.district].filter(Boolean).join(' · ')}</div>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <SeverityPill severity={p.latestSeverity} />
+                            <span style={{ fontSize: '0.7rem', color: isDark ? '#4b5563' : '#9ca3af' }}>{last ? timeAgo(last.created_at) : ''}</span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Show more */}
+          {patientResults.length > showCount && (
+            <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+              <button onClick={() => setShowCount(c => c + 50)}
+                style={{ padding: '0.625rem 1.5rem', borderRadius: 8, border: `1.5px solid #3b82f6`, color: '#3b82f6', background: 'transparent', fontWeight: 700, cursor: 'pointer', fontSize: '0.875rem' }}>
+                Load more ({patientResults.length - showCount} remaining)
+              </button>
+            </div>
+          )}
+
         </div>
+      </div>
 
-        {/* Show more */}
-        {patientResults.length > showCount && (
-          <div style={{ textAlign: 'center', marginTop: '1.25rem' }}>
-            <button onClick={() => setShowCount(c => c + 6)}
-              style={{ minHeight: 48, padding: '0 2rem', background: 'var(--surface)', border: `1.5px solid ${TEAL}`, color: TEAL, borderRadius: 10, fontSize: '0.9375rem', fontWeight: 700, cursor: 'pointer' }}>
-              आणखी पहा / Show more ({patientResults.length - showCount} remaining)
-            </button>
-          </div>
-        )}
-      </main>
+      {showProfile && <ProfileOverlay onClose={() => setShowProfile(false)} />}
     </div>
   )
 }
