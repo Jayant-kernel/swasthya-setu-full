@@ -158,7 +158,7 @@ export default function ISLCamera({ onSymptomDetected }) {
 
         hands = new mpHands({
           locateFile: (file) =>
-            `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+            `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`,
         })
         hands.setOptions({
           maxNumHands: 1,
@@ -218,7 +218,8 @@ export default function ISLCamera({ onSymptomDetected }) {
           videoRef.current.onloadedmetadata = () => {
             videoRef.current.play()
             setStatus('ready')
-            startLoop()
+            // Wait for video to fully stabilize before sending to MediaPipe
+            setTimeout(startLoop, 800)
           }
         }
       } catch (e) {
@@ -230,7 +231,7 @@ export default function ISLCamera({ onSymptomDetected }) {
     function startLoop() {
       async function loop() {
         const vid = videoRef.current
-        if (vid && handsRef.current && vid.readyState >= 4 && vid.videoWidth > 0 && vid.videoHeight > 0 && !vid.paused) {
+        if (vid && handsRef.current && vid.readyState >= 2 && vid.videoWidth > 0 && vid.videoHeight > 0 && !vid.paused) {
           try {
             await handsRef.current.send({ image: vid })
           } catch (_) {
