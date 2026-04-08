@@ -1,23 +1,31 @@
 /**
  * ISLCamera.jsx
  * =============
- * Webcam component that sends frames to the ISL WebSocket backend,
- * shows a real-time confidence bar, and calls onSymptomDetected()
- * when a sign is confirmed.
+ * Browser-side ISL detection using MediaPipe Hands (JS) + Random Forest (JSON).
+ * No WebSocket or backend required — everything runs locally in the browser.
  *
  * Props:
  *   onSymptomDetected(symptomEnglish: string) — called on confirmation
  */
 
-import React, { useEffect, useRef, useState, useCallback } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws/isl'
-const FRAME_INTERVAL_MS = 100   // send 10 frames/sec
-const CONFIRM_COOLDOWN_MS = 2000 // wait 2s before allowing next detection
-
+const CONFIRM_COOLDOWN_MS = 2000
+const SMOOTHER_WINDOW     = 8
+const SMOOTHER_THRESHOLD  = 5
+const CONFIDENCE_THRESHOLD = 0.75
 const TEAL = '#0F6E56'
 
-// Short 440Hz confirmation chime via Web Audio API
+const ODIA_LABELS = {
+  fever:      'ଜ୍ୱର',
+  cough:      'କାଶ',
+  vomit:      'ବାନ୍ତି',
+  weakness:   'ଦୁର୍ବଳତା',
+  dizziness:  'ମୁଣ୍ଡ ବୁଲାଇବା',
+  breathless: 'ନିଶ୍ୱାସ କଷ୍ଟ',
+}
+
+// Short 440Hz confirmation chime
 function playChime() {
   try {
     const ctx  = new (window.AudioContext || window.webkitAudioContext)()
@@ -34,124 +42,218 @@ function playChime() {
   } catch (_) {}
 }
 
+// ── Random Forest inference (browser-side) ────────────────────────────────────
+function predictRF(model, features) {
+  const votes = new Array(model.n_classes).fill(0)
+
+  for (const tree of model.trees) {
+    let node = 0
+    while (tree.children_left[node] !== -1) {
+      if (features[tree.feature[node]] <= tree.threshold[node]) {
+        node = tree.children_left[node]
+      } else {
+        node = tree.children_right[node]
+      }
+    }
+    const val = tree.value[node][0]
+    const total = val.reduce((a, b) => a + b, 0)
+    for (let i = 0; i < model.n_classes; i++) {
+      votes[i] += val[i] / total
+    }
+  }
+
+  const total = votes.reduce((a, b) => a + b, 0)
+  const probs = votes.map(v => v / total)
+  const maxIdx = probs.indexOf(Math.max(...probs))
+
+  const allConf = {}
+  model.classes.forEach((cls, i) => { allConf[cls] = probs[i] })
+
+  return { sign: model.classes[maxIdx], confidence: probs[maxIdx], allConf }
+}
+
+// ── Extract 42 features from MediaPipe landmarks ──────────────────────────────
+function extractFeatures(landmarks) {
+  // Normalize relative to wrist (landmark 0)
+  const wrist = landmarks[0]
+  const raw = landmarks.map(lm => [lm.x - wrist.x, lm.y - wrist.y])
+
+  // Scale by wrist-to-middle-mcp distance
+  const mid_mcp = raw[9]
+  const scale = Math.sqrt(mid_mcp[0] ** 2 + mid_mcp[1] ** 2) || 1
+
+  const features = []
+  for (const [x, y] of raw) {
+    features.push(x / scale, y / scale)
+  }
+  return features
+}
+
+// ── Temporal smoother ─────────────────────────────────────────────────────────
+class TemporalSmoother {
+  constructor(window = SMOOTHER_WINDOW, threshold = SMOOTHER_THRESHOLD) {
+    this.window    = window
+    this.threshold = threshold
+    this.history   = []
+    this.fill      = 0
+  }
+
+  update(sign) {
+    this.history.push(sign)
+    if (this.history.length > this.window) this.history.shift()
+
+    const count = this.history.filter(s => s === sign).length
+    this.fill = count / this.threshold
+    return count >= this.threshold
+  }
+
+  reset() {
+    this.history = []
+    this.fill    = 0
+  }
+}
+
 export default function ISLCamera({ onSymptomDetected }) {
-  const videoRef       = useRef(null)
-  const canvasRef      = useRef(null)  // hidden canvas for frame capture
-  const wsRef          = useRef(null)
-  const intervalRef    = useRef(null)
-  const cooldownRef    = useRef(false)
+  const videoRef      = useRef(null)
+  const canvasRef     = useRef(null)
+  const handsRef      = useRef(null)
+  const modelRef      = useRef(null)
+  const smootherRef   = useRef(new TemporalSmoother())
+  const cooldownRef   = useRef(false)
+  const animFrameRef  = useRef(null)
 
-  const [result, setResult]         = useState(null)   // latest WS result
-  const [confirmed, setConfirmed]   = useState(null)   // last confirmed sign
-  const [wsStatus, setWsStatus]     = useState('connecting') // connecting|open|closed
+  const [status, setStatus]         = useState('loading') // loading|ready|error
   const [cameraError, setCameraError] = useState(null)
+  const [result, setResult]         = useState(null)
+  const [confirmed, setConfirmed]   = useState(null)
+  const [hasHand, setHasHand]       = useState(false)
 
-  // ── Start webcam ──────────────────────────────────────────────────────────
+  // ── Load model JSON ───────────────────────────────────────────────────────
   useEffect(() => {
+    fetch('/isl_model.json')
+      .then(r => r.json())
+      .then(data => {
+        modelRef.current = data
+        setStatus('model_ready')
+      })
+      .catch(() => setStatus('error'))
+  }, [])
+
+  // ── Load MediaPipe Hands + start camera when model ready ──────────────────
+  useEffect(() => {
+    if (status !== 'model_ready') return
+
     let stream = null
-    navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
-      .then(s => {
-        stream = s
+    let hands  = null
+
+    async function init() {
+      try {
+        // Load MediaPipe Hands from CDN
+        const mpHands = window.Hands
+        if (!mpHands) {
+          setStatus('error')
+          setCameraError('MediaPipe not loaded. Please refresh.')
+          return
+        }
+
+        hands = new mpHands({
+          locateFile: (file) =>
+            `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
+        })
+        hands.setOptions({
+          maxNumHands: 1,
+          modelComplexity: 1,
+          minDetectionConfidence: 0.5,
+          minTrackingConfidence: 0.5,
+        })
+
+        hands.onResults((results) => {
+          if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
+            setHasHand(false)
+            smootherRef.current.reset()
+            setResult(null)
+            return
+          }
+
+          setHasHand(true)
+          const landmarks = results.multiHandLandmarks[0]
+          const features  = extractFeatures(landmarks)
+          const model     = modelRef.current
+          if (!model) return
+
+          const { sign, confidence, allConf } = predictRF(model, features)
+
+          if (confidence < CONFIDENCE_THRESHOLD) {
+            setResult({ sign: null, confidence, allConf, fill: 0 })
+            return
+          }
+
+          const confirmed_now = smootherRef.current.update(sign)
+          const fill = Math.min(smootherRef.current.fill, 1)
+
+          setResult({ sign, confidence, allConf, fill })
+
+          if (confirmed_now && !cooldownRef.current) {
+            cooldownRef.current = true
+            playChime()
+            const odia = ODIA_LABELS[sign] || sign
+            setConfirmed({ english: sign, odia })
+            onSymptomDetected?.(sign)
+            smootherRef.current.reset()
+            setTimeout(() => {
+              setConfirmed(null)
+              cooldownRef.current = false
+            }, CONFIRM_COOLDOWN_MS)
+          }
+        })
+
+        handsRef.current = hands
+
+        // Start camera
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 640, height: 480, facingMode: 'user' }
+        })
         if (videoRef.current) {
           videoRef.current.srcObject = stream
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current.play()
+            setStatus('ready')
+            startLoop()
+          }
         }
-      })
-      .catch(() => setCameraError('Camera permission denied'))
-
-    return () => {
-      // Stop all tracks and clear video element
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop())
-      }
-      if (videoRef.current) {
-        videoRef.current.srcObject = null
+      } catch (e) {
+        setCameraError('Camera permission denied')
+        setStatus('error')
       }
     }
-  }, [])
 
-  // ── Connect WebSocket ─────────────────────────────────────────────────────
-  useEffect(() => {
-    const ws = new WebSocket(WS_URL)
-    wsRef.current = ws
-
-    ws.onopen  = () => setWsStatus('open')
-    ws.onclose = () => setWsStatus('closed')
-    ws.onerror = () => setWsStatus('closed')
-
-    ws.onmessage = (evt) => {
-      try {
-        const data = JSON.parse(evt.data)
-        if (data.error || data.reset) return
-        setResult(data)
-
-        // Confirmed + not in cooldown → trigger
-        if (data.confirmed && data.english && !cooldownRef.current) {
-          cooldownRef.current = true
-          playChime()
-          setConfirmed({ english: data.english, odia: data.odia })
-          onSymptomDetected?.(data.english)
-          // Reset WS buffer
-          ws.send(JSON.stringify({ type: 'reset' }))
-          // Clear confirmed banner after 2s
-          setTimeout(() => {
-            setConfirmed(null)
-            cooldownRef.current = false
-          }, CONFIRM_COOLDOWN_MS)
+    function startLoop() {
+      async function loop() {
+        if (videoRef.current && handsRef.current && videoRef.current.readyState >= 2) {
+          await handsRef.current.send({ image: videoRef.current })
         }
-      } catch (_) {}
+        animFrameRef.current = requestAnimationFrame(loop)
+      }
+      animFrameRef.current = requestAnimationFrame(loop)
     }
+
+    init()
 
     return () => {
-      if (ws.readyState === WebSocket.OPEN) {
-        ws.close()
-      }
+      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current)
+      if (stream) stream.getTracks().forEach(t => t.stop())
+      if (videoRef.current) videoRef.current.srcObject = null
+      if (hands) hands.close()
     }
-  }, [onSymptomDetected])
+  }, [status, onSymptomDetected])
 
-  // ── Frame sending loop ────────────────────────────────────────────────────
-  const sendFrame = useCallback(() => {
-    const video  = videoRef.current
-    const canvas = canvasRef.current
-    const ws     = wsRef.current
-    if (!video || !canvas || !ws || ws.readyState !== WebSocket.OPEN) return
-    if (video.readyState < 2) return  // not loaded yet
-
-    const ctx = canvas.getContext('2d')
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
-    canvas.toBlob(blob => {
-      if (!blob) return
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        const b64 = reader.result.split(',')[1]
-        ws.send(JSON.stringify({ type: 'frame', image: b64 }))
-      }
-      reader.readAsDataURL(blob)
-    }, 'image/jpeg', 0.7)
-  }, [])
-
-  useEffect(() => {
-    intervalRef.current = setInterval(sendFrame, FRAME_INTERVAL_MS)
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current)
-        intervalRef.current = null
-      }
-    }
-  }, [sendFrame])
-
-  // ── Derived UI values ─────────────────────────────────────────────────────
+  // ── UI values ─────────────────────────────────────────────────────────────
   const fill        = result?.fill ?? 0
-  const hasHand     = result?.has_hand ?? false
   const previewSign = result?.sign
   const previewConf = result?.confidence ?? 0
 
-  const barColor = fill >= 1.0
-    ? '#22c55e'                    // green — confirmed
-    : fill >= 0.6
-      ? '#f59e0b'                  // yellow — getting there
-      : '#ef4444'                  // red — low confidence
+  const barColor = fill >= 1.0 ? '#22c55e' : fill >= 0.6 ? '#f59e0b' : '#ef4444'
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
@@ -159,7 +261,7 @@ export default function ISLCamera({ onSymptomDetected }) {
       <div style={{
         position: 'relative', background: '#000',
         borderRadius: 20, overflow: 'hidden', aspectRatio: '4/3',
-        boxShadow: confirmed ? `0 0 0 4px #22c55e` : '0 8px 32px rgba(0,0,0,0.2)',
+        boxShadow: confirmed ? '0 0 0 4px #22c55e' : '0 8px 32px rgba(0,0,0,0.2)',
         transition: 'box-shadow 0.3s',
       }}>
         <video
@@ -167,12 +269,22 @@ export default function ISLCamera({ onSymptomDetected }) {
           autoPlay playsInline muted
           style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }}
         />
-        {/* Hidden canvas for frame capture */}
-        <canvas ref={canvasRef} width={320} height={240}
-          style={{ display: 'none' }} />
+        <canvas ref={canvasRef} style={{ display: 'none' }} />
+
+        {/* Loading overlay */}
+        {(status === 'loading' || status === 'model_ready') && (
+          <div style={{
+            position: 'absolute', inset: 0,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.7)', color: '#fff', flexDirection: 'column', gap: 12,
+          }}>
+            <div style={{ fontSize: '1rem', fontWeight: 600 }}>Loading ISL Model...</div>
+            <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>Please wait</div>
+          </div>
+        )}
 
         {/* No hand message */}
-        {!hasHand && !cameraError && wsStatus === 'open' && (
+        {status === 'ready' && !hasHand && !cameraError && (
           <div style={{
             position: 'absolute', bottom: 16, left: '50%',
             transform: 'translateX(-50%)',
@@ -181,18 +293,6 @@ export default function ISLCamera({ onSymptomDetected }) {
             whiteSpace: 'nowrap',
           }}>
             Hold your hand in front of the camera
-          </div>
-        )}
-
-        {/* WS status */}
-        {wsStatus !== 'open' && (
-          <div style={{
-            position: 'absolute', top: 12, right: 12,
-            background: wsStatus === 'connecting' ? '#f59e0b' : '#ef4444',
-            color: '#fff', padding: '4px 10px', borderRadius: 99,
-            fontSize: '0.7rem', fontWeight: 700,
-          }}>
-            {wsStatus === 'connecting' ? 'Connecting...' : 'Disconnected'}
           </div>
         )}
 
@@ -215,7 +315,6 @@ export default function ISLCamera({ onSymptomDetected }) {
             display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center',
             background: 'rgba(34,197,94,0.88)', color: '#fff',
-            animation: 'fadeIn 0.2s ease',
           }}>
             <div style={{ fontSize: '2.5rem', fontWeight: 900, lineHeight: 1.1 }}>
               {confirmed.odia}
@@ -224,8 +323,20 @@ export default function ISLCamera({ onSymptomDetected }) {
               {confirmed.english}
             </div>
             <div style={{ fontSize: '0.75rem', marginTop: 8, opacity: 0.75 }}>
-              Added to triage form ✓
+              Added to triage form
             </div>
+          </div>
+        )}
+
+        {/* Ready indicator */}
+        {status === 'ready' && (
+          <div style={{
+            position: 'absolute', top: 12, right: 12,
+            background: '#22c55e', color: '#fff',
+            padding: '4px 10px', borderRadius: 99,
+            fontSize: '0.7rem', fontWeight: 700,
+          }}>
+            Live
           </div>
         )}
       </div>
@@ -241,43 +352,29 @@ export default function ISLCamera({ onSymptomDetected }) {
               ? `Detecting: ${previewSign} (${Math.round(previewConf * 100)}%)`
               : 'No sign detected'}
           </span>
-          <span style={{ color: barColor }}>
-            {Math.round(fill * 100)}%
-          </span>
+          <span style={{ color: barColor }}>{Math.round(fill * 100)}%</span>
         </div>
-
-        {/* Bar track */}
-        <div style={{
-          height: 14, background: '#e2e8f0',
-          borderRadius: 99, overflow: 'hidden',
-        }}>
+        <div style={{ height: 14, background: '#e2e8f0', borderRadius: 99, overflow: 'hidden' }}>
           <div style={{
-            height: '100%',
-            width: `${fill * 100}%`,
-            background: barColor,
-            borderRadius: 99,
+            height: '100%', width: `${fill * 100}%`,
+            background: barColor, borderRadius: 99,
             transition: 'width 0.1s ease, background 0.2s ease',
           }} />
         </div>
-
-        {/* Hint text */}
         <div style={{
           marginTop: 8, fontSize: '0.72rem',
           color: fill < 0.4 && hasHand ? '#ef4444' : '#94a3b8',
           textAlign: 'center', minHeight: 18,
         }}>
-          {!hasHand
-            ? 'Show your hand to the camera'
-            : fill < 0.4
-              ? 'Show sign more clearly...'
-              : fill < 1.0
-                ? 'Hold steady...'
-                : 'Confirmed!'}
+          {!hasHand ? 'Show your hand to the camera'
+            : fill < 0.4 ? 'Show sign more clearly...'
+            : fill < 1.0 ? 'Hold steady...'
+            : 'Confirmed!'}
         </div>
       </div>
 
-      {/* All-confidences mini bars (preview of all 7 signs) */}
-      {result?.all_confidences && hasHand && (
+      {/* All signs confidence bars */}
+      {result?.allConf && hasHand && (
         <div style={{
           background: '#f8fafc', borderRadius: 16,
           padding: '0.75rem 1rem', border: '1px solid #e2e8f0',
@@ -285,7 +382,7 @@ export default function ISLCamera({ onSymptomDetected }) {
           <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#94a3b8', marginBottom: 8 }}>
             ALL SIGNS
           </div>
-          {Object.entries(result.all_confidences)
+          {Object.entries(result.allConf)
             .sort((a, b) => b[1] - a[1])
             .map(([sign, conf]) => (
               <div key={sign} style={{ marginBottom: 5 }}>
@@ -300,21 +397,15 @@ export default function ISLCamera({ onSymptomDetected }) {
                 </div>
                 <div style={{ height: 4, background: '#e2e8f0', borderRadius: 99, overflow: 'hidden' }}>
                   <div style={{
-                    height: '100%',
-                    width: `${conf * 100}%`,
+                    height: '100%', width: `${conf * 100}%`,
                     background: sign === previewSign ? TEAL : '#cbd5e1',
-                    borderRadius: 99,
-                    transition: 'width 0.1s ease',
+                    borderRadius: 99, transition: 'width 0.1s ease',
                   }} />
                 </div>
               </div>
             ))}
         </div>
       )}
-
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
-      `}</style>
     </div>
   )
 }
