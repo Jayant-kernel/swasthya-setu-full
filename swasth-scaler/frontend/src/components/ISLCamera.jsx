@@ -209,6 +209,10 @@ export default function ISLCamera({ onSymptomDetected }) {
           }, CONFIRM_COOLDOWN_MS)
         }
       })
+      // Wait for MediaPipe WASM to fully load before sending frames
+      await hands.initialize()
+      if (!activeRef.current) return
+
       handsRef.current = hands
       setPhase('running')
 
