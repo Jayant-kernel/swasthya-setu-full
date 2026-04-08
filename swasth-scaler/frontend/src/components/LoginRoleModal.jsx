@@ -35,40 +35,42 @@ function HealthIllustration({ selectedRole }) {
   const img = selectedRole ? selectedRole.image : loginImg2;
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
-      {/* Background gradient blobs */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: selectedRole
-          ? `linear-gradient(160deg, ${selectedRole.color}ee 0%, #0a3d2e 100%)`
-          : 'linear-gradient(160deg, #0F6E56ee 0%, #0a3d2e 100%)',
-      }} />
-      {/* Decorative circles */}
-      <div style={{ position: 'absolute', top: '-80px', left: '-80px', width: 300, height: 300, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
-      <div style={{ position: 'absolute', bottom: '-60px', right: '-60px', width: 250, height: 250, borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
-      <div style={{ position: 'absolute', top: '40%', left: '60%', width: 180, height: 180, borderRadius: '50%', background: 'rgba(110,231,183,0.08)' }} />
-
-      {/* Role image */}
+      {/* Full-cover role image */}
       <img
         src={img}
         alt=""
         style={{
           position: 'absolute',
-          bottom: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          height: '72%',
-          objectFit: 'contain',
-          objectPosition: 'bottom',
-          opacity: 0.92,
-          filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.4))',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition: 'center top',
+          opacity: 0.9,
           transition: 'opacity 0.4s ease',
         }}
       />
 
+      {/* Colour-tinted overlay */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: selectedRole
+          ? `linear-gradient(160deg, ${selectedRole.color}88 0%, rgba(10,61,46,0.5) 100%)`
+          : 'linear-gradient(160deg, rgba(15,110,86,0.55) 0%, rgba(10,61,46,0.5) 100%)',
+        pointerEvents: 'none',
+      }} />
+
+      {/* Bottom vignette so brand text stays readable */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.55) 100%)',
+        pointerEvents: 'none',
+      }} />
+
       {/* Floating icon badges */}
       <FloatingBadge top="12%" left="8%" icon="🩺" delay="0s" />
-      <FloatingBadge top="22%" left="78%" icon="💊" delay="0.4s" />
-      <FloatingBadge top="55%" left="82%" icon="❤️" delay="0.8s" />
+      <FloatingBadge top="22%" left="74%" icon="💊" delay="0.4s" />
+      <FloatingBadge top="55%" left="78%" icon="❤️" delay="0.8s" />
       <FloatingBadge top="70%" left="6%" icon="📋" delay="1.2s" />
       <FloatingBadge top="38%" left="5%" icon="✚" delay="0.6s" />
 
@@ -81,7 +83,7 @@ function HealthIllustration({ selectedRole }) {
         textAlign: 'center',
         zIndex: 2,
       }}>
-        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600 }}>
+        <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600 }}>
           Swasthya Setu · स्वास्थ्य सेतु
         </div>
       </div>
