@@ -228,7 +228,6 @@ export default function HomePage() {
   const [query, setQuery] = useState('')
   const [districtFilter, setDistrictFilter] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [showProfile, setShowProfile] = useState(false)
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
   const debounceRef = useRef(null)
 
@@ -246,9 +245,11 @@ export default function HomePage() {
   }, [theme])
 
   // Prompt profile if missing
+  /* MOVED TO PROFILE PAGE OR OBSOLETE
   useEffect(() => {
     if (user && (!user.full_name || !user.location)) setShowProfile(true)
   }, [user])
+  */
 
   // Summary counts
   useEffect(() => {
@@ -350,7 +351,7 @@ export default function HomePage() {
     iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.15)',
     iconText: isDark ? '#93c5fd' : '#ffffff',
 
-    hover: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.50)',
+    hover: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(6, 78, 59, 0.12)',
 
     primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
     primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
@@ -404,9 +405,9 @@ export default function HomePage() {
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: ${isDark ? '#2d3148' : '#e5e7eb'}; border-radius: 99px; }
-        .nav-btn:hover { background: ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(16, 185, 129, 0.18)'} !important; }
-        .row-btn:hover { background: ${isDark ? '#1e2030' : '#f9fafb'} !important; cursor: pointer; }
-        .action-btn:hover { background: ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(16, 185, 129, 0.18)'} !important; }
+        .nav-btn:hover { background: ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(6, 78, 59, 0.12)'} !important; }
+        .row-btn:hover { background: ${isDark ? '#1e2030' : '#dcfce7'} !important; cursor: pointer; }
+        .action-btn:hover { background: ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(6, 78, 59, 0.12)'} !important; }
         .del-btn:hover { background: #fef2f2 !important; color: #ef4444 !important; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important; }
       `}</style>
@@ -499,7 +500,7 @@ export default function HomePage() {
 
           {/* User profile bottom */}
           <div style={{ padding: '0.875rem 1rem', borderTop: `1px solid ${clr.border}` }}>
-            <button className="nav-btn" onClick={() => setShowProfile(true)}
+            <button className="nav-btn" onClick={() => navigate('/profile')}
               style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.5rem 0.5rem', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', color: clr.topText, transition: 'all 0.15s' }}
               onMouseEnter={(e) => e.currentTarget.style.background = clr.hover}
               onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
@@ -837,7 +838,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {showProfile && <ProfileOverlay onClose={() => setShowProfile(false)} />}
+      {/* ProfileOverlay removed in favor of standalone /profile page */}
     </div>
   )
 }

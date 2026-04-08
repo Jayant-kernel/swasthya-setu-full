@@ -104,7 +104,7 @@ export default function ProfilePage() {
                 fontWeight: item.id === 'profile' ? 700 : 500,
                 fontSize: '0.9375rem', cursor: 'pointer', transition: 'all 0.3s'
               }}
-              onMouseEnter={(e) => { if(item.id !== 'profile') { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)'; e.currentTarget.style.color = '#fff'; }}}
+              onMouseEnter={(e) => { if(item.id !== 'profile') { e.currentTarget.style.background = 'rgba(0, 0, 0, 0.2)'; e.currentTarget.style.color = '#fff'; }}}
               onMouseLeave={(e) => { if(item.id !== 'profile') { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255, 255, 255, 0.6)'; }}}
             >
               <item.icon size={20} />
@@ -209,7 +209,7 @@ export default function ProfilePage() {
                       color: '#fff', fontWeight: 600, cursor: 'pointer',
                       transition: 'all 0.3s'
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.2)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.12)'; e.currentTarget.style.transform = 'translateY(0)'; }}
                   >
                     Edit Profile
@@ -231,7 +231,7 @@ export default function ProfilePage() {
                   transition: 'all 0.3s'
                 }} 
                 className="glass-card-hover"
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0, 0, 0, 0.2)'; e.currentTarget.style.transform = 'translateY(-4px)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.transform = 'translateY(0)'; }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
