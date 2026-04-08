@@ -4,8 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { openai, getChatSystemPrompt } from '../lib/openai'
 import { usePatient } from '../context/PatientContext.jsx'
 import ChatBubble from '../components/ChatBubble.jsx'
-import TopNav from '../components/TopNav.jsx'
-import GlobalHeader from '../components/GlobalHeader.jsx'
+import DashboardLayout from '../components/DashboardLayout.jsx'
 
 const SEVERITY_BADGE = {
   green:  { label: 'Stable / स्थिर',       cls: 'badge-green' },
@@ -217,65 +216,57 @@ export default function ChatPage() {
     )
 
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--color-bg)' }}>
-        <GlobalHeader />
-        <TopNav />
-        <main style={{ flex: 1, padding: '2rem 1.25rem', maxWidth: 1000, width: '100%', margin: '0 auto', overflowY: 'auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-            <h1 style={{ fontSize: '2.5rem', fontWeight: 900, color: 'var(--color-primary)', letterSpacing: '-0.03em', marginBottom: '1rem' }}>AI चॅट: रुग्ण निवडा<br /><span style={{ fontSize: '1.25rem', opacity: 0.7 }}>AI Chat: Select a Patient</span></h1>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '1.125rem' }}>कोणाबद्दल बोलायचे आहे? / Who would you like to talk about?</p>
+      <DashboardLayout contentStyle={{ padding: '1.5rem' }}>
+        <div style={{ maxWidth: 900, margin: '0 auto' }}>
+          <div style={{ marginBottom: '1.5rem' }}>
+            <h1 style={{ fontSize: '1.375rem', fontWeight: 800, letterSpacing: '-0.02em', margin: '0 0 0.25rem' }}>AI Chat</h1>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', margin: 0 }}>Select a patient to start an AI-assisted consultation</p>
           </div>
 
           {/* Search bar */}
-          <div style={{ position: 'relative', maxWidth: 500, margin: '0 auto 3rem' }}>
-            <input 
-              type="text" 
-              placeholder="रुग्णाचे नाव शोधा... / Search patient..." 
+          <div style={{ position: 'relative', maxWidth: 420, marginBottom: '1.5rem' }}>
+            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', opacity: 0.4, pointerEvents: 'none' }}>🔍</span>
+            <input
+              type="text"
+              placeholder="Search patient name or district…"
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              style={{ width: '100%', padding: '1.25rem 3rem', borderRadius: 99, border: '2px solid var(--color-border)', background: 'var(--color-surface)', fontSize: '1rem', outline: 'none', transition: 'all 0.2s' }}
-              onFocus={e => e.target.style.borderColor = 'var(--color-primary)'}
-              onBlur={e => e.target.style.borderColor = 'var(--color-border)'}
+              style={{ width: '100%', height: 36, paddingLeft: '2.25rem', paddingRight: '0.75rem', borderRadius: 8, border: '1px solid #e5e7eb', background: '#f9fafb', fontSize: '0.875rem', outline: 'none' }}
+              onFocus={e => e.target.style.borderColor = '#3b82f6'}
+              onBlur={e => e.target.style.borderColor = '#e5e7eb'}
             />
-            <span style={{ position: 'absolute', left: '1.25rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>🔍</span>
           </div>
 
           {loadingPatients ? (
-            <div style={{ textAlign: 'center', padding: '4rem' }}>Loading patients...</div>
+            <div style={{ textAlign: 'center', padding: '4rem', color: '#9ca3af' }}>Loading patients…</div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '0.875rem' }}>
               {filtered.map(p => {
-                const sevColor = p.latestSeverity === 'red' ? 'var(--color-red)' : p.latestSeverity === 'yellow' ? 'var(--color-yellow)' : 'var(--color-green)'
+                const sevColor = p.latestSeverity === 'red' ? '#ef4444' : p.latestSeverity === 'yellow' ? '#f59e0b' : '#10b981'
                 return (
-                  <button 
-                    key={p.id} 
+                  <button
+                    key={p.id}
                     onClick={() => handleSelectPatient(p)}
-                    style={{ background: 'var(--color-surface)', border: '1.5px solid var(--color-border)', borderLeft: `6px solid ${sevColor}`, borderRadius: 16, padding: '1.5rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative', overflow: 'hidden' }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-4px)'; e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.08)'; e.currentTarget.style.borderColor = 'var(--color-primary)'; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = 'var(--color-border)'; }}
+                    style={{ background: '#fff', border: '1px solid #e5e7eb', borderLeft: `4px solid ${sevColor}`, borderRadius: 10, padding: '1rem 1.25rem', textAlign: 'left', cursor: 'pointer', transition: 'all 0.15s' }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.08)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
                   >
-                    <div style={{ fontWeight: 800, fontSize: '1.125rem', color: 'var(--color-text)', marginBottom: '0.25rem' }}>{p.name}</div>
-                    <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginBottom: '1rem' }}>{p.age} yrs · {p.gender} · {p.district}</div>
+                    <div style={{ fontWeight: 700, fontSize: '0.9375rem', marginBottom: 4 }}>{p.name}</div>
+                    <div style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: 10 }}>{p.age} yrs · {p.gender} · {p.district}</div>
                     <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                      <div style={{ display: 'inline-block', padding: '0.25rem 0.75rem', borderRadius: 6, background: `${sevColor}15`, color: sevColor, fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        {p.latestSeverity}
-                      </div>
-                      <span style={{ fontSize: '0.6875rem', color: 'var(--color-text-muted)', fontWeight: 600 }}>
-                         {p.records.length} भेटी / {p.records.length} visits
-                      </span>
+                      <span style={{ padding: '2px 10px', borderRadius: 99, background: `${sevColor}18`, color: sevColor, fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>{p.latestSeverity}</span>
+                      <span style={{ fontSize: '0.7rem', color: '#9ca3af' }}>{p.records.length} visit{p.records.length !== 1 ? 's' : ''}</span>
                     </div>
                   </button>
                 )
               })}
               {filtered.length === 0 && (
-                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', color: 'var(--color-text-muted)' }}>
-                  रुग्ण आढळले नाहीत / No patients found.
-                </div>
+                <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', color: '#9ca3af' }}>No patients found.</div>
               )}
             </div>
           )}
-        </main>
-      </div>
+        </div>
+      </DashboardLayout>
     )
   }
 
@@ -283,48 +274,24 @@ export default function ChatPage() {
 
   const severityColor = { green: 'var(--color-green)', yellow: 'var(--color-yellow)', red: 'var(--color-red)' }[triageResult.severity] || 'var(--color-green)'
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--color-bg)' }}>
-      {/* Top header bar */}
-      <GlobalHeader>
-        <div className="chat-patient-header" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingLeft: '0.75rem', borderLeft: '2px solid #e5e7eb', marginLeft: '0.25rem', minWidth: 0, overflow: 'hidden' }}>
-          <span style={{ fontWeight: 700, fontSize: '0.9375rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '120px' }}>{patientData.name}</span>
-          <span className={`badge ${badge.cls} hide-mobile`} style={{ margin: 0, flexShrink: 0 }}>{badge.label}</span>
-          {triageResult.sickle_cell_risk && (
-            <div className="hide-mobile" style={{ background: 'var(--color-red)', color: 'var(--surface)', padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-full)', fontSize: '0.75rem', fontWeight: 600, flexShrink: 0 }}>
-              🔴 High Risk
-            </div>
-          )}
-        </div>
-      </GlobalHeader>
-      <TopNav />
+  /* Patient badge shown in the shared topbar */
+  const patientBadge = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingLeft: '0.75rem', borderLeft: '2px solid #e5e7eb', marginLeft: '0.25rem', minWidth: 0, overflow: 'hidden' }}>
+      <span style={{ fontWeight: 700, fontSize: '0.875rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 140 }}>{patientData.name}</span>
+      <span style={{ padding: '2px 10px', borderRadius: 99, background: `${severityColor}18`, color: severityColor, fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', flexShrink: 0 }}>{triageResult.severity}</span>
+      {triageResult.sickle_cell_risk && <span style={{ background: '#ef4444', color: '#fff', borderRadius: 99, padding: '2px 8px', fontSize: '0.7rem', fontWeight: 700, flexShrink: 0 }}>🔴 High Risk</span>}
+    </div>
+  )
 
-      {/* Mobile media queries + drawer */}
+  return (
+    <DashboardLayout topbarContent={patientBadge} contentStyle={{ display: 'flex', flexDirection: 'column', padding: 0 }}>
+
       <style>{`
-        @media (max-width: 1100px) {
+        @media (max-width: 900px) {
           .chat-sidebar { display: none !important; }
-          .chat-messages-area { padding: 1.5rem !important; }
-          .chat-input-area { padding: 0.75rem 1.5rem 1rem !important; }
-          .chat-quick-replies { padding: 0.75rem 1.5rem 0 !important; }
-          .chat-patient-header .badge { display: none; }
           .chat-info-btn { display: flex !important; }
         }
         .chat-info-btn { display: none; }
-        .chat-drawer-backdrop {
-          position: fixed; inset: 0; z-index: 500;
-          background: rgba(0,0,0,0.55);
-          backdrop-filter: blur(4px);
-          transition: opacity 0.25s ease;
-        }
-        .chat-drawer {
-          position: fixed; inset: 0; z-index: 501;
-          background: var(--color-bg);
-          overflow-y: auto;
-          padding: 0;
-          transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          display: flex;
-          flex-direction: column;
-        }
       `}</style>
 
       {/* Main body: sidebar + chat */}
@@ -637,7 +604,7 @@ export default function ChatPage() {
           </div>
         </>
       )}
-    </div>
+    </DashboardLayout>
   )
 }
 

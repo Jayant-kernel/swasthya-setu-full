@@ -459,27 +459,45 @@ export default function HomePage() {
         {/* Content */}
         <div style={S.content}>
 
-          {/* ── Stat summary cards ── */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
+          {/* ── Stat summary chips (replacing big cards) ── */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+            <button
+              onClick={() => setActiveTab('ALL')}
+              style={{
+                padding: '0.375rem 0.875rem', borderRadius: 99, border: `1.5px solid ${activeTab === 'ALL' ? '#3b82f6' : (isDark ? '#1f2230' : '#e5e7eb')}`,
+                background: activeTab === 'ALL' ? '#3b82f6' : (isDark ? '#1a1d27' : '#fff'),
+                color: activeTab === 'ALL' ? '#fff' : (isDark ? '#9ca3af' : '#4b5563'),
+                fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
+              }}>
+              All ({totalCount})
+            </button>
             {[
-              { sev: 'red',    emoji: '🚨', label: 'Emergency',  count: summaryCounts.red,    color: '#ef4444', bg: isDark ? '#2d1515' : '#fef2f2' },
-              { sev: 'yellow', emoji: '⚠️', label: 'Moderate',   count: summaryCounts.yellow, color: '#f59e0b', bg: isDark ? '#2d2210' : '#fffbeb' },
-              { sev: 'green',  emoji: '✅', label: 'Stable',     count: summaryCounts.green,  color: '#10b981', bg: isDark ? '#0d2520' : '#f0fdf4' },
-            ].map(s => (
-              <button key={s.sev} className="stat-card"
-                onClick={() => setActiveTab(activeTab === s.sev.toUpperCase() ? 'ALL' : s.sev.toUpperCase())}
-                style={{
-                  background: s.bg,
-                  border: `1.5px solid ${activeTab === s.sev.toUpperCase() ? s.color : (isDark ? '#1f2230' : '#e5e7eb')}`,
-                  borderRadius: 12, padding: '1rem 1.25rem',
-                  cursor: 'pointer', textAlign: 'left', transition: 'all 0.2s',
-                  boxShadow: activeTab === s.sev.toUpperCase() ? `0 0 0 3px ${s.color}22` : 'none',
-                }}>
-                <div style={{ fontSize: '1.5rem', marginBottom: '0.375rem' }}>{s.emoji}</div>
-                <div style={{ fontSize: '2rem', fontWeight: 800, color: s.color, lineHeight: 1 }}>{s.count}</div>
-                <div style={{ fontSize: '0.8125rem', fontWeight: 600, color: isDark ? '#9ca3af' : '#6b7280', marginTop: 3 }}>{s.label}</div>
-              </button>
-            ))}
+              { sev: 'red',    emoji: '🚨', label: 'Emergency',  count: summaryCounts.red,    color: '#ef4444', bg: isDark ? '#2d1515' : '#fef2f2', border: '#fca5a5' },
+              { sev: 'yellow', emoji: '⚠️', label: 'Moderate',   count: summaryCounts.yellow, color: '#d97706', bg: isDark ? '#2d2210' : '#fffbeb', border: '#fcd34d' },
+              { sev: 'green',  emoji: '✅', label: 'Stable',     count: summaryCounts.green,  color: '#059669', bg: isDark ? '#0d2520' : '#f0fdf4', border: '#6ee7b7' },
+            ].map(s => {
+              const active = activeTab === s.sev.toUpperCase();
+              return (
+                <button key={s.sev}
+                  onClick={() => setActiveTab(active ? 'ALL' : s.sev.toUpperCase())}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '0.375rem',
+                    padding: '0.375rem 0.875rem', borderRadius: 99, cursor: 'pointer', transition: 'all 0.15s',
+                    background: active ? s.bg : (isDark ? '#1a1d27' : '#fff'),
+                    border: `1.5px solid ${active ? s.border : (isDark ? '#1f2230' : '#e5e7eb')}`,
+                    color: active ? s.color : (isDark ? '#e5e7eb' : '#4b5563'),
+                    fontSize: '0.8125rem', fontWeight: 600,
+                  }}>
+                  <span>{s.emoji}</span>
+                  <span>{s.label}</span>
+                  <span style={{ 
+                    background: active ? s.color : (isDark ? '#374151' : '#f3f4f6'), 
+                    color: active ? '#fff' : (isDark ? '#9ca3af' : '#4b5563'), 
+                    padding: '0 6px', borderRadius: 99, fontSize: '0.7rem' 
+                  }}>{s.count}</span>
+                </button>
+              )
+            })}
           </div>
 
           {/* ── Page header ── */}

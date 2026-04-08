@@ -37,8 +37,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { usePatient } from '../context/PatientContext.jsx'
 import { useTriage } from '../hooks/useTriage'
 import { translateToEnglish, openai } from '../lib/openai'
-import TopNav from '../components/TopNav.jsx'
-import GlobalHeader from '../components/GlobalHeader.jsx'
+import DashboardLayout from '../components/DashboardLayout.jsx'
 import SignLanguageModal from '../components/SignLanguageModal.jsx'
 
 // ─── Duplicate-patient modal ──────────────────────────────────────────────────
@@ -463,13 +462,10 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
   }
 
   return (
-    <div style={{ 
-      minHeight: '100dvh', 
-      background: 'linear-gradient(-45deg, var(--island-grad-1), var(--island-grad-2), var(--island-grad-3), var(--island-grad-4))', 
+    <DashboardLayout contentStyle={{
+      background: 'linear-gradient(-45deg, var(--island-grad-1), var(--island-grad-2), var(--island-grad-3), var(--island-grad-4))',
       backgroundSize: '400% 400%',
       animation: 'islandGradientShift 15s ease infinite',
-      display: 'flex', 
-      flexDirection: 'column' 
     }}>
       <style>{`
         @keyframes islandGradientShift {
@@ -478,7 +474,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           100% { background-position: 0% 50%; }
         }
       `}</style>
-      
 
       {duplicateMatches && (
         <DuplicateModal
@@ -488,10 +483,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           onClose={() => setDuplicateMatches(null)}
         />
       )}
-
-      {/* Header */}
-      <GlobalHeader />
-      <TopNav />
 
       {/* Form Island */}
       <main style={{ 
@@ -836,7 +827,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           </div>
         )}
       </main>
-    </div>
+    </DashboardLayout>
   )
 }
 
