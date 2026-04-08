@@ -70,8 +70,8 @@ export default function LandingPage() {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '1.5rem 5%', maxWidth: 1600, margin: '0 auto', width: '100%',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', fontWeight: 700, fontSize: '1.5rem', color: '#ffffff', letterSpacing: '-0.02em' }}>
-            <img src={logo} alt="Logo" style={{ width: 36, height: 36, objectFit: 'contain' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 800, fontSize: '1.65rem', color: '#ffffff', letterSpacing: '-0.02em' }}>
+            <img src={logo} alt="Logo" style={{ width: 48, height: 48, objectFit: 'contain', filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))' }} />
             Swasthya Setu
           </div>
 

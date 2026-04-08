@@ -10,10 +10,13 @@ const ActivityIcon = ({ size = 18 }) => (
 const CalendarIcon = ({ size = 18 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
 )
+const LogoutIcon = ({ size = 18 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+)
 
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, logout } = useAuth()
   const [activeTab, setActiveTab] = useState('History')
   const [stats, setStats] = useState({
     patientCount: 0,
@@ -21,6 +24,11 @@ export default function ProfilePage() {
     rawRecords: []
   })
   const [loading, setLoading] = useState(true)
+
+  const handleLogout = async () => {
+    await logout()
+    navigate('/')
+  }
 
   const fetchProfileData = useCallback(async () => {
     try {
@@ -30,11 +38,9 @@ export default function ProfilePage() {
       })
       const records = res.ok ? await res.json() : []
       
-      // Calculate unique patients
       const patientIds = new Set(records.map(r => r.patient_id).filter(Boolean))
       const count = patientIds.size
 
-      // Find last patient time
       let lastTime = 'No records'
       if (records.length > 0) {
         const sorted = [...records].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
@@ -92,9 +98,9 @@ export default function ProfilePage() {
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
+        @keyframes glowRed {
+          from { box-shadow: 0 0 5px rgba(239, 68, 68, 0.2); }
+          to { box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
         }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -114,17 +120,17 @@ export default function ProfilePage() {
         justifyContent: 'flex-start',
         zIndex: 10
       }}>
-        <div 
-          style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer', transition: 'transform 0.3s' }} 
-          onClick={() => navigate('/home')}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-        >
-          <img src={logo} alt="Logo" style={{ width: 42, height: 42, objectFit: 'contain' }} />
-          <span style={{ fontWeight: 800, fontSize: '1.5rem', letterSpacing: '-0.03em', background: 'linear-gradient(to right, #fff, #7fdbff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            Swasthya Setu
-          </span>
-        </div>
+          <div 
+            style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', transition: 'all 0.3s' }} 
+            onClick={() => navigate('/home')}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.filter = 'brightness(1.2)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.filter = 'brightness(1)'; }}
+          >
+            <img src={logo} alt="Logo" style={{ width: 52, height: 52, objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(255,255,255,0.4))' }} />
+            <span style={{ fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.04em', background: 'linear-gradient(to right, #fff, #7fdbff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Swasthya Setu
+            </span>
+          </div>
       </header>
 
       {/* Main Content Area */}
@@ -172,17 +178,29 @@ export default function ProfilePage() {
                 </div>
               </div>
               <button 
+                onClick={handleLogout}
                 style={{ 
                   padding: '1rem 2rem', borderRadius: 16, 
-                  background: 'rgba(255, 255, 255, 0.15)', 
-                  border: '1px solid rgba(255, 255, 255, 0.25)',
-                  color: '#fff', fontWeight: 700, cursor: 'pointer',
-                  fontSize: '1rem', transition: 'all 0.3s'
+                  background: 'rgba(239, 68, 68, 0.15)', 
+                  border: '1px solid rgba(239, 68, 68, 0.4)',
+                  color: '#f87171', fontWeight: 800, cursor: 'pointer',
+                  fontSize: '1rem', transition: 'all 0.3s',
+                  display: 'flex', alignItems: 'center', gap: '0.75rem',
+                  boxShadow: '0 0 15px rgba(239, 68, 68, 0.3)'
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0, 0, 0, 0.3)'; e.currentTarget.style.transform = 'translateY(-3px)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+                onMouseEnter={(e) => { 
+                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.3)'; 
+                  e.currentTarget.style.transform = 'translateY(-3px)'; 
+                  e.currentTarget.style.boxShadow = '0 0 25px rgba(239, 68, 68, 0.6)';
+                }}
+                onMouseLeave={(e) => { 
+                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; 
+                  e.currentTarget.style.transform = 'translateY(0)'; 
+                  e.currentTarget.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.3)';
+                }}
               >
-                Edit Profile
+                <LogoutIcon size={20} />
+                Logout
               </button>
             </div>
             <p style={{ marginTop: '2rem', maxWidth: 700, color: 'rgba(255, 255, 255, 0.8)', fontSize: '1.125rem', lineHeight: 1.7 }}>
@@ -193,7 +211,6 @@ export default function ProfilePage() {
 
         {/* Health Stats Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem' }}>
-          {/* Card 1: Patients Visited */}
           <div style={{
             ...glassStyle,
             padding: '2rem',
@@ -212,7 +229,6 @@ export default function ProfilePage() {
             <div style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.6)', fontWeight: 600 }}>number of patients visited</div>
           </div>
 
-          {/* Card 2: Last Patient */}
           <div style={{
             ...glassStyle,
             padding: '2rem',
@@ -240,7 +256,7 @@ export default function ProfilePage() {
                 key={tab} 
                 onClick={() => setActiveTab(tab)}
                 style={{
-                  padding: '1rem 0',
+                  padding: '1.25rem 0',
                   background: 'none', border: 'none',
                   color: activeTab === tab ? '#10b981' : 'rgba(255, 255, 255, 0.5)',
                   fontWeight: 800, fontSize: '1.125rem',

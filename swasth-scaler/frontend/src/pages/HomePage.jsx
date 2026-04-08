@@ -34,7 +34,6 @@ const NAV_ITEMS = [
   { id: 'home', label: 'Dashboard', icon: GridIcon, path: '/home' },
   { id: 'patient', label: 'New Patient', icon: PatientIcon, path: '/patient' },
   { id: 'chat', label: 'AI Chat', icon: ChatIcon, path: '/chat' },
-  { id: 'profile', label: 'My Profile', icon: ProfileIcon, path: '/profile' },
 ]
 
 const DISTRICT_GROUPS = [
@@ -417,12 +416,12 @@ export default function HomePage() {
         <div style={S.sidebarInner}>
           {/* Dropdown arrow replacing hamburger */}
           <div style={{ padding: '1.25rem 1rem 0.75rem', borderBottom: `1px solid ${isDark ? '#1f2230' : '#f3f4f6'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-              <div style={{ width: 34, height: 34, borderRadius: 10, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, filter: isDark ? 'drop-shadow(0 0 10px rgba(16, 185, 129, 0.4))' : 'drop-shadow(0 0 10px rgba(16, 185, 129, 0.2))' }}>
                 <img src={logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
               <div>
-                <div style={{ fontWeight: 800, fontSize: '0.9375rem', color: clr.topText, lineHeight: 1.2, letterSpacing: '-0.02em' }}>Swasthya Setu</div>
+                <div style={{ fontWeight: 800, fontSize: '1rem', color: clr.topText, lineHeight: 1.2, letterSpacing: '-0.02em' }}>Swasthya Setu</div>
                 <div style={{ fontSize: '0.65rem', color: clr.topMuted, fontWeight: 500 }}>ASHA Dashboard</div>
               </div>
             </div>
