@@ -3,11 +3,42 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import ProfileOverlay from './ProfileOverlay.jsx'
 
-/* ── Nav items ── */
+/* ── Icon helpers ── */
+function GridIcon({ active }) {
+  return (
+    <svg width={16} height={16} viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={active ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+      <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+    </svg>
+  )
+}
+function PatientIcon({ active }) {
+  if (active) {
+    return (
+      <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    )
+  }
+  return (
+    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+      <circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/>
+    </svg>
+  )
+}
+function ChatIcon({ active }) {
+  return (
+    <svg width={16} height={16} viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+  )
+}
+
 const NAV_ITEMS = [
-  { id: 'home',    label: 'Dashboard',     emoji: '⊞',  path: '/home' },
-  { id: 'patient', label: 'New Patient',   emoji: '➕', path: '/patient' },
-  { id: 'chat',    label: 'AI Chat',       emoji: '💬', path: '/chat' },
+  { id: 'home',    label: 'Dashboard',   Icon: GridIcon,    path: '/home' },
+  { id: 'patient', label: 'New Patient', Icon: PatientIcon, path: '/patient' },
+  { id: 'chat',    label: 'AI Chat',     Icon: ChatIcon,    path: '/chat' },
 ]
 
 /* ── Tiny SVG icons ── */
@@ -133,7 +164,7 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
             <div style={{ fontSize: '0.65rem', fontWeight: 700, color: clr.muted, letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem' }}>Menu</div>
 
             {NAV_ITEMS.map(item => {
-              const isActive = location.pathname === item.path
+              const isActive = location.pathname.startsWith(item.path)
               return (
                 <button key={item.id} className="dl-nav-btn"
                   onClick={() => navigate(item.path)}
@@ -141,13 +172,13 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
                     width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem',
                     padding: '0.5rem 0.75rem', borderRadius: 8, border: 'none',
                     background: isActive ? (isDark ? '#1e2942' : '#eff6ff') : 'transparent',
-                    color: isActive ? '#3b82f6' : clr.muted,
+                    color: isActive ? '#5b21b6' : clr.muted,
                     fontWeight: isActive ? 600 : 500, fontSize: '0.875rem',
                     cursor: 'pointer', textAlign: 'left', marginBottom: 2, transition: 'all 0.15s',
                   }}
                 >
-                  <span style={{ fontSize: '1rem', lineHeight: 1 }}>{item.emoji}</span>
-                  {item.label}
+                  <span style={{ display: 'flex', color: isActive ? '#7c3aed' : 'inherit' }}><item.Icon active={isActive} /></span>
+                  <span style={{ flex: 1, color: isActive ? '#4f46e5' : 'inherit' }}>{item.label}</span>
                   {isActive && <ChevronRightIcon />}
                 </button>
               )

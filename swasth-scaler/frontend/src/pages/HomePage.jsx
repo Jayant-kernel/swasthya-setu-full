@@ -31,7 +31,7 @@ function formatDate(iso) {
 /* ── Sidebar nav items ─────────────────────────────────── */
 const NAV_ITEMS = [
   { id: 'home',    label: 'Dashboard',     icon: GridIcon,    path: '/home' },
-  { id: 'patient', label: 'New Patient',   icon: UserPlusIcon, path: '/patient' },
+  { id: 'patient', label: 'New Patient',   icon: PatientIcon, path: '/patient' },
   { id: 'chat',    label: 'AI Chat',       icon: ChatIcon,    path: '/chat' },
 ]
 
@@ -42,15 +42,22 @@ const DISTRICT_GROUPS = [
 ]
 
 /* ── SVG Icon helpers ──────────────────────────────────── */
-function GridIcon({ size = 16, color = 'currentColor' }) {
+function GridIcon({ size = 16, color = 'currentColor', active }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={active ? color : "none"} stroke={color} strokeWidth={active ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
       <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
     </svg>
   )
 }
-function UserPlusIcon({ size = 16, color = 'currentColor' }) {
+function PatientIcon({ size = 16, color = 'currentColor', active }) {
+  if (active) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    )
+  }
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
@@ -66,9 +73,9 @@ function ListIcon({ size = 16, color = 'currentColor' }) {
     </svg>
   )
 }
-function ChatIcon({ size = 16, color = 'currentColor' }) {
+function ChatIcon({ size = 16, color = 'currentColor', active }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={active ? color : "none"} stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
     </svg>
   )
@@ -321,8 +328,8 @@ export default function HomePage() {
       {/* ══ SIDEBAR ══════════════════════════════════════════ */}
       <aside style={S.sidebar}>
         <div style={S.sidebarInner}>
-          {/* Logo */}
-          <div style={{ padding: '1.25rem 1rem 0.75rem', borderBottom: `1px solid ${isDark ? '#1f2230' : '#f3f4f6'}` }}>
+          {/* Dropdown arrow replacing hamburger */}
+          <div style={{ padding: '1.25rem 1rem 0.75rem', borderBottom: `1px solid ${isDark ? '#1f2230' : '#f3f4f6'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
               <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #0F6E56, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <span style={{ color: '#fff', fontSize: '1rem' }}>🏥</span>
@@ -332,6 +339,10 @@ export default function HomePage() {
                 <div style={{ fontSize: '0.65rem', color: isDark ? '#6b7280' : '#9ca3af', fontWeight: 500 }}>ASHA Dashboard</div>
               </div>
             </div>
+            <button className="action-btn" onClick={() => setSidebarOpen(o => !o)}
+              style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: isDark ? '#6b7280' : '#9ca3af' }}>
+              <ChevronIcon size={14} dir="down" />
+            </button>
           </div>
 
           {/* Nav */}
@@ -339,7 +350,7 @@ export default function HomePage() {
             <div style={{ fontSize: '0.65rem', fontWeight: 700, color: isDark ? '#4b5563' : '#9ca3af', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem' }}>Menu</div>
 
             {NAV_ITEMS.map(item => {
-              const isActive = location.pathname === item.path && item.active
+              const isActive = location.pathname.startsWith(item.path)
               const Icon = item.icon
               return (
                 <button key={item.id} className="nav-btn"
@@ -348,15 +359,15 @@ export default function HomePage() {
                     width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem',
                     padding: '0.5rem 0.75rem', borderRadius: 8, border: 'none',
                     background: isActive ? (isDark ? '#1e2942' : '#eff6ff') : 'transparent',
-                    color: isActive ? '#3b82f6' : (isDark ? '#9ca3af' : '#6b7280'),
+                    color: isActive ? '#5b21b6' : (isDark ? '#9ca3af' : '#6b7280'),
                     fontWeight: isActive ? 600 : 500, fontSize: '0.875rem',
                     cursor: 'pointer', textAlign: 'left', marginBottom: 2,
                     transition: 'all 0.15s',
                   }}
                 >
-                  <Icon size={16} color={isActive ? '#3b82f6' : (isDark ? '#6b7280' : '#9ca3af')} />
-                  {item.label}
-                  {item.id === 'visits' && <ChevronIcon size={12} />}
+                  <span style={{ display: 'flex', color: isActive ? '#7c3aed' : 'inherit' }}><Icon size={16} active={isActive} /></span>
+                  <span style={{ flex: 1, color: isActive ? '#4f46e5' : 'inherit' }}>{item.label}</span>
+                  {isActive && <ChevronIcon size={14} color="#3b82f6" />}
                 </button>
               )
             })}
@@ -403,13 +414,6 @@ export default function HomePage() {
 
         {/* Top bar */}
         <div style={S.topbar}>
-          {/* Hamburger */}
-          <button className="action-btn" onClick={() => setSidebarOpen(o => !o)}
-            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s' }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-            </svg>
-          </button>
 
           {/* Search */}
           <div style={{ flex: 1, position: 'relative', maxWidth: 340 }}>
