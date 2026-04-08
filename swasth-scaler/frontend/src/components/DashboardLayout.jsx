@@ -291,19 +291,22 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
           display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0,
           position: 'relative', zIndex: 10
         }}>
-          {/* Re-expand Sidebar Button */}
-          {!sidebarOpen && (
-            <button className="dl-action" onClick={() => setSidebarOpen(true)}
-              style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.topText }}>
-              <HamburgerIcon />
-            </button>
-          )}
+          {/* Left wrapper */}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {/* Re-expand Sidebar Button */}
+            {!sidebarOpen && (
+              <button className="dl-action" onClick={() => setSidebarOpen(true)}
+                style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.topText }}>
+                <HamburgerIcon />
+              </button>
+            )}
 
-          {/* Optional page-specific content (e.g. patient badge in chat) */}
-          {topbarContent}
+            {/* Optional page-specific content (e.g. patient badge in chat) */}
+            {topbarContent}
+          </div>
 
           {/* Search — only on non-mobile */}
-          <div style={{ flex: 1, position: 'relative', maxWidth: 280 }}>
+          <div style={{ width: '100%', maxWidth: 280, position: 'relative' }}>
             <span style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', color: clr.topMuted, pointerEvents: 'none' }}><SearchIcon /></span>
             <input placeholder="Search patients…"
               style={{
@@ -319,42 +322,43 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
             />
           </div>
 
-          <div style={{ flex: 1 }} />
+          {/* Right wrapper */}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.75rem' }}>
+            {/* Theme */}
+            <button 
+              className="dl-action" 
+              aria-label="Toggle theme"
+              onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
+              onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.7)'}
+              onMouseLeave={(e) => { e.currentTarget.style.background = clr.glassBg; e.currentTarget.style.transform = 'scale(1)' }}
+              onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.85)'}
+              onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              style={{ 
+                width: 36, height: 36, borderRadius: '50%', 
+                border: `1px solid ${clr.borderSolid}`, 
+                background: clr.glassBg, 
+                backdropFilter: clr.glassBlur, WebkitBackdropFilter: clr.glassBlur,
+                boxShadow: clr.glassGlow,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                transition: 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)', 
+                flexShrink: 0 
+              }}
+            >
+              <ThemeMorphIcon isDark={isDark} color={clr.topText} idSuffix="dash" />
+            </button>
 
-          {/* Theme */}
-          <button 
-            className="dl-action" 
-            aria-label="Toggle theme"
-            onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
-            onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.7)'}
-            onMouseLeave={(e) => { e.currentTarget.style.background = clr.glassBg; e.currentTarget.style.transform = 'scale(1)' }}
-            onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.85)'}
-            onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            style={{ 
-              width: 36, height: 36, borderRadius: '50%', 
-              border: `1px solid ${clr.borderSolid}`, 
-              background: clr.glassBg, 
-              backdropFilter: clr.glassBlur, WebkitBackdropFilter: clr.glassBlur,
-              boxShadow: clr.glassGlow,
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              transition: 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)', 
-              flexShrink: 0 
-            }}
-          >
-            <ThemeMorphIcon isDark={isDark} color={clr.topText} idSuffix="dash" />
-          </button>
+            {/* Bell */}
+            <button className="dl-action"
+              style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: clr.topMuted, position: 'relative', flexShrink: 0, transition: 'all 0.15s' }}>
+              <BellIcon />
+            </button>
 
-          {/* Bell */}
-          <button className="dl-action"
-            style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: clr.topMuted, position: 'relative', flexShrink: 0, transition: 'all 0.15s' }}>
-            <BellIcon />
-          </button>
-
-          {/* New Patient CTA */}
-          <button className="dl-primary" onClick={() => navigate('/patient')}
-            style={{ height: 34, padding: '0 0.875rem', borderRadius: 8, border: `1px solid rgba(255,255,255,0.15)`, background: clr.primaryBg, color: '#fff', fontWeight: 600, fontSize: '0.8125rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0, transition: 'all 0.15s', boxShadow: clr.primaryShadow }}>
-            + New Patient
-          </button>
+            {/* New Patient CTA */}
+            <button className="dl-primary" onClick={() => navigate('/patient')}
+              style={{ height: 34, padding: '0 0.875rem', borderRadius: 8, border: `1px solid rgba(255,255,255,0.15)`, background: clr.primaryBg, color: '#fff', fontWeight: 600, fontSize: '0.8125rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0, transition: 'all 0.15s', boxShadow: clr.primaryShadow }}>
+              + New Patient
+            </button>
+          </div>
         </div>
 
         {/* Scrollable content */}
