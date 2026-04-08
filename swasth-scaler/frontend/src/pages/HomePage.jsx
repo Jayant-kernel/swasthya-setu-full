@@ -444,7 +444,7 @@ export default function HomePage() {
 
           {/* Search */}
           <div style={{ flex: 1, position: 'relative', maxWidth: 340 }}>
-            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: isDark ? '#4b5563' : '#9ca3af', pointerEvents: 'none' }}>
+            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: isDark ? '#cbd5e1' : '#64748b', pointerEvents: 'none' }}>
               <SearchIcon size={15} />
             </span>
             <input
@@ -453,34 +453,34 @@ export default function HomePage() {
               onChange={e => setQuery(e.target.value)}
               style={{
                 width: '100%', height: 36, paddingLeft: '2.25rem', paddingRight: '0.75rem',
-                borderRadius: 8, border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`,
-                background: isDark ? '#1a1d27' : '#f9fafb',
-                color: isDark ? '#e5e7eb' : '#111827', fontSize: '0.875rem', outline: 'none',
+                borderRadius: 8, border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.6)'}`,
+                background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255, 255, 255, 0.4)',
+                backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+                color: isDark ? '#f8fafc' : '#0f172a', fontSize: '0.875rem', outline: 'none',
+                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)', transition: 'all 0.2s',
               }}
             />
-            <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: isDark ? '#374151' : '#d1d5db', fontWeight: 600, background: isDark ? '#1f2230' : '#f3f4f6', padding: '2px 5px', borderRadius: 4, pointerEvents: 'none' }}>⌘ K</span>
+            <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: isDark ? '#cbd5e1' : '#64748b', fontWeight: 600, background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)', padding: '2px 5px', borderRadius: 4, pointerEvents: 'none' }}>⌘ K</span>
           </div>
 
           <div style={{ flex: 1 }} />
 
           {/* Theme toggle */}
           <button className="action-btn" onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
-            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', transition: 'all 0.15s', flexShrink: 0 }}>
+            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', transition: 'all 0.15s', flexShrink: 0 }}>
             {isDark ? '☀️' : '🌙'}
           </button>
 
           {/* Bell */}
           <button className="action-btn"
-            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#9ca3af' : '#6b7280', position: 'relative', transition: 'all 0.15s', flexShrink: 0 }}>
+            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#cbd5e1' : '#475569', position: 'relative', transition: 'all 0.15s', flexShrink: 0 }}>
             <BellIcon size={17} />
-            {summaryCounts.red > 0 && <span style={{ position: 'absolute', top: 7, right: 8, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid #fff' }} />}
+            {summaryCounts.red > 0 && <span style={{ position: 'absolute', top: 7, right: 8, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid transparent' }} />}
           </button>
 
           {/* New Patient CTA */}
           <button onClick={() => navigate('/patient')}
-            style={{ height: 36, padding: '0 1rem', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', flexShrink: 0, transition: 'background 0.15s' }}
-            onMouseEnter={e => e.currentTarget.style.background = '#2563eb'}
-            onMouseLeave={e => e.currentTarget.style.background = '#3b82f6'}>
+            style={{ height: 36, padding: '0 1rem', borderRadius: 8, border: `1px solid rgba(255,255,255,0.15)`, background: 'linear-gradient(135deg, #3b82f6, #2563eb)', color: '#fff', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', flexShrink: 0, transition: 'all 0.15s', boxShadow: '0 4px 14px rgba(37, 99, 235, 0.4)' }}>
             + New Patient
           </button>
         </div>
