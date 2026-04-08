@@ -14,11 +14,8 @@ const ROLES = [
     image: loginImg2,
     description: 'Track village visits, log health data & support community care.',
     path: '/home',
-    color: '#1a7fc4',
-    accent: '#bae6fd',
-    bg: 'linear-gradient(160deg, #0c3a6d 0%, #1a6cad 100%)',
-    border: '#3b9de0',
-    glow: 'rgba(59,157,224,0.25)',
+    color: '#0F6E56',
+    accent: '#6EE7B7',
   },
   {
     id: 'dmo',
@@ -28,20 +25,100 @@ const ROLES = [
     image: loginImg3,
     description: 'Oversee district health metrics and coordinate response logistics.',
     path: '/dashboard/dmo',
-    color: '#0e8f8f',
-    accent: '#99f6e4',
-    bg: 'linear-gradient(160deg, #043838 0%, #0b7a7a 100%)',
-    border: '#2dd4d4',
-    glow: 'rgba(45,212,212,0.25)',
+    color: '#0a5040',
+    accent: '#34D399',
   },
 ];
+
+/* ── SVG Illustrations rendered inline ── */
+function HealthIllustration({ selectedRole }) {
+  const img = selectedRole ? selectedRole.image : loginImg2;
+  return (
+    <div style={{ width: '100%', height: '100%', position: 'relative', overflow: 'hidden' }}>
+      {/* Background gradient blobs */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: selectedRole
+          ? `linear-gradient(160deg, ${selectedRole.color}ee 0%, #0a3d2e 100%)`
+          : 'linear-gradient(160deg, #0F6E56ee 0%, #0a3d2e 100%)',
+      }} />
+      {/* Decorative circles */}
+      <div style={{ position: 'absolute', top: '-80px', left: '-80px', width: 300, height: 300, borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }} />
+      <div style={{ position: 'absolute', bottom: '-60px', right: '-60px', width: 250, height: 250, borderRadius: '50%', background: 'rgba(255,255,255,0.04)' }} />
+      <div style={{ position: 'absolute', top: '40%', left: '60%', width: 180, height: 180, borderRadius: '50%', background: 'rgba(110,231,183,0.08)' }} />
+
+      {/* Role image */}
+      <img
+        src={img}
+        alt=""
+        style={{
+          position: 'absolute',
+          bottom: 0,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          height: '72%',
+          objectFit: 'contain',
+          objectPosition: 'bottom',
+          opacity: 0.92,
+          filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.4))',
+          transition: 'opacity 0.4s ease',
+        }}
+      />
+
+      {/* Floating icon badges */}
+      <FloatingBadge top="12%" left="8%" icon="🩺" delay="0s" />
+      <FloatingBadge top="22%" left="78%" icon="💊" delay="0.4s" />
+      <FloatingBadge top="55%" left="82%" icon="❤️" delay="0.8s" />
+      <FloatingBadge top="70%" left="6%" icon="📋" delay="1.2s" />
+      <FloatingBadge top="38%" left="5%" icon="✚" delay="0.6s" />
+
+      {/* Bottom brand text */}
+      <div style={{
+        position: 'absolute',
+        bottom: '1.5rem',
+        left: 0,
+        right: 0,
+        textAlign: 'center',
+        zIndex: 2,
+      }}>
+        <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.7rem', letterSpacing: '0.15em', textTransform: 'uppercase', fontWeight: 600 }}>
+          Swasthya Setu · स्वास्थ्य सेतु
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function FloatingBadge({ top, left, icon, delay }) {
+  return (
+    <div style={{
+      position: 'absolute',
+      top,
+      left,
+      width: 44,
+      height: 44,
+      borderRadius: '12px',
+      background: 'rgba(255,255,255,0.15)',
+      backdropFilter: 'blur(12px)',
+      border: '1px solid rgba(255,255,255,0.25)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: '1.25rem',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+      animation: `lrm-float 4s ease-in-out ${delay} infinite`,
+    }}>
+      {icon}
+    </div>
+  );
+}
 
 export default function LoginRoleModal({ onClose }) {
   const [selected, setSelected] = useState(null);
   const [authEmployeeId, setAuthEmployeeId] = useState('');
   const [authPassword, setAuthPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
-  const [authInfo, setAuthInfo] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -61,13 +138,12 @@ export default function LoginRoleModal({ onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setAuthError('');
-    setAuthInfo('');
     setAuthLoading(true);
     try {
       await auth.login(authEmployeeId, authPassword, selected.id);
       navigate(selected.path);
     } catch (err) {
-      setAuthError(err.message);
+      setAuthError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setAuthLoading(false);
     }
@@ -76,76 +152,221 @@ export default function LoginRoleModal({ onClose }) {
   return (
     <>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+        @keyframes lrm-float {
+          0%, 100% { transform: translateY(0px); }
+          50%       { transform: translateY(-10px); }
+        }
+
         .lrm-backdrop {
           position: fixed; inset: 0; z-index: 200;
-          background: rgba(0,0,0,0.7);
-          backdrop-filter: blur(10px);
+          background: rgba(0,0,0,0.65);
+          backdrop-filter: blur(12px);
           display: flex; align-items: center; justify-content: center;
           padding: 1rem;
           overflow-y: auto;
           transition: opacity 0.28s ease;
         }
+
         .lrm-card {
           width: 100%;
-          max-width: 560px;
-          border-radius: 1.5rem;
+          max-width: 840px;
+          min-height: 520px;
+          border-radius: 1.75rem;
           overflow: hidden;
-          box-shadow: 0 40px 100px rgba(0,0,0,0.6);
-          transition: transform 0.28s ease, opacity 0.28s ease;
+          box-shadow: 0 40px 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+          transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.28s ease;
           font-family: 'Inter', 'Noto Sans', sans-serif;
-          background: #0d1117;
-        }
-        .lrm-role-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0;
-        }
-        .lrm-role-card {
-          cursor: pointer;
-          position: relative;
-          overflow: hidden;
-          transition: background 0.3s ease;
-          background: transparent;
-          border: none;
-          padding: 0;
-          text-align: left;
-        }
-        .lrm-role-card:first-child {
-          border-right: 1px solid rgba(255,255,255,0.07);
-        }
-        .lrm-phase2 {
           display: flex;
+        }
+
+        .lrm-left-panel {
+          flex: 0 0 42%;
+          position: relative;
           min-height: 520px;
         }
-        .lrm-brand-panel {
-          flex: 0 0 40%;
-          position: relative;
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-end;
-          padding: 2rem;
-        }
-        .lrm-form-panel {
+
+        .lrm-right-panel {
           flex: 1;
-          background: #fff;
+          background: #ffffff;
           display: flex;
           flex-direction: column;
           justify-content: center;
-          padding: 2.5rem 2.5rem;
+          padding: 2.75rem 2.5rem;
           position: relative;
           overflow-y: auto;
         }
-        @media (max-width: 540px) {
-          .lrm-card { border-radius: 1.25rem; }
-          .lrm-phase2 { flex-direction: column; min-height: auto; }
-          .lrm-brand-panel { display: none; }
-          .lrm-form-panel { padding: 2rem 1.5rem; }
-          .lrm-role-img { height: 150px !important; }
-          .lrm-role-body { padding: 1rem 1rem 1.25rem !important; }
-          .lrm-role-title { font-size: 1rem !important; }
-          .lrm-role-desc { display: none !important; }
-          .lrm-role-cta { font-size: 0.75rem !important; padding: 0.5rem 0.75rem !important; }
+
+        .lrm-role-chips {
+          display: flex;
+          gap: 0.625rem;
+          margin-bottom: 1.75rem;
+          flex-wrap: wrap;
+        }
+
+        .lrm-chip {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 0.375rem;
+          padding: 0.625rem 1rem;
+          border-radius: 12px;
+          border: 1.5px solid #e5e7eb;
+          background: #f9fafb;
+          cursor: pointer;
+          transition: all 0.18s ease;
+          min-width: 88px;
+          font-family: 'Inter', sans-serif;
+        }
+
+        .lrm-chip:hover {
+          border-color: #0F6E56;
+          background: #f0fdf8;
+        }
+
+        .lrm-chip.active {
+          border-color: #0F6E56;
+          background: #0F6E56;
+        }
+
+        .lrm-chip .chip-icon {
+          font-size: 1.375rem;
+        }
+
+        .lrm-chip .chip-label {
+          font-size: 0.7rem;
+          font-weight: 600;
+          color: #6b7280;
+          text-align: center;
+          letter-spacing: 0.01em;
+        }
+
+        .lrm-chip.active .chip-label {
+          color: #ffffff;
+        }
+
+        .lrm-field-wrap {
+          position: relative;
+          margin-bottom: 0.875rem;
+        }
+
+        .lrm-field-icon {
+          position: absolute;
+          left: 1rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #9ca3af;
+          display: flex;
+          align-items: center;
+          pointer-events: none;
+        }
+
+        .lrm-input {
+          width: 100%;
+          padding: 0.875rem 1rem 0.875rem 2.75rem;
+          border-radius: 12px;
+          border: 1.5px solid #e5e7eb;
+          outline: none;
+          font-size: 0.9375rem;
+          font-family: 'Inter', sans-serif;
+          color: #111827;
+          background: #f9fafb;
+          box-sizing: border-box;
+          min-height: 50px;
+          transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .lrm-input::placeholder {
+          color: #b0bec5;
+        }
+
+        .lrm-input:focus {
+          border-color: #0F6E56;
+          background: #fff;
+          box-shadow: 0 0 0 3px rgba(15,110,86,0.12);
+        }
+
+        .lrm-eye-btn {
+          position: absolute;
+          right: 0.875rem;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          cursor: pointer;
+          color: #9ca3af;
+          display: flex;
+          align-items: center;
+          padding: 0.25rem;
+          min-height: unset;
+        }
+
+        .lrm-eye-btn:hover { color: #374151; }
+
+        .lrm-submit-btn {
+          width: 100%;
+          min-height: 50px;
+          border-radius: 12px;
+          background: #0F6E56;
+          color: #fff;
+          border: none;
+          font-size: 0.9375rem;
+          font-weight: 700;
+          font-family: 'Inter', sans-serif;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          margin-top: 0.5rem;
+          transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
+        }
+
+        .lrm-submit-btn:hover:not(:disabled) {
+          background: #0a5240;
+          box-shadow: 0 6px 20px rgba(15,110,86,0.35);
+          transform: translateY(-1px);
+        }
+
+        .lrm-submit-btn:active:not(:disabled) {
+          transform: translateY(0);
+        }
+
+        .lrm-submit-btn:disabled {
+          background: #6b7280;
+          cursor: not-allowed;
+        }
+
+        .lrm-close-btn {
+          position: absolute;
+          top: 1rem;
+          right: 1rem;
+          width: 34px;
+          height: 34px;
+          border-radius: 50%;
+          background: #f3f4f6;
+          border: none;
+          color: #6b7280;
+          font-size: 1rem;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background 0.15s, color 0.15s;
+          min-height: unset;
+          z-index: 5;
+        }
+
+        .lrm-close-btn:hover {
+          background: #e5e7eb;
+          color: #111827;
+        }
+
+        @media (max-width: 600px) {
+          .lrm-card { flex-direction: column; min-height: auto; border-radius: 1.25rem; max-width: 100%; }
+          .lrm-left-panel { min-height: 200px; flex: 0 0 auto; }
+          .lrm-right-panel { padding: 2rem 1.5rem 2.5rem; }
         }
       `}</style>
 
@@ -155,271 +376,184 @@ export default function LoginRoleModal({ onClose }) {
         onClick={handleClose}
         style={{ opacity: mounted ? 1 : 0 }}
       >
-        {/* Modal */}
+        {/* Card */}
         <div
           className="lrm-card"
           onClick={e => e.stopPropagation()}
           style={{
-            transform: mounted ? 'translateY(0) scale(1)' : 'translateY(24px) scale(0.97)',
+            transform: mounted ? 'translateY(0) scale(1)' : 'translateY(30px) scale(0.96)',
             opacity: mounted ? 1 : 0,
           }}
         >
-          {!selected ? (
-            /* ══════════════════════
-               Phase 1 — Role picker
-            ══════════════════════ */
-            <div>
-              {/* Header */}
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '1.25rem 1.5rem',
-                borderBottom: '1px solid rgba(255,255,255,0.07)',
-              }}>
-                <div>
-                  <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.02em', margin: 0 }}>
-                    Choose your role
-                  </h2>
-                  <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8125rem', margin: '0.2rem 0 0' }}>
-                    Select how you'll access the platform today
-                  </p>
-                </div>
-                <button
-                  onClick={handleClose}
-                  aria-label="Close"
-                  style={{
-                    width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
-                    background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)',
-                    color: 'rgba(255,255,255,0.6)', fontSize: '1rem', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    transition: 'background 0.2s',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.07)'}
-                >✕</button>
-              </div>
+          {/* ══ LEFT: Illustration panel ══ */}
+          <div className="lrm-left-panel">
+            <HealthIllustration selectedRole={selected} />
+          </div>
 
-              {/* 2-column role cards */}
-              <div className="lrm-role-grid">
-                {ROLES.map((role) => (
+          {/* ══ RIGHT: Form panel ══ */}
+          <div className="lrm-right-panel">
+            {/* Close button */}
+            <button className="lrm-close-btn" onClick={handleClose} aria-label="Close">✕</button>
+
+            {/* Header */}
+            <div style={{ marginBottom: '1.5rem' }}>
+              <h1 style={{
+                fontSize: '1.75rem',
+                fontWeight: 900,
+                color: '#111827',
+                letterSpacing: '-0.04em',
+                margin: '0 0 0.3rem',
+                fontFamily: 'Inter, sans-serif',
+              }}>
+                Welcome Back!
+              </h1>
+              <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0, fontFamily: 'Inter, sans-serif' }}>
+                ओपन बेस्ड हेल्थकेयर प्लेटफ़ॉर्म
+              </p>
+            </div>
+
+            {/* Role selector chips */}
+            <div style={{ marginBottom: '0.5rem' }}>
+              <label style={{ fontSize: '0.8rem', fontWeight: 700, color: '#374151', letterSpacing: '0.04em', textTransform: 'uppercase', display: 'block', marginBottom: '0.625rem', fontFamily: 'Inter, sans-serif' }}>
+                Select User Type *
+              </label>
+              <div className="lrm-role-chips">
+                {ROLES.map(role => (
                   <button
                     key={role.id}
-                    className="lrm-role-card"
-                    onClick={() => setSelected(role)}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                    className={`lrm-chip${selected?.id === role.id ? ' active' : ''}`}
+                    onClick={() => { setSelected(role); setAuthError(''); }}
+                    type="button"
+                    title={role.titleOdia}
                   >
-                    {/* Image area */}
-                    <div className="lrm-role-img" style={{ position: 'relative', height: '180px', overflow: 'hidden' }}>
-                      <div style={{ position: 'absolute', inset: 0, background: role.bg }} />
-                      <img
-                        src={role.image}
-                        alt={role.title}
-                        style={{
-                          position: 'absolute', inset: 0, width: '100%', height: '100%',
-                          objectFit: 'cover', objectPosition: 'center top',
-                          opacity: 0.4, mixBlendMode: 'luminosity',
-                          transition: 'transform 0.5s ease',
-                        }}
-                      />
-                      {/* Bottom fade */}
-                      <div style={{
-                        position: 'absolute', bottom: 0, left: 0, right: 0, height: '60%',
-                        background: 'linear-gradient(to top, #0d1117 0%, transparent 100%)',
-                      }} />
-                      {/* Glow */}
-                      <div style={{
-                        position: 'absolute', inset: 0,
-                        background: `radial-gradient(ellipse at 50% 80%, ${role.glow} 0%, transparent 70%)`,
-                      }} />
-                      {/* Icon badge */}
-                      <div style={{
-                        position: 'absolute', top: '0.875rem', left: '0.875rem',
-                        width: 40, height: 40, borderRadius: '10px',
-                        background: 'rgba(13,17,23,0.6)', backdropFilter: 'blur(8px)',
-                        border: `1px solid ${role.border}55`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: '1.25rem',
-                      }}>
-                        {role.icon}
-                      </div>
-                    </div>
-
-                    {/* Card body */}
-                    <div className="lrm-role-body" style={{ padding: '1rem 1.25rem 1.5rem' }}>
-                      <h3 className="lrm-role-title" style={{
-                        fontSize: '1.0625rem', fontWeight: 800, color: '#f1f5f9',
-                        margin: '0 0 0.2rem', letterSpacing: '-0.02em',
-                      }}>
-                        {role.title}
-                      </h3>
-                      <div style={{
-                        fontFamily: "'Noto Sans Oriya', sans-serif",
-                        fontSize: '0.8rem', color: role.accent, fontWeight: 600,
-                        marginBottom: '0.625rem', opacity: 0.85,
-                      }}>
-                        {role.titleOdia}
-                      </div>
-                      <p className="lrm-role-desc" style={{
-                        color: 'rgba(255,255,255,0.45)', fontSize: '0.75rem',
-                        lineHeight: 1.5, marginBottom: '1rem',
-                      }}>
-                        {role.description}
-                      </p>
-
-                      {/* CTA pill */}
-                      <div className="lrm-role-cta" style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '0.55rem 0.875rem',
-                        borderRadius: '99px',
-                        background: role.color,
-                        color: '#fff',
-                        fontSize: '0.8125rem',
-                        fontWeight: 700,
-                        letterSpacing: '-0.01em',
-                        boxShadow: `0 4px 16px ${role.glow}`,
-                      }}>
-                        <span>Continue →</span>
-                        <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-7-7 7 7-7 7" />
-                        </svg>
-                      </div>
-                    </div>
+                    <span className="chip-icon">{role.icon}</span>
+                    <span className="chip-label">{role.title}</span>
                   </button>
                 ))}
               </div>
-
-              {/* Footer */}
-              <div style={{
-                padding: '0.875rem 1.5rem',
-                borderTop: '1px solid rgba(255,255,255,0.06)',
-                textAlign: 'center',
-                color: 'rgba(255,255,255,0.25)',
-                fontSize: '0.75rem',
-              }}>
-                Swasthya Setu · Bridging healthcare across rural Odisha
-              </div>
             </div>
 
-          ) : (
-            /* ══════════════════════
-               Phase 2 — Login form
-            ══════════════════════ */
-            <div className="lrm-phase2">
-              {/* Left — brand panel */}
-              <div className="lrm-brand-panel" style={{ background: selected.bg }}>
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 30%, rgba(0,0,0,0.5) 100%)' }} />
-                <img
-                  src={selected.image} alt=""
-                  style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', opacity: 0.3, mixBlendMode: 'luminosity' }}
+            {/* Divider */}
+            <div style={{ height: '1px', background: '#f3f4f6', marginBottom: '1.25rem' }} />
+
+            {/* Login form */}
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
+              {authError && (
+                <div style={{
+                  background: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '10px',
+                  padding: '0.75rem 1rem',
+                  color: '#dc2626',
+                  fontSize: '0.875rem',
+                  marginBottom: '0.875rem',
+                  fontFamily: 'Inter, sans-serif',
+                }}>
+                  {authError}
+                </div>
+              )}
+
+              {/* Employee ID field */}
+              <div className="lrm-field-wrap">
+                <span className="lrm-field-icon">
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </span>
+                <input
+                  className="lrm-input"
+                  type="text"
+                  placeholder="Enter Your Employee / Officer ID"
+                  value={authEmployeeId}
+                  onChange={e => setAuthEmployeeId(e.target.value)}
+                  required
+                  disabled={!selected}
                 />
-                <div style={{ position: 'relative', zIndex: 2 }}>
-                  <span style={{ fontSize: '2.25rem' }}>{selected.icon}</span>
-                  <div style={{
-                    display: 'inline-block', background: `${selected.accent}22`,
-                    border: `1px solid ${selected.accent}44`, borderRadius: '99px',
-                    padding: '0.25rem 0.75rem', color: selected.accent,
-                    fontSize: '0.6875rem', fontWeight: 700, letterSpacing: '0.06em',
-                    textTransform: 'uppercase', marginTop: '0.875rem', marginBottom: '0.875rem',
-                    display: 'block', width: 'fit-content',
-                  }}>
-                    {selected.title} Portal
-                  </div>
-                  <h2 style={{ fontSize: '2rem', fontWeight: 900, color: '#fff', letterSpacing: '-0.04em', lineHeight: 1.05, marginBottom: '0.75rem' }}>
-                    Welcome<br />Back.
-                  </h2>
-                  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.875rem', lineHeight: 1.6 }}>
-                    {selected.description}
-                  </p>
-                </div>
               </div>
 
-              {/* Right — form */}
-              <div className="lrm-form-panel">
-                {/* Back + Close */}
+              {/* Password field */}
+              <div className="lrm-field-wrap">
+                <span className="lrm-field-icon">
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </span>
+                <input
+                  className="lrm-input"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter Your Password"
+                  value={authPassword}
+                  onChange={e => setAuthPassword(e.target.value)}
+                  required
+                  disabled={!selected}
+                />
                 <button
-                  onClick={() => { setSelected(null); setAuthError(''); setAuthInfo(''); }}
-                  style={{
-                    position: 'absolute', top: '1rem', left: '1.25rem',
-                    background: '#f3f4f6', border: 'none', borderRadius: '99px',
-                    padding: '0.4rem 0.875rem', fontSize: '0.8125rem', fontWeight: 600,
-                    color: '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
-                    minHeight: 36,
-                  }}
-                >← Back</button>
-                <button
-                  onClick={handleClose}
-                  style={{
-                    position: 'absolute', top: '1rem', right: '1.25rem',
-                    background: '#f3f4f6', border: 'none', borderRadius: '50%',
-                    width: 36, height: 36, fontSize: '1rem', cursor: 'pointer',
-                    color: '#374151', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >✕</button>
-
-                <div style={{ marginBottom: '1.5rem', marginTop: '2.5rem' }}>
-                  <h1 style={{ fontSize: '1.625rem', fontWeight: 900, color: '#111827', letterSpacing: '-0.03em', margin: '0 0 0.375rem' }}>
-                    Sign In
-                  </h1>
-                  <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0 }}>
-                    Continuing as{' '}
-                    <strong style={{ color: '#374151' }}>{selected.title}</strong>
-                  </p>
-                </div>
-
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                  {authError && (
-                    <div style={{ background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px', padding: '0.75rem 1rem', color: '#dc2626', fontSize: '0.875rem' }}>
-                      {authError}
-                    </div>
+                  type="button"
+                  className="lrm-eye-btn"
+                  onClick={() => setShowPassword(v => !v)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? (
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
+                    </svg>
+                  ) : (
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                    </svg>
                   )}
-                  {authInfo && (
-                    <div style={{ background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px', padding: '0.75rem 1rem', color: '#166534', fontSize: '0.875rem' }}>
-                      {authInfo}
-                    </div>
-                  )}
-
-                  <input
-                    type="text" placeholder="Employee / Officer ID"
-                    value={authEmployeeId} onChange={e => setAuthEmployeeId(e.target.value)} required
-                    style={{ width: '100%', padding: '0.875rem 1.125rem', borderRadius: '12px', border: '1.5px solid #e5e7eb', outline: 'none', fontSize: '0.9375rem', color: '#111827', background: '#f9fafb', boxSizing: 'border-box', minHeight: 48 }}
-                    onFocus={e => e.target.style.borderColor = selected.color}
-                    onBlur={e => e.target.style.borderColor = '#e5e7eb'}
-                  />
-                  <input
-                    type="password" placeholder="Password"
-                    value={authPassword} onChange={e => setAuthPassword(e.target.value)} required
-                    style={{ width: '100%', padding: '0.875rem 1.125rem', borderRadius: '12px', border: '1.5px solid #e5e7eb', outline: 'none', fontSize: '0.9375rem', color: '#111827', background: '#f9fafb', boxSizing: 'border-box', minHeight: 48 }}
-                    onFocus={e => e.target.style.borderColor = selected.color}
-                    onBlur={e => e.target.style.borderColor = '#e5e7eb'}
-                  />
-
-                  <button
-                    type="submit" disabled={authLoading}
-                    style={{
-                      width: '100%', minHeight: 50,
-                      borderRadius: '12px',
-                      background: authLoading ? '#9ca3af' : '#111827',
-                      color: '#fff', border: 'none',
-                      fontSize: '0.9375rem', fontWeight: 700,
-                      cursor: authLoading ? 'not-allowed' : 'pointer',
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '0 1.25rem',
-                      marginTop: '0.25rem', transition: 'background 0.2s',
-                    }}
-                    onMouseEnter={e => { if (!authLoading) e.currentTarget.style.background = '#1f2937'; }}
-                    onMouseLeave={e => { if (!authLoading) e.currentTarget.style.background = '#111827'; }}
-                  >
-                    <span>{authLoading ? 'Signing in…' : 'Sign In'}</span>
-                    <span style={{ background: '#fff', color: '#111827', borderRadius: '50%', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: '1rem' }}>
-                      {authLoading ? '…' : '→'}
-                    </span>
-                  </button>
-                </form>
+                </button>
               </div>
-            </div>
-          )}
+
+              {/* Hint if no role selected */}
+              {!selected && (
+                <p style={{ fontSize: '0.8rem', color: '#9ca3af', marginBottom: '0.5rem', textAlign: 'center', fontFamily: 'Inter, sans-serif' }}>
+                  ↑ Please select your role above to continue
+                </p>
+              )}
+
+              {/* Submit */}
+              <button
+                type="submit"
+                className="lrm-submit-btn"
+                disabled={authLoading || !selected}
+              >
+                {authLoading ? (
+                  <>
+                    <span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'lrm-spin 0.7s linear infinite' }} />
+                    Signing in…
+                  </>
+                ) : (
+                  <>
+                    Continue
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                    </svg>
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Footer note */}
+            <p style={{
+              marginTop: '1.5rem',
+              textAlign: 'center',
+              fontSize: '0.8rem',
+              color: '#9ca3af',
+              fontFamily: 'Inter, sans-serif',
+            }}>
+              Authorised personnel only ·{' '}
+              <span style={{ color: '#0F6E56', fontWeight: 600 }}>स्वास्थ्य सेतु</span>
+            </p>
+          </div>
         </div>
       </div>
+
+      {/* Spinner keyframe */}
+      <style>{`
+        @keyframes lrm-spin { to { transform: rotate(360deg); } }
+      `}</style>
     </>
   );
 }
