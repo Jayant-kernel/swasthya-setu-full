@@ -401,6 +401,41 @@ export default function ChatPage() {
               </div>
             </>
           )}
+
+          {/* ── Switch Patient button ── */}
+          <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
+            <div style={{ height: 1, background: `${clr.border}`, marginBottom: '1rem' }} />
+            <button
+              onClick={() => { setPatientData({}); setTriageResult(null); setMessages([]) }}
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                borderRadius: 10,
+                border: `1.5px solid ${isDark ? 'rgba(239,68,68,0.35)' : 'rgba(239,68,68,0.3)'}`,
+                background: isDark ? 'rgba(239,68,68,0.1)' : 'rgba(254,242,242,0.8)',
+                backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+                color: '#ef4444',
+                fontWeight: 700,
+                fontSize: '0.875rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                transition: 'all 0.2s',
+                boxShadow: '0 2px 8px rgba(239,68,68,0.15)',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = isDark ? 'rgba(239,68,68,0.2)' : 'rgba(254,226,226,0.95)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(239,68,68,0.25)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = isDark ? 'rgba(239,68,68,0.1)' : 'rgba(254,242,242,0.8)'; e.currentTarget.style.boxShadow = '0 2px 8px rgba(239,68,68,0.15)' }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+              Switch Patient
+            </button>
+          </div>
         </aside>
 
         {/* Chat area */}

@@ -340,7 +340,7 @@ export default function HomePage() {
     iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.15)',
     iconText: isDark ? '#93c5fd' : '#ffffff',
 
-    hover: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(16, 185, 129, 0.15)',
+    hover: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.18)',
 
     primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #059669)',
     primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
@@ -394,9 +394,9 @@ export default function HomePage() {
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: ${isDark ? '#2d3148' : '#e5e7eb'}; border-radius: 99px; }
-        .nav-btn:hover { background: ${isDark ? '#1e2030' : '#f3f4f6'} !important; }
+        .nav-btn:hover { background: ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(16, 185, 129, 0.18)'} !important; }
         .row-btn:hover { background: ${isDark ? '#1e2030' : '#f9fafb'} !important; cursor: pointer; }
-        .action-btn:hover { background: ${isDark ? '#2d3148' : '#f3f4f6'} !important; }
+        .action-btn:hover { background: ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(16, 185, 129, 0.18)'} !important; }
         .del-btn:hover { background: #fef2f2 !important; color: #ef4444 !important; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important; }
       `}</style>

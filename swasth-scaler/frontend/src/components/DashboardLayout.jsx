@@ -170,7 +170,7 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
     iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.15)',
     iconColor: isDark ? '#93c5fd' : '#ffffff',
 
-    hover: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(16, 185, 129, 0.15)',
+    hover: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.18)',
 
     primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #059669)',
     primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
