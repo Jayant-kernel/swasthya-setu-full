@@ -13,16 +13,21 @@ from fastapi.websockets import WebSocket, WebSocketDisconnect
 from openai import OpenAI
 from dotenv import load_dotenv
 
+# Add backend folder to path
+_BACKEND_PATH = os.path.dirname(__file__)
+if _BACKEND_PATH not in sys.path:
+    sys.path.insert(0, os.path.abspath(_BACKEND_PATH))
+
 # ISL detector — path relative to backend/
 _ISL_PATH = os.path.join(os.path.dirname(__file__), "..", "isl_feature", "inference")
 if _ISL_PATH not in sys.path:
     sys.path.insert(0, os.path.abspath(_ISL_PATH))
 
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
+
 from database import engine, Base, AsyncSessionLocal
 from models import TriageRecord
 from routes import auth_routes, patient_routes, triage_routes, user_routes
-
-load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -47,30 +52,32 @@ from auth import get_password_hash
 
 @app.on_event("startup")
 async def startup():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-        
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(select(User).limit(1))
-        if not result.scalar_one_or_none():
-            logger.info("Database empty! Seeding default user accounts...")
-            session.add_all([
-                User(employee_id="ASHA001", role="asha", password_hash=get_password_hash("password"), full_name="Kalyani Dash", location="Village Alpha", district="Pune"),
-                User(employee_id="DMO001", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Pradhan", location="District HQ", district="Pune"),
-                User(employee_id="DMO002", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Sharma", location="District HQ", district="Mumbai"),
-                User(employee_id="DMO003", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Kulkarni", location="District HQ", district="Nagpur"),
-                User(employee_id="DMO004", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Deshmukh", location="District HQ", district="Nashik"),
-                User(employee_id="DMO005", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Patil", location="District HQ", district="Ahmednagar"),
-                User(employee_id="DMO006", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Jadhav", location="District HQ", district="Aurangabad"),
-                User(employee_id="DMO007", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. More", location="District HQ", district="Solapur"),
-                User(employee_id="DMO008", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Shinde", location="District HQ", district="Kolhapur"),
-                User(employee_id="DMO009", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Bhosale", location="District HQ", district="Thane"),
-                User(employee_id="DMO010", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Pawar", location="District HQ", district="Satara"),
-                User(employee_id="DMO011", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Chavan", location="District HQ", district="Sangli"),
-                User(employee_id="ADMIN001", role="admin", password_hash=get_password_hash("password"), full_name="System Admin", location="State HQ", district="All")
-            ])
-            await session.commit()
-            logger.info("Seed complete.")
+    logger.info("Backend startup - skipping database init for now")
+    # TODO: Re-enable when database connection is stable
+    # async with engine.begin() as conn:
+    #     await conn.run_sync(Base.metadata.create_all)
+    #
+    # async with AsyncSessionLocal() as session:
+    #     result = await session.execute(select(User).limit(1))
+    #     if not result.scalar_one_or_none():
+    #         logger.info("Database empty! Seeding default user accounts...")
+    #         session.add_all([
+    #             User(employee_id="ASHA001", role="asha", password_hash=get_password_hash("password"), full_name="Kalyani Dash", location="Village Alpha", district="Pune"),
+    #             User(employee_id="DMO001", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Pradhan", location="District HQ", district="Pune"),
+    #             User(employee_id="DMO002", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Sharma", location="District HQ", district="Mumbai"),
+    #             User(employee_id="DMO003", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Kulkarni", location="District HQ", district="Nagpur"),
+    #             User(employee_id="DMO004", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Deshmukh", location="District HQ", district="Nashik"),
+    #             User(employee_id="DMO005", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Patil", location="District HQ", district="Ahmednagar"),
+    #             User(employee_id="DMO006", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Jadhav", location="District HQ", district="Aurangabad"),
+    #             User(employee_id="DMO007", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. More", location="District HQ", district="Solapur"),
+    #             User(employee_id="DMO008", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Shinde", location="District HQ", district="Kolhapur"),
+    #             User(employee_id="DMO009", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Bhosale", location="District HQ", district="Thane"),
+    #             User(employee_id="DMO010", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Pawar", location="District HQ", district="Satara"),
+    #             User(employee_id="DMO011", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Chavan", location="District HQ", district="Sangli"),
+    #             User(employee_id="ADMIN001", role="admin", password_hash=get_password_hash("password"), full_name="System Admin", location="State HQ", district="All")
+    #         ])
+    #         await session.commit()
+    #         logger.info("Seed complete.")
 
 # Initialize clients with error handling
 try:

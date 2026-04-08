@@ -43,23 +43,18 @@ GOAL      = 200
 AUTO_FPS  = 10
 
 STATIC_SIGNS = [
-    "fever", "pain", "vomit", "cough",
+    "fever", "vomit", "cough",
     "weakness", "dizziness", "breathless",
-    "headache", "stomachache", "joint_pain",
 ]
 
-# Keys: 1-9 for first 9 signs, 0 for 10th (joint_pain)
+# Keys: 1-6 for the 6 signs
 INSTRUCTIONS = {
     "fever":       "Open palm, fingers spread wide, face palm outward",
-    "pain":        "Closed fist pushed forward toward camera",
     "vomit":       "Fingers together pointing outward from near mouth",
-    "cough":       "Closed fist on chest, thumb pointing up",
+    "cough":       "Closed fist on chest, move UP and DOWN (motion required)",
     "weakness":    "Wrist bent down, fingers hanging loosely downward",
     "dizziness":   "Only index finger up, pointing toward forehead",
     "breathless":  "ONE open palm on chest, fingers spread, push outward toward camera",
-    "headache":    "Palm flat PRESSED on forehead, fingers spread wide",
-    "stomachache": "Palm flat PRESSED on stomach, fingers pointing downward",
-    "joint_pain":  "Closed fist PRESSED on knee, thumb tucked to side",
 }
 
 # ── Download model if missing ─────────────────────────────────────────────────
@@ -176,7 +171,7 @@ def draw_ui(frame, sign, counts, auto_mode, hand_found, last_flash):
         cv2.putText(frame, f"[{i+1}]{s[:4]}", (x, panel_y + 14),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.32, c, 1)
 
-    cv2.putText(frame, "[1-9,0]=sign  [SPACE]=capture  [a]=auto  [q]=quit",
+    cv2.putText(frame, "[1-6]=sign  [SPACE]=capture  [a]=auto  [q]=quit",
                 (15, h - 35), cv2.FONT_HERSHEY_SIMPLEX, 0.35, (120, 120, 120), 1)
     return frame
 
@@ -192,7 +187,7 @@ def main():
     for s in STATIC_SIGNS:
         bar = "█" * (counts[s] * 20 // GOAL)
         print(f"  {s:12s}: {counts[s]:3d}/{GOAL}  {bar}")
-    print("\n  Keys: [1-9] signs 1-9 | [0] joint_pain | [SPACE] capture | [a] auto | [q] quit\n")
+    print("\n  Keys: [1-6] signs 1-6 | [SPACE] capture | [a] auto | [q] quit\n")
 
     # ── Build Tasks-API hand landmarker (VIDEO mode = stateful tracking) ──────
     base_options = mp_python.BaseOptions(model_asset_path=MODEL_PATH)
@@ -211,9 +206,22 @@ def main():
     last_flash   = 0.0
     last_auto    = 0.0
 
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
+
+    if not cap.isOpened():
+        print("  Trying fallback camera...")
+        cap = cv2.VideoCapture(0)
+
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
+    print("  Warming up camera...")
+    time.sleep(2)
+
+    for _ in range(15):
+        cap.read()
+
+    print("  Camera ready.\n")
 
     frame_ts_ms = 0  # monotonic timestamp for VIDEO mode
 
@@ -270,11 +278,6 @@ def main():
                 current_sign = STATIC_SIGNS[idx]
                 auto_mode = False
                 print(f"  Selected: {current_sign} [{counts[current_sign]}/{GOAL}]")
-        elif key == ord('0'):
-            # Key 0 = 10th sign (joint_pain)
-            current_sign = STATIC_SIGNS[9]
-            auto_mode = False
-            print(f"  Selected: {current_sign} [{counts[current_sign]}/{GOAL}]")
 
     cap.release()
     cv2.destroyAllWindows()
