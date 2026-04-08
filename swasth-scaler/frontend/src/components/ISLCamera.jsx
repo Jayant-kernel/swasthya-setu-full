@@ -230,8 +230,12 @@ export default function ISLCamera({ onSymptomDetected }) {
     function startLoop() {
       async function loop() {
         const vid = videoRef.current
-        if (vid && handsRef.current && vid.readyState >= 2 && vid.videoWidth > 0 && vid.videoHeight > 0) {
-          await handsRef.current.send({ image: vid })
+        if (vid && handsRef.current && vid.readyState >= 4 && vid.videoWidth > 0 && vid.videoHeight > 0 && !vid.paused) {
+          try {
+            await handsRef.current.send({ image: vid })
+          } catch (_) {
+            // MediaPipe internal errors (WebGL/ROI) — skip frame, continue
+          }
         }
         animFrameRef.current = requestAnimationFrame(loop)
       }
