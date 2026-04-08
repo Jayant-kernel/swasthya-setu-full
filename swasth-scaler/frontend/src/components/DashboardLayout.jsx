@@ -105,8 +105,8 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
   const clr = {
     bg:      isDark 
                ? 'linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%)' 
-               : '#f8fafc',
-    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(209, 250, 229, 0.4)', // Very faint green
+               : 'linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%)', // Very light green bg
+    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(209, 250, 229, 0.4)',
     blur:    'blur(24px) saturate(150%)',
     border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.2)',
     borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.35)',
@@ -130,6 +130,10 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
     primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #059669)',
     primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
     primaryColor: isDark ? '#3b82f6' : '#10b981',
+
+    glassBg: isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(255, 255, 255, 0.45)',
+    glassBlur: 'blur(12px)',
+    glassGlow: isDark ? '0 4px 15px rgba(0,0,0,0.3)' : '0 4px 16px rgba(16, 185, 129, 0.25)', // slight greener tint glow
   }
 
   return (
@@ -273,9 +277,26 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
           <div style={{ flex: 1 }} />
 
           {/* Theme */}
-          <button className="dl-action" onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
-            style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.9rem', flexShrink: 0, transition: 'all 0.15s', color: clr.topText }}>
-            {isDark ? '☀️' : '🌙'}
+          <button 
+            className="dl-action" 
+            aria-label="Toggle theme"
+            onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
+            onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.7)'}
+            onMouseLeave={(e) => { e.currentTarget.style.background = clr.glassBg; e.currentTarget.style.transform = 'scale(1)' }}
+            onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.85)'}
+            onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            style={{ 
+              width: 36, height: 36, borderRadius: '50%', 
+              border: `1px solid ${clr.borderSolid}`, 
+              background: clr.glassBg, 
+              backdropFilter: clr.glassBlur, WebkitBackdropFilter: clr.glassBlur,
+              boxShadow: clr.glassGlow,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              transition: 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)', 
+              flexShrink: 0 
+            }}
+          >
+            <ThemeMorphIcon isDark={isDark} color={clr.topText} idSuffix="dash" />
           </button>
 
           {/* Bell */}

@@ -162,6 +162,51 @@ function PriorityBadge({ severity }) {
 /* ══════════════════════════════════════════════════════════
    Main Page
    ══════════════════════════════════════════════════════════ */
+const ThemeMorphIcon = ({ isDark, color, idSuffix }) => (
+  <svg 
+    width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
+    style={{
+      color: color,
+      transform: isDark ? 'rotate(-45deg)' : 'rotate(0deg)',
+      transition: 'transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)'
+    }}
+  >
+    <mask id={`moon-mask-${idSuffix}`}>
+      <rect x="0" y="0" width="100%" height="100%" fill="white" />
+      <circle 
+        cx={isDark ? "15" : "28"} 
+        cy={isDark ? "6" : "-8"} 
+        r="8" fill="black" 
+        style={{ transition: 'cx 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), cy 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)' }} 
+      />
+    </mask>
+    <circle 
+      cx="12" cy="12" 
+      r={isDark ? "9" : "5"} 
+      mask={`url(#moon-mask-${idSuffix})`}
+      fill={isDark ? "currentColor" : "transparent"}
+      style={{ 
+        transition: 'r 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), fill 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)' 
+      }} 
+    />
+    <g style={{
+      transform: isDark ? 'scale(0)' : 'scale(1)',
+      transformOrigin: '12px 12px',
+      transition: 'transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)',
+      opacity: isDark ? 0 : 1
+    }}>
+      <line x1="12" y1="1" x2="12" y2="3" />
+      <line x1="12" y1="21" x2="12" y2="23" />
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+      <line x1="1" y1="12" x2="3" y2="12" />
+      <line x1="21" y1="12" x2="23" y2="12" />
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+    </g>
+  </svg>
+)
+
 export default function HomePage() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -275,19 +320,19 @@ export default function HomePage() {
   const clr = {
     bg:      isDark 
                ? 'linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%)' 
-               : '#f8fafc',
-    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(209, 250, 229, 0.4)', // Very very faint green
+               : 'linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%)', // Very light green background
+    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(209, 250, 229, 0.4)',
     blur:    'blur(24px) saturate(150%)',
-    border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.2)', // Subtle green border
+    border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.2)',
     borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.35)',
     
-    topText: isDark ? '#f8fafc' : '#022c22', // Almost black
+    topText: isDark ? '#f8fafc' : '#022c22',
     topMuted: isDark ? '#cbd5e1' : '#047857',
     
     text:    isDark ? '#f8fafc' : '#0f172a',
     muted:   isDark ? '#cbd5e1' : '#475569',
     
-    activeBg: isDark ? 'rgba(59, 130, 246, 0.2)' : 'linear-gradient(135deg, #065f46, #064e3b)', // Dark green
+    activeBg: isDark ? 'rgba(59, 130, 246, 0.2)' : 'linear-gradient(135deg, #065f46, #064e3b)',
     activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : '0 4px 12px rgba(6, 78, 59, 0.3)',
     activeBorder: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(6, 78, 59, 0.6)',
     activeText: isDark ? '#60a5fa' : '#ffffff',
@@ -300,6 +345,10 @@ export default function HomePage() {
     primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #059669)',
     primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
     primaryColor: isDark ? '#3b82f6' : '#10b981',
+
+    glassBg: isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(255, 255, 255, 0.45)',
+    glassBlur: 'blur(12px)',
+    glassGlow: isDark ? '0 4px 15px rgba(0,0,0,0.3)' : '0 4px 16px rgba(16, 185, 129, 0.25)', // slight greener tint backdrop glow
   }
 
   const S = {
@@ -504,12 +553,26 @@ export default function HomePage() {
           <div style={{ flex: 1 }} />
 
           {/* Theme toggle */}
-          <button className="action-btn" onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
-            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', transition: 'all 0.15s', flexShrink: 0, color: clr.topText }}
-            onMouseEnter={(e) => e.currentTarget.style.background = clr.hover}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          <button 
+            className="action-btn" 
+            aria-label="Toggle theme"
+            onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
+            onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.7)'}
+            onMouseLeave={(e) => { e.currentTarget.style.background = clr.glassBg; e.currentTarget.style.transform = 'scale(1)' }}
+            onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.85)'}
+            onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            style={{ 
+              width: 38, height: 38, borderRadius: '50%', // Perfect circle
+              border: `1px solid ${clr.borderSolid}`, 
+              background: clr.glassBg, 
+              backdropFilter: clr.glassBlur, WebkitBackdropFilter: clr.glassBlur,
+              boxShadow: clr.glassGlow,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              transition: 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)', 
+              flexShrink: 0 
+            }}
           >
-            {isDark ? '☀️' : '🌙'}
+            <ThemeMorphIcon isDark={isDark} color={clr.topText} idSuffix="home" />
           </button>
 
           {/* Bell */}
@@ -537,17 +600,19 @@ export default function HomePage() {
             <button
               onClick={() => setActiveTab('ALL')}
               style={{
-                padding: '0.375rem 0.875rem', borderRadius: 99, border: `1.5px solid ${activeTab === 'ALL' ? clr.primaryColor : (isDark ? '#1f2230' : '#e5e7eb')}`,
-                background: activeTab === 'ALL' ? clr.primaryColor : (isDark ? '#1a1d27' : '#fff'),
-                color: activeTab === 'ALL' ? '#fff' : (isDark ? '#9ca3af' : '#4b5563'),
+                padding: '0.375rem 0.875rem', borderRadius: 99, border: `1px solid ${activeTab === 'ALL' ? clr.primaryColor : clr.borderSolid}`,
+                background: activeTab === 'ALL' ? clr.primaryColor : clr.glassBg,
+                backdropFilter: clr.glassBlur, WebkitBackdropFilter: clr.glassBlur,
+                boxShadow: clr.glassGlow,
+                color: activeTab === 'ALL' ? '#fff' : clr.text,
                 fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.15s',
               }}>
               All ({totalCount})
             </button>
             {[
-              { sev: 'red',    emoji: '🚨', label: 'Emergency',  count: summaryCounts.red,    color: '#ef4444', bg: isDark ? '#2d1515' : '#fef2f2', border: '#fca5a5' },
-              { sev: 'yellow', emoji: '⚠️', label: 'Moderate',   count: summaryCounts.yellow, color: '#d97706', bg: isDark ? '#2d2210' : '#fffbeb', border: '#fcd34d' },
-              { sev: 'green',  emoji: '✅', label: 'Stable',     count: summaryCounts.green,  color: '#059669', bg: isDark ? '#0d2520' : '#f0fdf4', border: '#6ee7b7' },
+              { sev: 'red',    emoji: '🚨', label: 'Emergency',  count: summaryCounts.red,    color: isDark ? '#ef4444' : '#dc2626', activeBg: isDark ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.8)' },
+              { sev: 'yellow', emoji: '⚠️', label: 'Moderate',   count: summaryCounts.yellow, color: isDark ? '#f59e0b' : '#d97706', activeBg: isDark ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.8)' },
+              { sev: 'green',  emoji: '✅', label: 'Stable',     count: summaryCounts.green,  color: clr.primaryColor, activeBg: isDark ? 'rgba(16, 185, 129, 0.2)' : clr.primaryBg },
             ].map(s => {
               const active = activeTab === s.sev.toUpperCase();
               return (
@@ -556,16 +621,18 @@ export default function HomePage() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: '0.375rem',
                     padding: '0.375rem 0.875rem', borderRadius: 99, cursor: 'pointer', transition: 'all 0.15s',
-                    background: active ? s.bg : (isDark ? '#1a1d27' : '#fff'),
-                    border: `1.5px solid ${active ? s.border : (isDark ? '#1f2230' : '#e5e7eb')}`,
-                    color: active ? s.color : (isDark ? '#e5e7eb' : '#4b5563'),
+                    background: active ? s.activeBg : clr.glassBg,
+                    backdropFilter: clr.glassBlur, WebkitBackdropFilter: clr.glassBlur,
+                    boxShadow: clr.glassGlow,
+                    border: `1px solid ${active ? s.color : clr.borderSolid}`,
+                    color: active ? (isDark ? s.color : '#fff') : clr.text,
                     fontSize: '0.8125rem', fontWeight: 600,
                   }}>
                   <span>{s.emoji}</span>
                   <span>{s.label}</span>
                   <span style={{ 
-                    background: active ? s.color : (isDark ? '#374151' : '#f3f4f6'), 
-                    color: active ? '#fff' : (isDark ? '#9ca3af' : '#4b5563'), 
+                    background: active ? '#fff' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(16, 185, 129, 0.15)'), 
+                    color: active ? s.color : clr.text, 
                     padding: '0 6px', borderRadius: 99, fontSize: '0.7rem' 
                   }}>{s.count}</span>
                 </button>
@@ -581,21 +648,21 @@ export default function HomePage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               {/* District filter */}
               <select value={districtFilter} onChange={e => setDistrictFilter(e.target.value)}
-                style={{ height: 34, padding: '0 0.75rem', fontSize: '0.8125rem', border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, borderRadius: 8, background: isDark ? '#16181f' : '#fff', color: isDark ? '#e5e7eb' : '#111827', outline: 'none' }}>
+                style={{ height: 34, padding: '0 0.75rem', fontSize: '0.8125rem', border: `1px solid ${clr.borderSolid}`, borderRadius: 8, background: clr.glassBg, backdropFilter: clr.glassBlur, WebkitBackdropFilter: clr.glassBlur, boxShadow: clr.glassGlow, color: clr.text, outline: 'none', transition: 'all 0.15s' }}>
                 <option value="">All Districts</option>
                 {ALL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
               </select>
 
               {/* Sort */}
               <select value={sortMode} onChange={e => setSortMode(e.target.value)}
-                style={{ height: 34, padding: '0 0.75rem', fontSize: '0.8125rem', border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, borderRadius: 8, background: isDark ? '#16181f' : '#fff', color: isDark ? '#e5e7eb' : '#111827', outline: 'none' }}>
+                style={{ height: 34, padding: '0 0.75rem', fontSize: '0.8125rem', border: `1px solid ${clr.borderSolid}`, borderRadius: 8, background: clr.glassBg, backdropFilter: clr.glassBlur, WebkitBackdropFilter: clr.glassBlur, boxShadow: clr.glassGlow, color: clr.text, outline: 'none', transition: 'all 0.15s' }}>
                 <option value="latest">Latest first</option>
                 <option value="critical">Critical first</option>
               </select>
 
               {/* Filter pill */}
               <button className="action-btn"
-                style={{ height: 34, padding: '0 0.75rem', border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, borderRadius: 8, background: isDark ? '#16181f' : '#fff', color: isDark ? '#9ca3af' : '#6b7280', fontSize: '0.8125rem', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s' }}>
+                style={{ height: 34, padding: '0 0.75rem', border: `1px solid ${clr.borderSolid}`, borderRadius: 8, background: clr.glassBg, backdropFilter: clr.glassBlur, WebkitBackdropFilter: clr.glassBlur, boxShadow: clr.glassGlow, color: clr.muted, fontSize: '0.8125rem', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, transition: 'all 0.15s' }}>
                 <FilterIcon size={13} /> Filter
               </button>
             </div>
@@ -606,9 +673,11 @@ export default function HomePage() {
             {['Table', 'Board'].map(t => (
               <button key={t} onClick={() => setViewTab(t)}
                 style={{
-                  padding: '0.375rem 1rem', borderRadius: 8, border: 'none',
-                  background: viewTab === t ? clr.primaryColor : (isDark ? '#1a1d27' : '#f3f4f6'),
-                  color: viewTab === t ? '#fff' : (isDark ? '#9ca3af' : '#6b7280'),
+                  padding: '0.375rem 1rem', borderRadius: 8, border: `1px solid ${viewTab === t ? clr.primaryColor : clr.borderSolid}`,
+                  background: viewTab === t ? clr.primaryColor : clr.glassBg,
+                  backdropFilter: clr.glassBlur, WebkitBackdropFilter: clr.glassBlur,
+                  boxShadow: clr.glassGlow,
+                  color: viewTab === t ? '#fff' : clr.text,
                   fontWeight: viewTab === t ? 700 : 500, fontSize: '0.875rem', cursor: 'pointer',
                   transition: 'all 0.15s',
                 }}>{t}</button>
