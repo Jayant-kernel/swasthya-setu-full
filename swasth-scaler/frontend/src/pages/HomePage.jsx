@@ -272,15 +272,25 @@ export default function HomePage() {
 
   const isDark = theme === 'dark'
 
-  /* ── Styles ─── */
+  const clr = {
+    bg:      isDark 
+               ? 'linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%)' 
+               : 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 50%, #bfdbfe 100%)',
+    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255, 255, 255, 0.5)',
+    blur:    'blur(24px) saturate(150%)',
+    border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.6)',
+    borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.6)',
+    text:    isDark ? '#f8fafc' : '#0f172a',
+    muted:   isDark ? '#cbd5e1' : '#475569',
+    hover:   isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(255, 255, 255, 0.4)',
+  }
+
   const S = {
     root: {
       display: 'flex', height: '100dvh', overflow: 'hidden',
       fontFamily: "'Inter', 'Noto Sans', sans-serif",
-      background: isDark 
-        ? 'radial-gradient(circle at top left, rgba(76, 29, 149, 0.15), transparent 40%), radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.1), transparent 40%), #0f1117'
-        : 'radial-gradient(circle at top left, rgba(139, 92, 246, 0.08), transparent 40%), radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.08), transparent 40%), #f8fafc',
-      color: isDark ? '#e5e7eb' : '#111827',
+      background: clr.bg,
+      color: clr.text,
     },
     /* Sidebar */
     sidebar: {
@@ -290,24 +300,22 @@ export default function HomePage() {
       display: 'flex', flexDirection: 'column',
       transition: 'width 0.25s ease, min-width 0.25s ease',
       flexShrink: 0,
+      background: clr.surface,
+      backdropFilter: clr.blur, WebkitBackdropFilter: clr.blur,
+      borderRight: `1px solid ${clr.border}`,
     },
     sidebarInner: { 
       width: 220, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden',
-      background: isDark ? 'rgba(22, 24, 31, 0.65)' : 'rgba(255, 255, 255, 0.7)',
-      backdropFilter: 'blur(20px) saturate(180%)',
-      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-      borderRight: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
     },
     /* Main */
     main: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' },
     topbar: {
-      background: isDark ? 'rgba(22, 24, 31, 0.65)' : 'rgba(255, 255, 255, 0.7)',
-      backdropFilter: 'blur(20px) saturate(180%)',
-      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-      borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+      background: clr.surface,
+      backdropFilter: clr.blur, WebkitBackdropFilter: clr.blur,
+      borderBottom: `1px solid ${clr.border}`,
       padding: '0 1.5rem', height: 60,
       display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0,
-      position: 'relative', zIndex: 10
+      position: 'relative', zIndex: 10,
     },
     content: { flex: 1, overflowY: 'auto', padding: '1.5rem', position: 'relative', zIndex: 1 },
   }
@@ -359,19 +367,19 @@ export default function HomePage() {
                   onClick={() => navigate(item.path)}
                   style={{
                     width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem',
-                    padding: '0.4rem 0.75rem', borderRadius: 10, border: 'none',
-                    background: isActive ? (isDark ? 'linear-gradient(90deg, rgba(139,92,246,0.15) 0%, rgba(139,92,246,0.02) 100%)' : 'linear-gradient(90deg, #f5f3ff 0%, rgba(245,243,255,0.2) 100%)') : 'transparent',
-                    boxShadow: isActive ? (isDark ? 'inset 3px 0 0 #8b5cf6' : 'inset 3px 0 0 #7c3aed') : 'none',
-                    color: isActive ? (isDark ? '#a78bfa' : '#6d28d9') : (isDark ? '#9ca3af' : '#6b7280'),
+                    padding: '0.5rem 0.75rem', borderRadius: 10, border: 'none',
+                    background: isActive ? (isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.6)') : 'transparent',
+                    boxShadow: isActive ? (isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : '0 4px 12px rgba(59, 130, 246, 0.15)') : 'none',
+                    border: isActive ? `1px solid ${isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(255, 255, 255, 0.8)'}` : '1px solid transparent',
+                    color: isActive ? (isDark ? '#60a5fa' : '#2563eb') : clr.muted,
                     fontWeight: isActive ? 600 : 500, fontSize: '0.875rem',
-                    cursor: 'pointer', textAlign: 'left', marginBottom: 4,
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    cursor: 'pointer', textAlign: 'left', marginBottom: 4, transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                 >
                   <div style={{
                     width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: isActive ? (isDark ? 'rgba(139,92,246,0.2)' : '#ede9fe') : 'transparent',
-                    color: isActive ? (isDark ? '#c4b5fd' : '#7c3aed') : 'inherit',
+                    background: isActive ? (isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.1)') : 'transparent',
+                    color: isActive ? (isDark ? '#93c5fd' : '#1d4ed8') : 'inherit',
                     transition: 'all 0.2s'
                   }}>
                     <Icon size={16} active={isActive} />
@@ -394,12 +402,12 @@ export default function HomePage() {
                     padding: '0.4rem 0.75rem', borderRadius: 10, border: 'none',
                     background: active ? `${d.color}15` : 'transparent',
                     boxShadow: active ? `inset 3px 0 0 ${d.color}` : 'none',
-                    color: active ? d.color : (isDark ? '#9ca3af' : '#6b7280'),
+                    color: active ? d.color : '#cbd5e1',
                     fontWeight: active ? 600 : 500, fontSize: '0.875rem', cursor: 'pointer', textAlign: 'left', marginBottom: 4,
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                    transition: 'all 0.2s',
                   }}
                 >
-                  <div style={{ width: 24, height: 24, borderRadius: 6, background: `${d.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <div style={{ width: 24, height: 24, borderRadius: 6, background: `${d.color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <span style={{ width: 8, height: 8, borderRadius: 4, background: d.color, boxShadow: active ? `0 0 8px ${d.color}` : 'none', transition: 'all 0.2s' }} />
                   </div>
                   <span style={{ flex: 1 }}>{d.label}</span>
@@ -435,7 +443,7 @@ export default function HomePage() {
           {/* Re-expand Sidebar Button (only visible if sidebar is collapsed) */}
           {!sidebarOpen && (
             <button className="action-btn" onClick={() => setSidebarOpen(true)}
-              style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: isDark ? '#e5e7eb' : '#111827' }}>
+              style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.text }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                 <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
               </svg>
@@ -444,7 +452,7 @@ export default function HomePage() {
 
           {/* Search */}
           <div style={{ flex: 1, position: 'relative', maxWidth: 340 }}>
-            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: isDark ? '#cbd5e1' : '#64748b', pointerEvents: 'none' }}>
+            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: clr.muted, pointerEvents: 'none' }}>
               <SearchIcon size={15} />
             </span>
             <input
@@ -453,27 +461,29 @@ export default function HomePage() {
               onChange={e => setQuery(e.target.value)}
               style={{
                 width: '100%', height: 36, paddingLeft: '2.25rem', paddingRight: '0.75rem',
-                borderRadius: 8, border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.6)'}`,
+                borderRadius: 8, border: `1px solid ${clr.borderSolid}`,
                 background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255, 255, 255, 0.4)',
                 backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
-                color: isDark ? '#f8fafc' : '#0f172a', fontSize: '0.875rem', outline: 'none',
+                color: clr.text, fontSize: '0.875rem', outline: 'none',
                 boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)', transition: 'all 0.2s',
               }}
+              onFocus={e => e.target.style.borderColor = '#3b82f6'}
+              onBlur={e => e.target.style.borderColor = clr.borderSolid}
             />
-            <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: isDark ? '#cbd5e1' : '#64748b', fontWeight: 600, background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)', padding: '2px 5px', borderRadius: 4, pointerEvents: 'none' }}>⌘ K</span>
+            <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: clr.muted, fontWeight: 600, background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)', padding: '2px 5px', borderRadius: 4, pointerEvents: 'none' }}>⌘ K</span>
           </div>
 
           <div style={{ flex: 1 }} />
 
           {/* Theme toggle */}
           <button className="action-btn" onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
-            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', transition: 'all 0.15s', flexShrink: 0 }}>
+            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem', transition: 'all 0.15s', flexShrink: 0 }}>
             {isDark ? '☀️' : '🌙'}
           </button>
 
           {/* Bell */}
           <button className="action-btn"
-            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.6)'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: isDark ? '#cbd5e1' : '#475569', position: 'relative', transition: 'all 0.15s', flexShrink: 0 }}>
+            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: clr.muted, position: 'relative', transition: 'all 0.15s', flexShrink: 0 }}>
             <BellIcon size={17} />
             {summaryCounts.red > 0 && <span style={{ position: 'absolute', top: 7, right: 8, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid transparent' }} />}
           </button>
