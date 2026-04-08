@@ -119,18 +119,6 @@ export default function LandingPage() {
 
         {/* Content */}
         <div style={{ position: 'relative', zIndex: 2, maxWidth: 1600, margin: '0 auto', width: '100%', padding: '8rem 5% 5rem' }} className="hero-left-content">
-          {/* Trust Badge */}
-          <div className="observe-anim animate-fade-up" style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-            <div style={{ display: 'flex' }}>
-              <img src={pushkarAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', objectFit: 'cover' }} />
-              <img src={jayantAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', objectFit: 'cover', marginLeft: -12 }} />
-              <img src={vaibhavAvatar} alt="patient" style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', objectFit: 'cover', marginLeft: -12 }} />
-              <div style={{ width: 40, height: 40, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.4)', marginLeft: -12, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700, color: '#fff' }}>+</div>
-            </div>
-            <div style={{ fontWeight: 400, color: 'rgba(255,255,255,0.85)', fontSize: '0.875rem', lineHeight: 1.3 }}>
-              <span style={{ color: '#fff', fontWeight: 700, fontSize: '1rem' }}>10,000+</span><br />healthy patients
-            </div>
-          </div>
 
           <h1
             className="observe-anim animate-fade-up delay-150 hero-heading"
@@ -148,19 +136,6 @@ export default function LandingPage() {
           >
             Make an appointment
           </button>
-
-          {/* Stats */}
-          <div style={{ display: 'flex', gap: '3rem', marginTop: '4rem', flexWrap: 'wrap' }}>
-            <div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, lineHeight: 1 }}>
-                4.9 <span style={{ color: '#f59e0b', fontSize: '1.75rem' }}>★</span>
-              </div>
-            </div>
-            <div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 700, color: '#fff', lineHeight: 1, marginBottom: 4 }}>20+</div>
-              <div style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.9375rem', fontWeight: 400, lineHeight: 1.4 }}>years of successful<br />experience</div>
-            </div>
-          </div>
         </div>
       </div>
 
@@ -245,21 +220,21 @@ export default function LandingPage() {
               { src: jayantAvatar, name: 'Jayant Saxena', role: 'Frontend and UI/UX Dev', bio: 'Driven by a vision to create intuitive user experiences, Jayant leads the frontend architecture. His aesthetic UI/UX designs make Swasthya Setu accessible to thousands of people across rural districts.', quote: `"Designing for someone who has never used a smartphone before completely changed how I think about interfaces."`, grad: 'linear-gradient(135deg, #112822 0%, #0a1713 100%)' },
               { src: vaibhavAvatar, name: 'Vaibhav Mishra', role: 'ASHA Operations Lead', bio: 'Specializing in community outreach and ground-level engagement, Vaibhav champions the enablement of ASHA workers and manages direct field operations.', quote: `"Every feature we ship has a real ASHA worker's workflow behind it. That keeps us honest."`, grad: 'linear-gradient(135deg, #112822 0%, #0a1713 100%)' },
             ].map(({ src, name, role, bio, quote, grad }, index) => (
-              <div 
-                key={name} 
+              <div
+                key={name}
                 className="observe-anim animate-fade-up"
-                style={{ 
-                  background: '#fff', 
-                  borderRadius: 24, 
-                  overflow: 'hidden', 
-                  border: '1px solid rgba(0,0,0,0.06)', 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)', 
+                style={{
+                  background: '#fff',
+                  borderRadius: 24,
+                  overflow: 'hidden',
+                  border: '1px solid rgba(0,0,0,0.06)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
                   transition: 'transform 0.3s ease, opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
                   transitionDelay: `${index * 150}ms`
-                }} 
-                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'} 
+                }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-8px)'}
                 onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
               >
                 <div style={{ height: 380, background: '#2d2d2d', position: 'relative' }}>
@@ -288,31 +263,35 @@ export default function LandingPage() {
             </div>
             <p style={{ lineHeight: 1.6, marginBottom: '2rem', maxWidth: 300, color: 'rgba(255,255,255,0.6)', fontSize: '14px', fontWeight: 400 }}>Bridging the healthcare gap in rural India with intelligent digital infrastructure.</p>
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <a href="#" style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s', color: '#fff' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+              {/* X / Twitter */}
+              <button onClick={() => navigate('/under-construction')} style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s', color: '#fff' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                 <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z" /></svg>
-              </a>
-              <a href="#" style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s', color: '#fff' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+              </button>
+              {/* Instagram */}
+              <button onClick={() => navigate('/under-construction')} style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s', color: '#fff' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                 <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5" ry="5" /><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" /><line x1="17.5" x2="17.51" y1="6.5" y2="6.5" /></svg>
-              </a>
-              <a href="#" style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s', color: '#fff' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+              </button>
+              {/* Facebook */}
+              <button onClick={() => navigate('/under-construction')} style={{ width: 36, height: 36, borderRadius: 8, border: '1px solid rgba(255,255,255,0.15)', background: 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s', color: '#fff' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                 <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" /></svg>
-              </a>
+              </button>
             </div>
           </div>
           <div style={{ flex: '1 1 150px' }}>
             <p style={{ fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: '20px', fontWeight: 400 }}>Platform</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {['ASHA Workers', 'Medical Officers', 'Admin Dashboard'].map(item => (
-                <a key={item} href="#" style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', fontWeight: 400, textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,1)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>{item}</a>
+                <button key={item} onClick={() => navigate('/under-construction')} style={{ background: 'none', border: 'none', padding: 0, color: 'rgba(255,255,255,0.6)', fontSize: '14px', fontWeight: 400, textDecoration: 'none', transition: 'color 0.2s', cursor: 'pointer', textAlign: 'left' }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,1)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>{item}</button>
               ))}
             </div>
           </div>
           <div style={{ flex: '1 1 150px' }}>
             <p style={{ fontSize: '11px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.35)', marginBottom: '20px', fontWeight: 400 }}>Company</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-              {[['About Us', '#about'], ['Our Service', '#goal'], ['Privacy Policy', '#']].map(([label, href]) => (
+              {[['About Us', '#about'], ['Our Service', '#goal']].map(([label, href]) => (
                 <a key={label} href={href} style={{ color: 'rgba(255,255,255,0.6)', fontSize: '14px', fontWeight: 400, textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,1)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>{label}</a>
               ))}
+              <button onClick={() => navigate('/under-construction')} style={{ background: 'none', border: 'none', padding: 0, color: 'rgba(255,255,255,0.6)', fontSize: '14px', fontWeight: 400, cursor: 'pointer', textAlign: 'left', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'rgba(255,255,255,1)'} onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.6)'}>Privacy Policy</button>
             </div>
           </div>
         </div>

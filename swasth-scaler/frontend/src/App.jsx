@@ -13,6 +13,7 @@ import AdminDashboardPage from './pages/AdminDashboardPage.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
 import LandingPage from './pages/LandingPage.jsx'
 import ISLPage from './pages/ISLPage.jsx'
+import UnderConstructionPage from './pages/UnderConstructionPage.jsx'
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <PatientProvider>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/under-construction" element={<UnderConstructionPage />} />
 
 
             <Route path="/home" element={<ProtectedRoute role="asha"><HomePage /></ProtectedRoute>} />
