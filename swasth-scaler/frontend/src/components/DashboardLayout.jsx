@@ -40,6 +40,13 @@ function HamburgerIcon() {
     </svg>
   )
 }
+function ChevronDownIcon() {
+  return (
+    <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  )
+}
 
 /**
  * DashboardLayout — shared sidebar + topbar shell.
@@ -104,7 +111,7 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
         <div style={{ width: 220, display: 'flex', flexDirection: 'column', height: '100%' }}>
 
           {/* Logo */}
-          <div style={{ padding: '1.25rem 1rem 0.875rem', borderBottom: `1px solid ${clr.border}` }}>
+          <div style={{ padding: '1.25rem 1rem 0.875rem', borderBottom: `1px solid ${clr.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
               <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg,#0F6E56,#10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <span style={{ color: '#fff', fontSize: '1rem' }}>🏥</span>
@@ -114,6 +121,11 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
                 <div style={{ fontSize: '0.65rem', color: clr.muted, fontWeight: 500 }}>ASHA Dashboard</div>
               </div>
             </div>
+            {/* The new "downward arrow" dropdown button */}
+            <button className="dl-action" onClick={() => setSidebarOpen(o => !o)}
+              style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.muted }}>
+              <ChevronDownIcon />
+            </button>
           </div>
 
           {/* Nav */}
@@ -169,12 +181,6 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
           padding: '0 1.25rem', height: 56,
           display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0,
         }}>
-          {/* Hamburger */}
-          <button className="dl-action" onClick={() => setSidebarOpen(o => !o)}
-            style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.text }}>
-            <HamburgerIcon />
-          </button>
-
           {/* Optional page-specific content (e.g. patient badge in chat) */}
           {topbarContent}
 
