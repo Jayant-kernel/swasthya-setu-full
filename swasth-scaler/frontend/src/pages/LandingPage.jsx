@@ -8,6 +8,7 @@ import img2 from '../images/landing/hero2.jpg'
 import pushkarAvatar from '../images/landing/pushkar.jpg'
 import jayantAvatar from '../images/landing/jayant.png'
 import vaibhavAvatar from '../images/landing/vaibhav.png'
+import logo from '../images/logo/logo.png'
 
 const ArrowRight = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-7-7 7 7-7 7" /></svg>
 const PlayCircle = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinejoin="round" d="m10 8 6 4-6 4z" /></svg>
@@ -69,7 +70,8 @@ export default function LandingPage() {
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '1.5rem 5%', maxWidth: 1600, margin: '0 auto', width: '100%',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, fontSize: '1.5rem', color: '#ffffff', letterSpacing: '-0.02em' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', fontWeight: 700, fontSize: '1.5rem', color: '#ffffff', letterSpacing: '-0.02em' }}>
+            <img src={logo} alt="Logo" style={{ width: 36, height: 36, objectFit: 'contain' }} />
             Swasthya Setu
           </div>
 
@@ -259,6 +261,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '4rem', marginBottom: '4rem' }}>
           <div style={{ flex: '2 1 300px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 700, fontSize: '1.5rem', color: '#fff', letterSpacing: '-0.02em', marginBottom: '1.5rem' }}>
+              <img src={logo} alt="Logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
               Swasthya Setu
             </div>
             <p style={{ lineHeight: 1.6, marginBottom: '2rem', maxWidth: 300, color: 'rgba(255,255,255,0.6)', fontSize: '14px', fontWeight: 400 }}>Bridging the healthcare gap in rural India with intelligent digital infrastructure.</p>

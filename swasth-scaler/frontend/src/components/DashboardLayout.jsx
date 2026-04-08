@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import ProfileOverlay from './ProfileOverlay.jsx'
+import logo from '../images/logo/logo.png'
 
 /* ── Icon helpers ── */
 function GridIcon({ active }) {
@@ -170,7 +171,7 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
     iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.15)',
     iconColor: isDark ? '#93c5fd' : '#ffffff',
 
-    hover: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.18)',
+    hover: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.50)',
 
     primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
     primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
@@ -209,8 +210,8 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
           {/* Logo */}
           <div style={{ padding: '1.25rem 1rem 0.875rem', borderBottom: `1px solid ${clr.border}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-              <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg,#0F6E56,#10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ color: '#fff', fontSize: '1rem' }}>🏥</span>
+              <div style={{ width: 34, height: 34, borderRadius: 10, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <img src={logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
               <div>
                 <div style={{ fontWeight: 800, fontSize: '0.9375rem', color: clr.topText, letterSpacing: '-0.02em' }}>Swasthya Setu</div>
@@ -349,14 +350,14 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
 
             {/* New Patient CTA */}
             <button className="dl-primary" onClick={() => navigate('/patient')}
-              style={{ 
-                height: 34, padding: '0 0.875rem', borderRadius: 8, 
-                border: '1px solid rgba(255,255,255,0.2)', 
-                background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)', 
-                color: '#fff', fontWeight: 600, fontSize: '0.8125rem', 
-                cursor: 'pointer', display: 'flex', alignItems: 'center', 
-                gap: '0.3rem', flexShrink: 0, transition: 'all 0.15s', 
-                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)' 
+              style={{
+                height: 34, padding: '0 0.875rem', borderRadius: 8,
+                border: '1px solid rgba(255,255,255,0.2)',
+                background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
+                color: '#fff', fontWeight: 600, fontSize: '0.8125rem',
+                cursor: 'pointer', display: 'flex', alignItems: 'center',
+                gap: '0.3rem', flexShrink: 0, transition: 'all 0.15s',
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)'
               }}>
               + New Patient
             </button>
