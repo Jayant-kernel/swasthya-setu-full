@@ -332,17 +332,17 @@ export default function HomePage() {
     text: isDark ? '#f8fafc' : '#0f172a',
     muted: isDark ? '#cbd5e1' : '#475569',
 
-    activeBg: isDark ? 'rgba(59, 130, 246, 0.2)' : 'linear-gradient(135deg, #065f46, #064e3b)',
-    activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : '0 4px 12px rgba(6, 78, 59, 0.3)',
-    activeBorder: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(6, 78, 59, 0.6)',
-    activeText: isDark ? '#60a5fa' : '#ffffff',
+    activeBg: isDark ? 'rgba(59, 130, 246, 0.25)' : '#065f46',
+    activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : '0 4px 16px rgba(6, 78, 59, 0.45)',
+    activeBorder: isDark ? 'rgba(59, 130, 246, 0.4)' : 'rgba(4, 120, 87, 0.9)',
+    activeText: isDark ? '#93c5fd' : '#ffffff',
 
     iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.15)',
     iconText: isDark ? '#93c5fd' : '#ffffff',
 
     hover: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.18)',
 
-    primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #059669)',
+    primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
     primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
     primaryColor: isDark ? '#3b82f6' : '#10b981',
 
@@ -416,7 +416,7 @@ export default function HomePage() {
               </div>
             </div>
             <button className="action-btn" onClick={() => setSidebarOpen(o => !o)}
-              style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #065f46', background: isDark ? 'linear-gradient(135deg,#065f46,#047857)' : 'linear-gradient(135deg,#065f46,#0f9f6e)', boxShadow: '0 2px 10px rgba(6, 95, 70, 0.55)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s', color: '#fff' }}>
+              style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(16,185,129,0.45)'}`, background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 12px rgba(16,185,129,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s', color: isDark ? '#e2e8f0' : '#065f46' }}>
               <ChevronIcon size={14} dir="down" />
             </button>
           </div>
@@ -518,7 +518,7 @@ export default function HomePage() {
             {/* Re-expand Sidebar Button (only visible if sidebar is collapsed) */}
             {!sidebarOpen && (
               <button className="action-btn" onClick={() => setSidebarOpen(true)}
-                style={{ width: 36, height: 36, borderRadius: 9, border: '1.5px solid #065f46', background: isDark ? 'linear-gradient(135deg,#065f46,#047857)' : 'linear-gradient(135deg,#065f46,#0f9f6e)', boxShadow: '0 2px 12px rgba(6, 95, 70, 0.5)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s', color: '#fff' }}
+                style={{ width: 36, height: 36, borderRadius: 9, border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(16,185,129,0.45)'}`, background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 12px rgba(16,185,129,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s', color: isDark ? '#e2e8f0' : '#065f46' }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
@@ -576,19 +576,17 @@ export default function HomePage() {
               <ThemeMorphIcon isDark={isDark} color={clr.topText} idSuffix="home" />
             </button>
 
-            {/* Bell */}
-            <button className="action-btn"
-              style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: clr.topMuted, position: 'relative', transition: 'all 0.15s', flexShrink: 0 }}
-              onMouseEnter={(e) => e.currentTarget.style.background = clr.hover}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-            >
-              <BellIcon size={17} />
-              {summaryCounts.red > 0 && <span style={{ position: 'absolute', top: 7, right: 8, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid transparent' }} />}
-            </button>
-
             {/* New Patient CTA */}
             <button onClick={() => navigate('/patient')}
-              style={{ height: 36, padding: '0 1rem', borderRadius: 8, border: `1px solid rgba(255,255,255,0.15)`, background: clr.primaryBg, color: '#fff', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', flexShrink: 0, transition: 'all 0.15s', boxShadow: clr.primaryShadow }}>
+              style={{ 
+                height: 36, padding: '0 1rem', borderRadius: 8, 
+                border: '1px solid rgba(255,255,255,0.2)', 
+                background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)', 
+                color: '#fff', fontWeight: 600, fontSize: '0.875rem', 
+                cursor: 'pointer', display: 'flex', alignItems: 'center', 
+                gap: '0.375rem', flexShrink: 0, transition: 'all 0.15s', 
+                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)' 
+              }}>
               + New Patient
             </button>
           </div>

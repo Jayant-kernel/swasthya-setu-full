@@ -162,17 +162,17 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
     text: isDark ? '#f8fafc' : '#0f172a',
     muted: isDark ? '#cbd5e1' : '#475569',
 
-    activeBg: isDark ? 'rgba(59, 130, 246, 0.2)' : 'linear-gradient(135deg, #065f46, #064e3b)',
-    activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : '0 4px 12px rgba(6, 78, 59, 0.3)',
-    activeBorder: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(6, 78, 59, 0.6)',
-    activeText: isDark ? '#60a5fa' : '#ffffff',
+    activeBg: isDark ? 'rgba(59, 130, 246, 0.25)' : '#065f46',
+    activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : '0 4px 16px rgba(6, 78, 59, 0.45)',
+    activeBorder: isDark ? 'rgba(59, 130, 246, 0.4)' : 'rgba(4, 120, 87, 0.9)',
+    activeText: isDark ? '#93c5fd' : '#ffffff',
 
     iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.15)',
     iconColor: isDark ? '#93c5fd' : '#ffffff',
 
     hover: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.18)',
 
-    primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #059669)',
+    primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
     primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
     primaryColor: isDark ? '#3b82f6' : '#10b981',
 
@@ -219,7 +219,7 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
             </div>
             {/* The new "downward arrow" dropdown button */}
             <button className="dl-action" onClick={() => setSidebarOpen(o => !o)}
-              style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #065f46', background: isDark ? 'linear-gradient(135deg,#065f46,#047857)' : 'linear-gradient(135deg,#065f46,#0f9f6e)', boxShadow: '0 2px 10px rgba(6, 95, 70, 0.55)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s', color: '#fff' }}>
+              style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(16,185,129,0.45)'}`, background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 12px rgba(16,185,129,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s', color: isDark ? '#e2e8f0' : '#065f46' }}>
               <ChevronDownIcon />
             </button>
           </div>
@@ -296,7 +296,7 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
             {/* Re-expand Sidebar Button */}
             {!sidebarOpen && (
               <button className="dl-action" onClick={() => setSidebarOpen(true)}
-                style={{ width: 36, height: 36, borderRadius: 9, border: '1.5px solid #065f46', background: isDark ? 'linear-gradient(135deg,#065f46,#047857)' : 'linear-gradient(135deg,#065f46,#0f9f6e)', boxShadow: '0 2px 12px rgba(6, 95, 70, 0.5)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s', color: '#fff' }}>
+                style={{ width: 36, height: 36, borderRadius: 9, border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(16,185,129,0.45)'}`, background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 12px rgba(16,185,129,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s', color: isDark ? '#e2e8f0' : '#065f46' }}>
                 <HamburgerIcon />
               </button>
             )}
@@ -347,15 +347,17 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
               <ThemeMorphIcon isDark={isDark} color={clr.topText} idSuffix="dash" />
             </button>
 
-            {/* Bell */}
-            <button className="dl-action"
-              style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: clr.topMuted, position: 'relative', flexShrink: 0, transition: 'all 0.15s' }}>
-              <BellIcon />
-            </button>
-
             {/* New Patient CTA */}
             <button className="dl-primary" onClick={() => navigate('/patient')}
-              style={{ height: 34, padding: '0 0.875rem', borderRadius: 8, border: `1px solid rgba(255,255,255,0.15)`, background: clr.primaryBg, color: '#fff', fontWeight: 600, fontSize: '0.8125rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0, transition: 'all 0.15s', boxShadow: clr.primaryShadow }}>
+              style={{ 
+                height: 34, padding: '0 0.875rem', borderRadius: 8, 
+                border: '1px solid rgba(255,255,255,0.2)', 
+                background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)', 
+                color: '#fff', fontWeight: 600, fontSize: '0.8125rem', 
+                cursor: 'pointer', display: 'flex', alignItems: 'center', 
+                gap: '0.3rem', flexShrink: 0, transition: 'all 0.15s', 
+                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.25)' 
+              }}>
               + New Patient
             </button>
           </div>
