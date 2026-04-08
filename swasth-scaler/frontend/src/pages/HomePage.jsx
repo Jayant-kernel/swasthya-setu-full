@@ -34,6 +34,7 @@ const NAV_ITEMS = [
   { id: 'home', label: 'Dashboard', icon: GridIcon, path: '/home' },
   { id: 'patient', label: 'New Patient', icon: PatientIcon, path: '/patient' },
   { id: 'chat', label: 'AI Chat', icon: ChatIcon, path: '/chat' },
+  { id: 'profile', label: 'My Profile', icon: ProfileIcon, path: '/profile' },
 ]
 
 const DISTRICT_GROUPS = [
@@ -71,6 +72,14 @@ function ChatIcon({ size = 16, color = 'currentColor', active }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill={active ? color : "none"} stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  )
+}
+function ProfileIcon({ size = 16, color = 'currentColor', active }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={active ? color : "none"} stroke={color} strokeWidth={active ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
     </svg>
   )
 }
