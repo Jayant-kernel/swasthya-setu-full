@@ -13,15 +13,8 @@ function GridIcon({ active }) {
   )
 }
 function PatientIcon({ active }) {
-  if (active) {
-    return (
-      <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
-      </svg>
-    )
-  }
   return (
-    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
       <circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/>
     </svg>
@@ -212,6 +205,14 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
           padding: '0 1.25rem', height: 56,
           display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0,
         }}>
+          {/* Re-expand Sidebar Button */}
+          {!sidebarOpen && (
+            <button className="dl-action" onClick={() => setSidebarOpen(true)}
+              style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.text }}>
+              <HamburgerIcon />
+            </button>
+          )}
+
           {/* Optional page-specific content (e.g. patient badge in chat) */}
           {topbarContent}
 

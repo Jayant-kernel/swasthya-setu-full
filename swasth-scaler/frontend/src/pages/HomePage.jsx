@@ -51,15 +51,8 @@ function GridIcon({ size = 16, color = 'currentColor', active }) {
   )
 }
 function PatientIcon({ size = 16, color = 'currentColor', active }) {
-  if (active) {
-    return (
-      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>
-      </svg>
-    )
-  }
   return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={active ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
       <circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/>
     </svg>
@@ -414,6 +407,16 @@ export default function HomePage() {
 
         {/* Top bar */}
         <div style={S.topbar}>
+
+          {/* Re-expand Sidebar Button (only visible if sidebar is collapsed) */}
+          {!sidebarOpen && (
+            <button className="action-btn" onClick={() => setSidebarOpen(true)}
+              style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: isDark ? '#e5e7eb' : '#111827' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            </button>
+          )}
 
           {/* Search */}
           <div style={{ flex: 1, position: 'relative', maxWidth: 340 }}>
