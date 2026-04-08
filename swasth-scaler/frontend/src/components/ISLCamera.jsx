@@ -213,17 +213,20 @@ export default function ISLCamera({ onSymptomDetected }) {
         stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 640, height: 480, facingMode: 'user' }
         })
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          videoRef.current.onloadedmetadata = () => {
-            videoRef.current.play()
-            setStatus('ready')
-            // Wait for video to fully stabilize before sending to MediaPipe
-            setTimeout(startLoop, 800)
-          }
+        const vid = videoRef.current
+        if (vid) {
+          vid.srcObject = stream
+          await new Promise((resolve) => {
+            vid.onloadedmetadata = resolve
+          })
+          await vid.play()
+          setStatus('ready')
+          // Wait for first frames to render before sending to MediaPipe
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+          startLoop()
         }
       } catch (e) {
-        setCameraError('Camera permission denied')
+        setCameraError('Camera access denied or unavailable')
         setStatus('error')
       }
     }
