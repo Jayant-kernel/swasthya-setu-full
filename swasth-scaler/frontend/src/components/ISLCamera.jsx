@@ -229,8 +229,9 @@ export default function ISLCamera({ onSymptomDetected }) {
 
     function startLoop() {
       async function loop() {
-        if (videoRef.current && handsRef.current && videoRef.current.readyState >= 2) {
-          await handsRef.current.send({ image: videoRef.current })
+        const vid = videoRef.current
+        if (vid && handsRef.current && vid.readyState >= 2 && vid.videoWidth > 0 && vid.videoHeight > 0) {
+          await handsRef.current.send({ image: vid })
         }
         animFrameRef.current = requestAnimationFrame(loop)
       }
