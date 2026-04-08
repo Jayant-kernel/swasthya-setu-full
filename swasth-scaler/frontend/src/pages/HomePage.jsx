@@ -32,9 +32,7 @@ function formatDate(iso) {
 const NAV_ITEMS = [
   { id: 'home',    label: 'Dashboard',     icon: GridIcon,    path: '/home' },
   { id: 'patient', label: 'New Patient',   icon: UserPlusIcon, path: '/patient' },
-  { id: 'visits',  label: 'My Visit List', icon: ListIcon,    path: '/home', active: true },
   { id: 'chat',    label: 'AI Chat',       icon: ChatIcon,    path: '/chat' },
-  { id: 'isl',     label: 'Sign Language', icon: HandIcon,    path: '/isl' },
 ]
 
 const DISTRICT_GROUPS = [

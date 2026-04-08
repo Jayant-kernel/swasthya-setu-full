@@ -8,7 +8,6 @@ const NAV_ITEMS = [
   { id: 'home',    label: 'Dashboard',     emoji: '⊞',  path: '/home' },
   { id: 'patient', label: 'New Patient',   emoji: '➕', path: '/patient' },
   { id: 'chat',    label: 'AI Chat',       emoji: '💬', path: '/chat' },
-  { id: 'isl',     label: 'Sign Language', emoji: '🤟', path: '/isl' },
 ]
 
 /* ── Tiny SVG icons ── */
