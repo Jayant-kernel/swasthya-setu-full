@@ -277,7 +277,9 @@ export default function HomePage() {
     root: {
       display: 'flex', height: '100dvh', overflow: 'hidden',
       fontFamily: "'Inter', 'Noto Sans', sans-serif",
-      background: isDark ? '#0f1117' : '#f5f6fa',
+      background: isDark 
+        ? 'radial-gradient(circle at top left, rgba(76, 29, 149, 0.15), transparent 40%), radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.1), transparent 40%), #0f1117'
+        : 'radial-gradient(circle at top left, rgba(139, 92, 246, 0.08), transparent 40%), radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.08), transparent 40%), #f8fafc',
       color: isDark ? '#e5e7eb' : '#111827',
     },
     /* Sidebar */
@@ -285,22 +287,29 @@ export default function HomePage() {
       width: sidebarOpen ? 220 : 0,
       minWidth: sidebarOpen ? 220 : 0,
       overflow: 'hidden',
-      background: isDark ? '#16181f' : '#ffffff',
-      borderRight: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`,
       display: 'flex', flexDirection: 'column',
       transition: 'width 0.25s ease, min-width 0.25s ease',
       flexShrink: 0,
     },
-    sidebarInner: { width: 220, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' },
+    sidebarInner: { 
+      width: 220, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden',
+      background: isDark ? 'rgba(22, 24, 31, 0.65)' : 'rgba(255, 255, 255, 0.7)',
+      backdropFilter: 'blur(20px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+      borderRight: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+    },
     /* Main */
-    main: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+    main: { flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' },
     topbar: {
-      background: isDark ? '#16181f' : '#ffffff',
-      borderBottom: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`,
+      background: isDark ? 'rgba(22, 24, 31, 0.65)' : 'rgba(255, 255, 255, 0.7)',
+      backdropFilter: 'blur(20px) saturate(180%)',
+      WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+      borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
       padding: '0 1.5rem', height: 60,
       display: 'flex', alignItems: 'center', gap: '1rem', flexShrink: 0,
+      position: 'relative', zIndex: 10
     },
-    content: { flex: 1, overflowY: 'auto', padding: '1.5rem' },
+    content: { flex: 1, overflowY: 'auto', padding: '1.5rem', position: 'relative', zIndex: 1 },
   }
 
   return (
@@ -333,7 +342,7 @@ export default function HomePage() {
               </div>
             </div>
             <button className="action-btn" onClick={() => setSidebarOpen(o => !o)}
-              style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${isDark ? '#1f2230' : '#e5e7eb'}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: isDark ? '#6b7280' : '#9ca3af' }}>
+              style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${isDark ? '#374151' : '#e5e7eb'}`, background: isDark ? '#1f2230' : '#ffffff', boxShadow: isDark ? '0 2px 5px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: isDark ? '#6b7280' : '#9ca3af' }}>
               <ChevronIcon size={14} dir="down" />
             </button>
           </div>
@@ -349,40 +358,55 @@ export default function HomePage() {
                 <button key={item.id} className="nav-btn"
                   onClick={() => navigate(item.path)}
                   style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem',
-                    padding: '0.5rem 0.75rem', borderRadius: 8, border: 'none',
-                    background: isActive ? (isDark ? '#1e2942' : '#eff6ff') : 'transparent',
-                    color: isActive ? '#5b21b6' : (isDark ? '#9ca3af' : '#6b7280'),
+                    width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem',
+                    padding: '0.4rem 0.75rem', borderRadius: 10, border: 'none',
+                    background: isActive ? (isDark ? 'linear-gradient(90deg, rgba(139,92,246,0.15) 0%, rgba(139,92,246,0.02) 100%)' : 'linear-gradient(90deg, #f5f3ff 0%, rgba(245,243,255,0.2) 100%)') : 'transparent',
+                    boxShadow: isActive ? (isDark ? 'inset 3px 0 0 #8b5cf6' : 'inset 3px 0 0 #7c3aed') : 'none',
+                    color: isActive ? (isDark ? '#a78bfa' : '#6d28d9') : (isDark ? '#9ca3af' : '#6b7280'),
                     fontWeight: isActive ? 600 : 500, fontSize: '0.875rem',
-                    cursor: 'pointer', textAlign: 'left', marginBottom: 2,
-                    transition: 'all 0.15s',
+                    cursor: 'pointer', textAlign: 'left', marginBottom: 4,
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                 >
-                  <span style={{ display: 'flex', color: isActive ? '#7c3aed' : 'inherit' }}><Icon size={16} active={isActive} /></span>
-                  <span style={{ flex: 1, color: isActive ? '#4f46e5' : 'inherit' }}>{item.label}</span>
-                  {isActive && <ChevronIcon size={14} color="#3b82f6" />}
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: isActive ? (isDark ? 'rgba(139,92,246,0.2)' : '#ede9fe') : 'transparent',
+                    color: isActive ? (isDark ? '#c4b5fd' : '#7c3aed') : 'inherit',
+                    transition: 'all 0.2s'
+                  }}>
+                    <Icon size={16} active={isActive} />
+                  </div>
+                  <span style={{ flex: 1 }}>{item.label}</span>
+                  {isActive && <ChevronIcon size={14} color="currentColor" />}
                 </button>
               )
             })}
 
             {/* District shortcuts */}
             <div style={{ fontSize: '0.65rem', fontWeight: 700, color: isDark ? '#4b5563' : '#9ca3af', letterSpacing: '0.08em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', marginTop: '1.25rem' }}>Districts</div>
-            {DISTRICT_GROUPS.map(d => (
-              <button key={d.label} className="nav-btn"
-                onClick={() => setDistrictFilter(districtFilter === d.label ? '' : d.label)}
-                style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem',
-                  padding: '0.5rem 0.75rem', borderRadius: 8, border: 'none',
-                  background: districtFilter === d.label ? `${d.color}15` : 'transparent',
-                  color: districtFilter === d.label ? d.color : (isDark ? '#9ca3af' : '#6b7280'),
-                  fontWeight: 500, fontSize: '0.875rem', cursor: 'pointer', textAlign: 'left', marginBottom: 2,
-                  transition: 'all 0.15s',
-                }}
-              >
-                <span style={{ width: 10, height: 10, borderRadius: 3, background: d.color, flexShrink: 0 }} />
-                {d.label}
-              </button>
-            ))}
+            {DISTRICT_GROUPS.map(d => {
+              const active = districtFilter === d.label;
+              return (
+                <button key={d.label} className="nav-btn"
+                  onClick={() => setDistrictFilter(active ? '' : d.label)}
+                  style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem',
+                    padding: '0.4rem 0.75rem', borderRadius: 10, border: 'none',
+                    background: active ? `${d.color}15` : 'transparent',
+                    boxShadow: active ? `inset 3px 0 0 ${d.color}` : 'none',
+                    color: active ? d.color : (isDark ? '#9ca3af' : '#6b7280'),
+                    fontWeight: active ? 600 : 500, fontSize: '0.875rem', cursor: 'pointer', textAlign: 'left', marginBottom: 4,
+                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  }}
+                >
+                  <div style={{ width: 24, height: 24, borderRadius: 6, background: `${d.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <span style={{ width: 8, height: 8, borderRadius: 4, background: d.color, boxShadow: active ? `0 0 8px ${d.color}` : 'none', transition: 'all 0.2s' }} />
+                  </div>
+                  <span style={{ flex: 1 }}>{d.label}</span>
+                  {active && <ChevronIcon size={14} color="currentColor" />}
+                </button>
+              )
+            })}
           </div>
 
           {/* User profile bottom */}

@@ -103,12 +103,16 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
   const isDark = theme === 'dark'
 
   const clr = {
-    bg:      isDark ? '#0f1117' : '#f5f6fa',
-    surface: isDark ? '#16181f' : '#ffffff',
-    border:  isDark ? '#1f2230' : '#e5e7eb',
+    bg:      isDark 
+               ? 'radial-gradient(circle at top left, rgba(76, 29, 149, 0.15), transparent 40%), radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.1), transparent 40%), #0f1117' 
+               : 'radial-gradient(circle at top left, rgba(139, 92, 246, 0.08), transparent 40%), radial-gradient(circle at bottom right, rgba(16, 185, 129, 0.08), transparent 40%), #f8fafc',
+    surface: isDark ? 'rgba(22, 24, 31, 0.65)' : 'rgba(255, 255, 255, 0.7)',
+    blur:    'blur(20px) saturate(180%)',
+    border:  isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)',
+    borderSolid: isDark ? '#1f2230' : '#e5e7eb',
     text:    isDark ? '#e5e7eb' : '#111827',
-    muted:   isDark ? '#6b7280' : '#9ca3af',
-    hover:   isDark ? '#1e2030' : '#f3f4f6',
+    muted:   isDark ? '#9ca3af' : '#6b7280',
+    hover:   isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)',
   }
 
   return (
@@ -128,9 +132,11 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
       <aside style={{
         width: sidebarOpen ? 220 : 0, minWidth: sidebarOpen ? 220 : 0,
         overflow: 'hidden', flexShrink: 0,
-        background: clr.surface, borderRight: `1px solid ${clr.border}`,
+        background: clr.surface,
+        backdropFilter: clr.blur, WebkitBackdropFilter: clr.blur,
+        borderRight: `1px solid ${clr.border}`,
         display: 'flex', flexDirection: 'column',
-        transition: 'width 0.25s ease, min-width 0.25s ease',
+        transition: 'width 0.25s cubic-bezier(0.4, 0, 0.2, 1), min-width 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
       }}>
         <div style={{ width: 220, display: 'flex', flexDirection: 'column', height: '100%' }}>
 
@@ -147,7 +153,7 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
             </div>
             {/* The new "downward arrow" dropdown button */}
             <button className="dl-action" onClick={() => setSidebarOpen(o => !o)}
-              style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.muted }}>
+              style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${clr.border}`, background: clr.surface, boxShadow: isDark ? '0 2px 5px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.muted }}>
               <ChevronDownIcon />
             </button>
           </div>
@@ -162,16 +168,24 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
                 <button key={item.id} className="dl-nav-btn"
                   onClick={() => navigate(item.path)}
                   style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem',
-                    padding: '0.5rem 0.75rem', borderRadius: 8, border: 'none',
-                    background: isActive ? (isDark ? '#1e2942' : '#eff6ff') : 'transparent',
-                    color: isActive ? '#5b21b6' : clr.muted,
+                    width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem',
+                    padding: '0.4rem 0.75rem', borderRadius: 10, border: 'none',
+                    background: isActive ? (isDark ? 'linear-gradient(90deg, rgba(139,92,246,0.15) 0%, rgba(139,92,246,0.02) 100%)' : 'linear-gradient(90deg, #f5f3ff 0%, rgba(245,243,255,0.2) 100%)') : 'transparent',
+                    boxShadow: isActive ? (isDark ? 'inset 3px 0 0 #8b5cf6' : 'inset 3px 0 0 #7c3aed') : 'none',
+                    color: isActive ? (isDark ? '#a78bfa' : '#6d28d9') : clr.muted,
                     fontWeight: isActive ? 600 : 500, fontSize: '0.875rem',
-                    cursor: 'pointer', textAlign: 'left', marginBottom: 2, transition: 'all 0.15s',
+                    cursor: 'pointer', textAlign: 'left', marginBottom: 4, transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                 >
-                  <span style={{ display: 'flex', color: isActive ? '#7c3aed' : 'inherit' }}><item.Icon active={isActive} /></span>
-                  <span style={{ flex: 1, color: isActive ? '#4f46e5' : 'inherit' }}>{item.label}</span>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    background: isActive ? (isDark ? 'rgba(139,92,246,0.2)' : '#ede9fe') : 'transparent',
+                    color: isActive ? (isDark ? '#c4b5fd' : '#7c3aed') : 'inherit',
+                    transition: 'all 0.2s'
+                  }}>
+                    <item.Icon active={isActive} />
+                  </div>
+                  <span style={{ flex: 1 }}>{item.label}</span>
                   {isActive && <ChevronRightIcon />}
                 </button>
               )
@@ -201,9 +215,12 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
 
         {/* Top bar */}
         <div style={{
-          background: clr.surface, borderBottom: `1px solid ${clr.border}`,
-          padding: '0 1.25rem', height: 56,
+          background: clr.surface,
+          backdropFilter: clr.blur, WebkitBackdropFilter: clr.blur,
+          borderBottom: `1px solid ${clr.border}`,
+          padding: '0 1.25rem', height: 60,
           display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0,
+          position: 'relative', zIndex: 10
         }}>
           {/* Re-expand Sidebar Button */}
           {!sidebarOpen && (
