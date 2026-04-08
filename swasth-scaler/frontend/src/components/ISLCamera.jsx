@@ -64,10 +64,13 @@ function predictRF(model, features) {
 }
 
 function extractFeatures(landmarks) {
+  // Must match Python normalize_landmarks() in collect_static.py exactly:
+  //   coords -= coords[0]          (subtract wrist)
+  //   scale = np.linalg.norm(coords[12])  (landmark 12 = middle fingertip)
   const wrist = landmarks[0]
   const raw   = landmarks.map(lm => [lm.x - wrist.x, lm.y - wrist.y])
-  const mid   = raw[9]
-  const scale = Math.sqrt(mid[0] ** 2 + mid[1] ** 2) || 1
+  const tip12 = raw[12]  // middle finger TIP (not MCP)
+  const scale = Math.sqrt(tip12[0] ** 2 + tip12[1] ** 2) || 1
   const feats = []
   for (const [x, y] of raw) feats.push(x / scale, y / scale)
   return feats
