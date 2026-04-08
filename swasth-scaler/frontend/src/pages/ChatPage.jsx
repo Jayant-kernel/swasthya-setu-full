@@ -39,6 +39,31 @@ ${triage.brief}
 export default function ChatPage() {
   const navigate = useNavigate()
   const { patientData, setPatientData, triageResult, setTriageResult } = usePatient()
+
+  const [isDark, setIsDark] = useState(document.documentElement.getAttribute('data-theme') === 'dark')
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsDark(document.documentElement.getAttribute('data-theme') === 'dark')
+    })
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    return () => observer.disconnect()
+  }, [])
+
+  const clr = {
+    bg:      isDark ? 'linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%)' : 'linear-gradient(135deg, #ffffff 0%, #f0fbf5 100%)',
+    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(209, 250, 229, 0.4)',
+    blur:    'blur(24px) saturate(150%)',
+    border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.2)',
+    borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.35)',
+    topText: isDark ? '#f8fafc' : '#022c22',
+    topMuted: isDark ? '#cbd5e1' : '#047857',
+    text:    isDark ? '#f8fafc' : '#0f172a',
+    muted:   isDark ? '#cbd5e1' : '#475569',
+    glassGlow: isDark ? '0 4px 15px rgba(0,0,0,0.3)' : '0 4px 16px rgba(16, 185, 129, 0.25)',
+    primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #059669)',
+    primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
+  }
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -301,13 +326,16 @@ export default function ChatPage() {
         <aside className="chat-sidebar" style={{
           width: 280,
           flexShrink: 0,
-          background: 'var(--color-surface)',
-          borderRight: '1px solid var(--color-border)',
+          background: clr.surface,
+          backdropFilter: clr.blur, WebkitBackdropFilter: clr.blur,
+          borderRight: `1px solid ${clr.border}`,
+          boxShadow: clr.glassGlow,
           padding: '1.5rem 1.25rem',
           overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
           gap: '1.25rem',
+          position: 'relative', zIndex: 5,
         }}>
           <div>
             <div style={{ fontSize: '0.6875rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>Patient Info</div>
@@ -407,18 +435,19 @@ export default function ChatPage() {
             aria-live="polite"
           >
             {messages.map((msg, i) => (
-              <ChatBubble key={i} role={msg.role} content={msg.content} />
+              <ChatBubble key={i} role={msg.role} content={msg.content} clr={clr} isDark={isDark} />
             ))}
 
             {loading && (
               <div style={{
                 display: 'flex', alignItems: 'center', gap: '0.5rem',
                 padding: '0.75rem 1rem',
-                background: 'var(--color-white)',
-                border: '1.5px solid var(--color-border)',
+                background: clr.surface,
+                backdropFilter: clr.blur, WebkitBackdropFilter: clr.blur,
+                border: `1px solid ${clr.border}`,
                 borderRadius: 'var(--radius-sm) var(--radius) var(--radius) var(--radius-sm)',
                 maxWidth: 200,
-                boxShadow: 'var(--shadow)',
+                boxShadow: clr.glassGlow,
                 animation: 'fadeIn 0.2s ease',
               }}>
                 <TypingDots />
@@ -436,7 +465,7 @@ export default function ChatPage() {
           </div>
 
           {/* Quick reply chips */}
-          <div className="chat-quick-replies" style={{ padding: '0.5rem 2rem 0', background: 'var(--color-surface)', display: 'flex', gap: '0.5rem', flexWrap: 'wrap', borderTop: '1px solid var(--color-border)' }}>
+          <div className="chat-quick-replies" style={{ padding: '0.5rem 2rem 0.5rem', background: clr.surface, backdropFilter: clr.blur, WebkitBackdropFilter: clr.blur, display: 'flex', gap: '0.5rem', flexWrap: 'wrap', borderTop: `1px solid ${clr.border}` }}>
             {QUICK_REPLIES.map((chip) => (
               <button
                 key={chip.marathi}
@@ -457,10 +486,12 @@ export default function ChatPage() {
             className="chat-input-area"
             style={{
               padding: '0.75rem 2rem 1rem',
-              background: 'var(--color-surface)',
+              background: clr.surface,
+              backdropFilter: clr.blur, WebkitBackdropFilter: clr.blur,
               display: 'flex',
               gap: '0.75rem',
               alignItems: 'flex-end',
+              position: 'relative', zIndex: 5,
             }}
           >
             <textarea
@@ -474,13 +505,13 @@ export default function ChatPage() {
               style={{
                 flex: 1,
                 padding: '0.875rem 1.125rem',
-                border: '1.5px solid var(--color-border)',
+                border: `1px solid ${clr.border}`,
                 borderRadius: 'var(--radius)',
                 fontSize: '0.9375rem',
                 lineHeight: 1.5,
                 resize: 'none',
-                background: 'var(--color-bg)',
-                color: 'var(--color-text)',
+                background: isDark ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.4)',
+                color: clr.text,
                 maxHeight: 140,
                 overflowY: 'auto',
                 fontFamily: 'inherit',

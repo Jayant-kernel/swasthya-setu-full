@@ -17,7 +17,7 @@ function BotIcon() {
   )
 }
 
-export default function ChatBubble({ role, content }) {
+export default function ChatBubble({ role, content, clr, isDark }) {
   const isUser = role === 'user'
 
   return (
@@ -42,9 +42,10 @@ export default function ChatBubble({ role, content }) {
           alignItems: 'center',
           justifyContent: 'center',
           flexShrink: 0,
-          background: isUser ? 'var(--color-primary)' : 'var(--color-bg)',
-          color: isUser ? 'var(--surface)' : 'var(--color-text-muted)',
-          border: isUser ? 'none' : '1.5px solid var(--color-border)',
+          background: isUser ? (clr?.primaryBg || 'var(--color-primary)') : 'transparent',
+          color: isUser ? '#fff' : (clr?.text || 'var(--color-text-muted)'),
+          border: isUser ? 'none' : `2px solid ${clr?.borderSolid || clr?.border || 'var(--color-border)'}`,
+          boxShadow: isUser ? (clr?.primaryShadow || 'none') : 'none'
         }}
         aria-hidden="true"
       >
@@ -59,10 +60,12 @@ export default function ChatBubble({ role, content }) {
           borderRadius: isUser
             ? 'var(--radius) var(--radius-sm) var(--radius-sm) var(--radius)'
             : 'var(--radius-sm) var(--radius) var(--radius) var(--radius-sm)',
-          background: isUser ? 'var(--color-primary)' : 'var(--color-white)',
-          color: isUser ? 'var(--surface)' : 'var(--color-text)',
-          border: isUser ? 'none' : '1.5px solid var(--color-border)',
-          boxShadow: 'var(--shadow)',
+          background: isUser ? (clr?.primaryBg || 'var(--color-primary)') : (clr?.surface || 'var(--color-white)'),
+          backdropFilter: isUser ? 'none' : (clr?.blur || 'none'),
+          WebkitBackdropFilter: isUser ? 'none' : (clr?.blur || 'none'),
+          color: isUser ? '#fff' : (clr?.text || 'var(--color-text)'),
+          border: isUser ? 'none' : `1px solid ${clr?.border || 'var(--color-border)'}`,
+          boxShadow: isUser ? (clr?.primaryShadow || 'var(--shadow)') : (clr?.glassGlow || 'var(--shadow)'),
           fontSize: '0.9375rem',
           lineHeight: 1.55,
           whiteSpace: 'pre-wrap',
