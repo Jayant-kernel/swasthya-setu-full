@@ -51,14 +51,6 @@ function HealthIllustration({ selectedRole }) {
         }}
       />
 
-      {/* Colour-tinted overlay */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: selectedRole
-          ? `linear-gradient(160deg, ${selectedRole.color}88 0%, rgba(10,61,46,0.5) 100%)`
-          : 'linear-gradient(160deg, rgba(15,110,86,0.55) 0%, rgba(10,61,46,0.5) 100%)',
-        pointerEvents: 'none',
-      }} />
 
       {/* Bottom vignette so brand text stays readable */}
       <div style={{
