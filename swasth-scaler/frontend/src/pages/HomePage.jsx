@@ -416,7 +416,7 @@ export default function HomePage() {
               </div>
             </div>
             <button className="action-btn" onClick={() => setSidebarOpen(o => !o)}
-              style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${clr.border}`, background: clr.surface, boxShadow: isDark ? '0 2px 5px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.topMuted }}>
+              style={{ width: 32, height: 32, borderRadius: 8, border: '1px solid #065f46', background: isDark ? 'linear-gradient(135deg,#065f46,#047857)' : 'linear-gradient(135deg,#065f46,#0f9f6e)', boxShadow: '0 2px 10px rgba(6, 95, 70, 0.55)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s', color: '#fff' }}>
               <ChevronIcon size={14} dir="down" />
             </button>
           </div>
@@ -518,9 +518,7 @@ export default function HomePage() {
             {/* Re-expand Sidebar Button (only visible if sidebar is collapsed) */}
             {!sidebarOpen && (
               <button className="action-btn" onClick={() => setSidebarOpen(true)}
-                style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.topText }}
-                onMouseEnter={(e) => e.currentTarget.style.background = clr.hover}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                style={{ width: 36, height: 36, borderRadius: 9, border: '1.5px solid #065f46', background: isDark ? 'linear-gradient(135deg,#065f46,#047857)' : 'linear-gradient(135deg,#065f46,#0f9f6e)', boxShadow: '0 2px 12px rgba(6, 95, 70, 0.5)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s', color: '#fff' }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />

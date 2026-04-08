@@ -334,7 +334,7 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
               onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.85)'}
               onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
               style={{
-                width: 48, height: 36, borderRadius: '50%',
+                width: 42, height: 36, borderRadius: '50%',
                 border: `1px solid ${clr.borderSolid}`,
                 background: clr.glassBg,
                 backdropFilter: clr.glassBlur, WebkitBackdropFilter: clr.glassBlur,
