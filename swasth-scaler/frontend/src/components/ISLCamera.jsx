@@ -48,8 +48,10 @@ export default function ISLCamera({ onSymptomDetected }) {
 
   // ── Start webcam ──────────────────────────────────────────────────────────
   useEffect(() => {
+    let stream = null
     navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } })
-      .then(stream => {
+      .then(s => {
+        stream = s
         if (videoRef.current) {
           videoRef.current.srcObject = stream
         }
@@ -57,8 +59,12 @@ export default function ISLCamera({ onSymptomDetected }) {
       .catch(() => setCameraError('Camera permission denied'))
 
     return () => {
-      if (videoRef.current?.srcObject) {
-        videoRef.current.srcObject.getTracks().forEach(t => t.stop())
+      // Stop all tracks and clear video element
+      if (stream) {
+        stream.getTracks().forEach(t => t.stop())
+      }
+      if (videoRef.current) {
+        videoRef.current.srcObject = null
       }
     }
   }, [])
@@ -95,7 +101,11 @@ export default function ISLCamera({ onSymptomDetected }) {
       } catch (_) {}
     }
 
-    return () => ws.close()
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) {
+        ws.close()
+      }
+    }
   }, [onSymptomDetected])
 
   // ── Frame sending loop ────────────────────────────────────────────────────
@@ -121,7 +131,12 @@ export default function ISLCamera({ onSymptomDetected }) {
 
   useEffect(() => {
     intervalRef.current = setInterval(sendFrame, FRAME_INTERVAL_MS)
-    return () => clearInterval(intervalRef.current)
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
   }, [sendFrame])
 
   // ── Derived UI values ─────────────────────────────────────────────────────
