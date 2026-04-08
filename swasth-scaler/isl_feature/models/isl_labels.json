@@ -1,0 +1,8 @@
+{
+  "fever":       {"odia": "ଜ୍ୱର",        "english": "Fever"},
+  "vomit":       {"odia": "ବାନ୍ତି",       "english": "Vomiting"},
+  "cough":       {"odia": "କାଶ",          "english": "Cough"},
+  "weakness":    {"odia": "ଦୁର୍ବଳତା",     "english": "Weakness"},
+  "dizziness":   {"odia": "ମୁଣ୍ଡ ବୁଲାଇ",   "english": "Dizziness"},
+  "breathless":  {"odia": "ଶ୍ୱାସ କଷ୍ଟ",    "english": "Breathlessness"}
+}

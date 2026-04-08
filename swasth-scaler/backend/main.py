@@ -1,12 +1,22 @@
 import os
+import sys
 import json
+import base64
 import logging
 import httpx
+import numpy as np
+import cv2
 from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
+from fastapi.websockets import WebSocket, WebSocketDisconnect
 from openai import OpenAI
 from dotenv import load_dotenv
+
+# ISL detector — path relative to backend/
+_ISL_PATH = os.path.join(os.path.dirname(__file__), "..", "isl_feature", "inference")
+if _ISL_PATH not in sys.path:
+    sys.path.insert(0, os.path.abspath(_ISL_PATH))
 
 from database import engine, Base, AsyncSessionLocal
 from models import TriageRecord
@@ -45,8 +55,18 @@ async def startup():
         if not result.scalar_one_or_none():
             logger.info("Database empty! Seeding default user accounts...")
             session.add_all([
-                User(employee_id="ASHA001", role="asha", password_hash=get_password_hash("password"), full_name="Kalyani Dash", location="Village Alpha", district="Puri"),
-                User(employee_id="DMO001", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Pradhan", location="District HQ", district="Puri"),
+                User(employee_id="ASHA001", role="asha", password_hash=get_password_hash("password"), full_name="Kalyani Dash", location="Village Alpha", district="Pune"),
+                User(employee_id="DMO001", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Pradhan", location="District HQ", district="Pune"),
+                User(employee_id="DMO002", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Sharma", location="District HQ", district="Mumbai"),
+                User(employee_id="DMO003", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Kulkarni", location="District HQ", district="Nagpur"),
+                User(employee_id="DMO004", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Deshmukh", location="District HQ", district="Nashik"),
+                User(employee_id="DMO005", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Patil", location="District HQ", district="Ahmednagar"),
+                User(employee_id="DMO006", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Jadhav", location="District HQ", district="Aurangabad"),
+                User(employee_id="DMO007", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. More", location="District HQ", district="Solapur"),
+                User(employee_id="DMO008", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Shinde", location="District HQ", district="Kolhapur"),
+                User(employee_id="DMO009", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Bhosale", location="District HQ", district="Thane"),
+                User(employee_id="DMO010", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Pawar", location="District HQ", district="Satara"),
+                User(employee_id="DMO011", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Chavan", location="District HQ", district="Sangli"),
                 User(employee_id="ADMIN001", role="admin", password_hash=get_password_hash("password"), full_name="System Admin", location="State HQ", district="All")
             ])
             await session.commit()
@@ -99,6 +119,44 @@ Return ONLY valid JSON no markdown:
 @app.get("/health")
 async def health():
     return {"status": "ok", "service": "swasthya-setu-backend"}
+
+
+MAHARASHTRA_DMOS = [
+    ("DMO001", "Dr. Pradhan",  "Pune"),
+    ("DMO002", "Dr. Sharma",   "Mumbai"),
+    ("DMO003", "Dr. Kulkarni", "Nagpur"),
+    ("DMO004", "Dr. Deshmukh", "Nashik"),
+    ("DMO005", "Dr. Patil",    "Ahmednagar"),
+    ("DMO006", "Dr. Jadhav",   "Aurangabad"),
+    ("DMO007", "Dr. More",     "Solapur"),
+    ("DMO008", "Dr. Shinde",   "Kolhapur"),
+    ("DMO009", "Dr. Bhosale",  "Thane"),
+    ("DMO010", "Dr. Pawar",    "Satara"),
+    ("DMO011", "Dr. Chavan",   "Sangli"),
+]
+
+@app.post("/api/v1/migrate-maharashtra-dmos")
+async def migrate_maharashtra_dmos():
+    """One-time migration: upsert Maharashtra DMO accounts."""
+    async with AsyncSessionLocal() as session:
+        created, updated = [], []
+        for emp_id, name, district in MAHARASHTRA_DMOS:
+            result = await session.execute(select(User).where(User.employee_id == emp_id))
+            existing = result.scalar_one_or_none()
+            if existing:
+                existing.full_name = name
+                existing.district = district
+                existing.location = "District HQ"
+                updated.append(emp_id)
+            else:
+                session.add(User(
+                    employee_id=emp_id, role="dmo",
+                    password_hash=get_password_hash("password"),
+                    full_name=name, location="District HQ", district=district
+                ))
+                created.append(emp_id)
+        await session.commit()
+    return {"created": created, "updated": updated}
 
 
 @app.post("/incoming-call")
@@ -262,4 +320,67 @@ Text: {original_transcript}"""
         return PlainTextResponse(content=twiml, media_type="application/xml")
 
 
+# ── ISL WebSocket endpoint ────────────────────────────────────────────────────
+@app.websocket("/ws/isl")
+async def isl_detect(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time ISL detection.
 
+    Client sends JSON:
+      { "type": "frame",  "image": "<base64 JPEG>" }
+      { "type": "reset" }
+
+    Server replies JSON:
+      {
+        "sign":            "fever" | null,
+        "confidence":      0.0-1.0,
+        "confirmed":       true/false,
+        "fill":            0.0-1.0,
+        "odia":            "ଜ୍ୱର" | null,
+        "english":         "Fever" | null,
+        "has_hand":        true/false,
+        "all_confidences": { "fever": 0.92, ... }
+      }
+    """
+    await websocket.accept()
+    logger.info("ISL WebSocket connected")
+
+    # Lazy-load detector (only when first client connects)
+    try:
+        from isl_detector import ISLDetector
+        detector = ISLDetector()
+    except Exception as e:
+        logger.error(f"ISLDetector load failed: {e}")
+        await websocket.send_json({"error": str(e)})
+        await websocket.close()
+        return
+
+    try:
+        while True:
+            data    = await websocket.receive_text()
+            payload = json.loads(data)
+
+            if payload.get("type") == "reset":
+                detector.reset()
+                await websocket.send_json({"reset": True})
+                continue
+
+            if payload.get("type") == "frame":
+                try:
+                    img_bytes = base64.b64decode(payload["image"])
+                    np_arr    = np.frombuffer(img_bytes, np.uint8)
+                    frame     = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+                    if frame is None:
+                        continue
+                    result = detector.process_frame(frame)
+                    await websocket.send_json(result)
+                except Exception as e:
+                    logger.error(f"ISL frame error: {e}")
+                    await websocket.send_json({"error": str(e)})
+
+    except WebSocketDisconnect:
+        logger.info("ISL WebSocket disconnected")
+        detector.close()
+    except Exception as e:
+        logger.error(f"ISL WebSocket error: {e}")
+        detector.close()
