@@ -6,6 +6,66 @@ import logo from '../images/logo/logo.png'
 const API = 'https://swasthya-setu-full.onrender.com/api/v1'
 const DistrictHeatmap = lazy(() => import('../components/DistrictHeatmap'))
 
+// ── District Config ────────────────────────────────────────────────────────
+const DISTRICT_CENTERS = {
+  'Pune': [18.5204, 73.8567],
+  'Mumbai': [19.0760, 72.8777],
+  'Nagpur': [21.1458, 79.0882],
+  'Nashik': [20.0059, 73.7897],
+}
+const DISTRICT_BOUNDS = {
+  'Pune': [[17.85, 73.20], [19.20, 74.70]],
+  'Mumbai': [[18.85, 72.70], [19.35, 73.10]],
+  'Nagpur': [[20.60, 78.40], [21.70, 79.80]],
+  'Nashik': [[19.40, 73.20], [20.60, 74.60]],
+}
+
+// Group records for heatmap visualization
+function buildMapPoints(records, center) {
+  if (!records.length) return []
+  
+  const withGps = records.filter(r => r.latitude && r.longitude)
+  const withoutGps = records.filter(r => !r.latitude || !r.longitude)
+
+  const gpsPoints = withGps.map(r => ({
+    village: r.patient_name || 'Patient',
+    total: 1,
+    critical: r.severity === 'red' ? 1 : 0,
+    moderate: r.severity === 'yellow' ? 1 : 0,
+    mild: r.severity === 'green' ? 1 : 0,
+    lastReported: new Date(r.created_at).toLocaleString('en-IN'),
+    lat: r.latitude,
+    lng: r.longitude
+  }))
+
+  const groups = {}
+  withoutGps.forEach(r => {
+    const village = r.patient_name || 'Unknown'
+    if (!groups[village]) {
+      groups[village] = { village, total: 0, critical: 0, moderate: 0, mild: 0, lastReported: r.created_at }
+    }
+    const g = groups[village]
+    g.total++
+    if (r.severity === 'red') g.critical++
+    else if (r.severity === 'yellow') g.moderate++
+    else g.mild++
+    if (r.created_at > g.lastReported) g.lastReported = r.created_at
+  })
+
+  const legacyPoints = Object.values(groups).map((g, i) => {
+    const angle = (i / (Object.keys(groups).length || 1)) * 2 * Math.PI
+    const radius = 0.06 + (i % 4) * 0.08
+    return {
+      ...g,
+      lat: center[0] + Math.sin(angle) * radius,
+      lng: center[1] + Math.cos(angle) * radius,
+      lastReported: new Date(g.lastReported).toLocaleString('en-IN'),
+    }
+  })
+
+  return [...gpsPoints, ...legacyPoints]
+}
+
 // ── Icons ──────────────────────────────────────────────────────────────────
 const HomeIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
 const UsersIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
@@ -27,7 +87,7 @@ const StatCard = ({ label, value, subtext, icon: Icon, color = '#3b82f6' }) => (
         <Icon />
       </div>
       <div style={{ color: '#10b981', background: '#dcfce7', padding: '2px 8px', borderRadius: 6, fontSize: '0.75rem', fontWeight: 700 }}>
-        ↑ 12%
+        Active
       </div>
     </div>
     <div style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: 600, marginBottom: '0.25rem' }}>{label}</div>
@@ -92,6 +152,8 @@ export default function DMODashboardPage() {
     try { return JSON.parse(localStorage.getItem('user') || '{}') } catch { return {} }
   }, [])
   const dmoDistrict = _savedUser.district || 'Pune'
+  const center = DISTRICT_CENTERS[dmoDistrict] || [18.5204, 73.8567]
+  const bounds = DISTRICT_BOUNDS[dmoDistrict] || null
 
   const [triageRecords, setTriageRecords] = useState([])
   const [patients, setPatients] = useState([])
@@ -125,6 +187,8 @@ export default function DMODashboardPage() {
     return { unreviewed, critical, sickle }
   }, [triageRecords])
 
+  const mapPoints = useMemo(() => buildMapPoints(triageRecords, center), [triageRecords, center])
+
   return (
     <div style={{ minHeight: '100dvh', background: '#f8fafc', display: 'flex', fontFamily: "'Inter', sans-serif" }}>
       <style>{`
@@ -141,8 +205,8 @@ export default function DMODashboardPage() {
       {/* ── SIDEBAR ── */}
       <aside style={{ width: 240, background: '#fff', borderRight: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-          <img src={logo} alt="Logo" style={{ width: 34, height: 34 }} />
-          <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e293b', letterSpacing: '-0.03em' }}>MedScaler</span>
+          <img src={logo} alt="Logo" style={{ width: 42, height: 42 }} />
+          <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e293b', letterSpacing: '-0.03em' }}>Swasthya Setu</span>
         </div>
 
         <nav style={{ flex: 1, padding: '0 0.75rem' }}>
@@ -164,7 +228,7 @@ export default function DMODashboardPage() {
         </nav>
 
         <div style={{ padding: '1rem', borderTop: '1px solid #f1f5f9' }}>
-          <div onClick={logout} className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer' }}>
+          <div onClick={() => { logout(); navigate('/') }} className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer' }}>
             <LogoutIcon /> <span>Logout</span>
           </div>
         </div>
@@ -293,7 +357,7 @@ export default function DMODashboardPage() {
                 </div>
                 <div style={{ flex: 1, background: '#fff', borderRadius: 20, border: '1px solid #f1f5f9', overflow: 'hidden', minHeight: 600 }}>
                     <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center' }}>Loading Region Map...</div>}>
-                        <DistrictHeatmap district={dmoDistrict} points={[]} center={[18.5204, 73.8567]} />
+                        <DistrictHeatmap district={dmoDistrict} points={mapPoints} center={center} bounds={bounds} />
                     </Suspense>
                 </div>
             </div>

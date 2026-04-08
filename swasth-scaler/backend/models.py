@@ -1,6 +1,6 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Boolean, DateTime, Integer, JSON, ForeignKey
+from sqlalchemy import Column, String, Boolean, DateTime, Integer, JSON, ForeignKey, Float
 from database import Base
 
 def generate_uuid():
@@ -54,5 +54,7 @@ class TriageRecord(Base):
     brief = Column(String)
     reviewed = Column(Boolean, default=False)
     district = Column(String)
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
     user_id = Column(String, ForeignKey("users.id")) # ASHA worker who submitted
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
