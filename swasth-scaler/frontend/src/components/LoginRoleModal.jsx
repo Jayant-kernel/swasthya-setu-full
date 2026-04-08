@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
-import loginImg2 from '../images/login/image2.png';
-import loginImg3 from '../images/login/image3.png';
+import loginImg2 from '../images/login/asha_worker.avif';
+import loginImg3 from '../images/login/DMO_Worker.png';
 
 const ROLES = [
   {

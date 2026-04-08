@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoginRoleModal from '../components/LoginRoleModal'
 
-import img1 from '../images/hero1.jpg'
-import img2 from '../images/hero2.jpg'
+import img1 from '../images/landing/hero1.jpg'
+import img2 from '../images/landing/hero2.jpg'
 
-import pushkarAvatar from '../images/pushkar.jpg'
-import jayantAvatar from '../images/jayant.png'
-import vaibhavAvatar from '../images/vaibhav.png'
+import pushkarAvatar from '../images/landing/pushkar.jpg'
+import jayantAvatar from '../images/landing/jayant.png'
+import vaibhavAvatar from '../images/landing/vaibhav.png'
 
 const ArrowRight = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-7-7 7 7-7 7" /></svg>
 const PlayCircle = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinejoin="round" d="m10 8 6 4-6 4z" /></svg>
