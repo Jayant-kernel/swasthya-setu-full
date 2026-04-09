@@ -305,7 +305,7 @@ export default function DMODashboardPage() {
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead style={{ background: '#f8fafc' }}>
                       <tr>
-                        {['Patient Name', 'Identification No.', 'District', 'Status', 'Severity', 'Actions'].map(h => (
+                        {['Patient Name', 'Identification No.', 'Location', 'Status', 'Severity', 'Actions'].map(h => (
                           <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
                         ))}
                       </tr>
@@ -322,7 +322,14 @@ export default function DMODashboardPage() {
                             </div>
                           </td>
                           <td style={{ padding: '1rem 1.5rem', color: '#64748b', fontSize: '0.875rem' }}>ID-{record.patient_id?.substring(0,6) || record.id?.substring(0,6)}</td>
-                          <td style={{ padding: '1rem 1.5rem', color: '#64748b', fontSize: '0.875rem' }}>{record.district || dmoDistrict}</td>
+                          <td style={{ padding: '1rem 1.5rem', color: '#64748b', fontSize: '0.875rem' }}>
+                            <div>{record.district || dmoDistrict}</div>
+                            {record.latitude && record.longitude && (
+                              <div style={{ fontSize: '0.7rem', color: '#3b82f6', marginTop: 4, fontWeight: 600 }}>
+                                📍 {Number(record.latitude).toFixed(5)}, {Number(record.longitude).toFixed(5)}
+                              </div>
+                            )}
+                          </td>
                           <td style={{ padding: '1rem 1.5rem' }}>
                              <span style={{ 
                                padding: '4px 10px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 800,
