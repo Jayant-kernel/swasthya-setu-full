@@ -33,7 +33,7 @@ export default function App() {
             <Route path="/profile" element={<ProtectedRoute role="asha"><ProfilePage /></ProtectedRoute>} />
 
             <Route path="/dashboard/dmo" element={<ProtectedRoute role="dmo"><DMODashboardPage /></ProtectedRoute>} />
-            <Route path="/dashboard/admin" element={<ProtectedRoute role="admin"><AdminDashboardPage /></ProtectedRoute>} />
+            <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
           </Routes>
         </PatientProvider>
       </AuthProvider>

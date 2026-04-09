@@ -81,9 +81,7 @@ export default function ProfilePage() {
     <div style={{
       minHeight: '100dvh',
       width: '100%',
-      background: 'linear-gradient(-45deg, #0a192f, #004d40, #0074d9, #10b981, #7fdbff)',
-      backgroundSize: '400% 400%',
-      animation: 'gradientShift 15s ease infinite',
+      background: '#004d40',
       fontFamily: "'Inter', sans-serif",
       color: '#fff',
       position: 'relative',
@@ -93,11 +91,6 @@ export default function ProfilePage() {
       alignItems: 'center'
     }}>
       <style>{`
-        @keyframes gradientShift {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
         @keyframes glowRed {
           from { box-shadow: 0 0 5px rgba(239, 68, 68, 0.2); }
           to { box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }

@@ -228,6 +228,9 @@ export default function DMODashboardPage() {
         </nav>
 
         <div style={{ padding: '1rem', borderTop: '1px solid #f1f5f9' }}>
+          <div onClick={() => navigate('/dashboard/admin')} className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#6366f1', cursor: 'pointer', marginBottom: 8, border: '1px dashed #e0e7ff', background: '#f5f7ff' }}>
+            <span style={{ fontSize: '1.1rem' }}>🌐</span> <span>Admin Mode</span>
+          </div>
           <div onClick={() => { logout(); navigate('/') }} className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer' }}>
             <LogoutIcon /> <span>Logout</span>
           </div>
