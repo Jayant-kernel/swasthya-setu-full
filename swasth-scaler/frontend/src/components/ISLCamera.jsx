@@ -54,7 +54,7 @@ export default function ISLCamera({ onSymptomDetected }) {
   useEffect(() => {
     loadModel('/tfjs_model/model.json')
       .then(m => { modelRef.current = m; setStatus('ready') })
-      .catch(() => { setStatus('no-model') })
+      .catch((err) => { console.error('[ISLCamera] model load failed:', err); setStatus('no-model') })
   }, [])
 
   // ── MediaPipe results callback ──────────────────────────────────────────────

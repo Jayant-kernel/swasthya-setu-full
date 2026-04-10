@@ -1,22 +1,18 @@
 /**
  * inferenceEngine.js
  * ─────────────────────────────────────────────────────────────────────────────
- * Handles TensorFlow.js model loading and single-sample inference.
+ * TF.js model loader + single-sample inference.
  *
- * • Uses WebGL backend for GPU-accelerated inference
- * • Wraps all tensor operations in tf.tidy() to prevent memory leaks
- * • Returns { label, confidence, scores } for every prediction
- *
- * Label order must match the order used during Python training.
- * If you retrain, update LABELS to match your label_encoder.classes_.
+ * ⚠️  LABELS must match label_classes.json produced by train_model.py exactly
+ *      (same order, same casing). Update this array whenever you retrain.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import * as tf from '@tensorflow/tfjs'
 import '@tensorflow/tfjs-backend-webgl'
 
-// ── Label set — MUST match Python LabelEncoder order ─────────────────────────
-// Update this if you add or rename gesture classes.
+// Order must exactly match sklearn LabelEncoder output from training.
+// Python sorts class names alphabetically by default → alphabetical here too.
 export const LABELS = [
     'BREATHLESS',
     'COUGH',
@@ -27,70 +23,62 @@ export const LABELS = [
     'WEAKNESS',
 ]
 
-let _modelLoaded = false
+let _ready = false
 
 /**
- * Load and warm-up the TF.js model.
- * Call once at boot. Returns the loaded model.
+ * Load model from the given URL and warm it up.
+ * Call once at app boot. Resolves with the loaded tf.LayersModel.
  *
- * @param {string} url   Path to model.json (e.g. '/tfjs_model/model.json')
- * @returns {Promise<tf.LayersModel>}
+ * @param {string} url  e.g. '/tfjs_model/model.json'
  */
 export async function loadModel(url = '/tfjs_model/model.json') {
-    // Prefer WebGL; fall back to CPU wasm if unavailable
+    // Try WebGL (GPU); fall back to CPU if unavailable (e.g. headless test env)
     try {
         await tf.setBackend('webgl')
         await tf.ready()
-        console.log('[Inference] TF.js backend:', tf.getBackend())
     } catch {
         await tf.setBackend('cpu')
-        console.warn('[Inference] WebGL unavailable, using CPU backend')
+        console.warn('[inference] WebGL unavailable — using CPU backend')
     }
+    console.log('[inference] TF.js backend:', tf.getBackend())
 
+    console.log('[inference] loading model from:', url)
     const model = await tf.loadLayersModel(url)
+    console.log('[inference] model loaded, inputs:', model.inputs)
 
-    // Warm-up pass — eliminates first-prediction latency spike
-    tf.tidy(() => {
-        const dummy = tf.zeros([1, 63])
-        model.predict(dummy)
-    })
+    // Warm-up eliminates the JIT compilation spike on the first real prediction
+    tf.tidy(() => model.predict(tf.zeros([1, 63])))
 
-    _modelLoaded = true
-    console.log('[Inference] Model loaded and warmed up')
+    _ready = true
+    console.log('[inference] model ready')
     return model
 }
 
 /**
- * Run a single prediction.
+ * Run inference on a single normalised sample.
  *
- * @param {tf.LayersModel}  model     Loaded TF.js model
- * @param {Float32Array}    features  Normalised landmarks, length 63
+ * @param {tf.LayersModel}  model
+ * @param {Float32Array}    features  length 63
  * @returns {{ label: string, confidence: number, scores: number[] }}
  */
 export function predict(model, features) {
-    if (!model || !_modelLoaded) {
+    if (!model || !_ready) {
         return { label: LABELS[0], confidence: 0, scores: [] }
     }
 
     return tf.tidy(() => {
-        // Shape: [1, 63]
         const input = tf.tensor2d([Array.from(features)], [1, 63])
-        const output = model.predict(input)              // shape [1, NUM_CLASSES]
-        const scores = Array.from(output.dataSync())     // copy out before tidy cleans up
+        const output = model.predict(input)              // [1, NUM_CLASSES]
+        const scores = Array.from(output.dataSync())     // copy before tidy cleans up
 
-        // Argmax
         let bestIdx = 0
-        let bestScore = 0
-        for (let i = 0; i < scores.length; i++) {
-            if (scores[i] > bestScore) {
-                bestScore = scores[i]
-                bestIdx = i
-            }
+        for (let i = 1; i < scores.length; i++) {
+            if (scores[i] > scores[bestIdx]) bestIdx = i
         }
 
         return {
             label: LABELS[bestIdx] ?? `CLASS_${bestIdx}`,
-            confidence: bestScore,
+            confidence: scores[bestIdx],
             scores,
         }
     })

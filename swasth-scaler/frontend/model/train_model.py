@@ -29,7 +29,12 @@ from sklearn.metrics         import classification_report
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-import tensorflowjs as tfjs
+try:
+    import tensorflowjs as tfjs
+    HAS_TFJS = True
+except Exception:
+    HAS_TFJS = False
+    print('[Warning] tensorflowjs import failed — will use tensorflowjs CLI for conversion instead')
 
 
 # ─── CLI args ─────────────────────────────────────────────────────────────────
@@ -150,19 +155,30 @@ def train(args):
     # 6. Save .h5 (optional backup)
     h5_path = 'isl_model.h5'
     model.save(h5_path)
-    print(f'[Save] Keras model → {h5_path}')
+    print(f'[Save] Keras model -> {h5_path}')
 
     # 7. Convert to TF.js format
     os.makedirs(args.output, exist_ok=True)
-    tfjs.converters.save_keras_model(model, args.output)
-    print(f'[Convert] TF.js model → {args.output}/')
+    if HAS_TFJS:
+        tfjs.converters.save_keras_model(model, args.output)
+    else:
+        import subprocess
+        result = subprocess.run(
+            ['tensorflowjs_converter', '--input_format=keras', h5_path, args.output],
+            capture_output=True, text=True
+        )
+        if result.returncode != 0:
+            print(f'[Convert] CLI error: {result.stderr}')
+        else:
+            print(f'[Convert] CLI success')
+    print(f'[Convert] TF.js model -> {args.output}/')
 
     # 8. Print final accuracy
     _, train_acc = model.evaluate(X_train, y_train, verbose=0)
     _, test_acc  = model.evaluate(X_test,  y_test,  verbose=0)
     print(f'\n[Result] Train accuracy: {train_acc:.4f}  Test accuracy: {test_acc:.4f}')
 
-    print('\n✅  Done. Copy the tfjs_model/ folder into /public/ before running the React app.')
+    print('\nDone! Copy the tfjs_model/ folder into /public/ before running the React app.')
 
 
 if __name__ == '__main__':
