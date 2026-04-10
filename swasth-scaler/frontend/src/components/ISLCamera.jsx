@@ -1,14 +1,19 @@
 /**
  * ISLCamera.jsx
  * ─────────────────────────────────────────────────────────────────────────────
- * Core detection component. Manages:
- *   • Webcam access via HTML5 getUserMedia
- *   • MediaPipe Hands landmark detection (21 points per hand)
- *   • Canvas overlay drawing
- *   • Normalization → TF.js inference → smoothing → callback
+ * Full detection pipeline — webcam → MediaPipe → TF.js → callback.
  *
- * Props:
- *   onSymptomDetected(englishName: string) — called when a gesture is confirmed
+ * IMPORTANT — package versions that work together:
+ *   npm install @mediapipe/hands@0.4.1646424915
+ *   npm install @mediapipe/camera_utils@0.3.1640029074
+ *   npm install @tensorflow/tfjs@4.20.0
+ *   npm install @tensorflow/tfjs-backend-webgl@4.20.0
+ *
+ * Why these exact versions?
+ *   - @mediapipe/hands 0.4.x ships its own WASM/bin files and can self-host
+ *     them via locateFile → unpkg (correct JS MIME, unlike jsdelivr for WASM).
+ *   - @mediapipe/camera_utils handles getUserMedia + the rAF send loop so we
+ *     don't reinvent it or hit race conditions with video.readyState.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -16,128 +21,55 @@ import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { normalizeLandmarks } from '../utils/normalize'
 import { PredictionSmoother } from '../utils/smoothing'
 import { loadModel, predict } from '../utils/inferenceEngine'
+import { loadMediaPipeHands } from '../utils/loadMediaPipeHands'
 
-// ── visual constants ──────────────────────────────────────────────────────────
 const TEAL = '#0F6E56'
-const TEAL_LIGHT = 'rgba(15,110,86,0.15)'
-const CONFIDENCE_MIN = 0.80   // must exceed this to surface a prediction
-const LOCK_FRAMES = 18     // hold for N consecutive frames before firing
+const CONFIDENCE_MIN = 0.80
+const LOCK_FRAMES = 18   // frames a prediction must hold before firing
 
-// Finger connection pairs for canvas drawing (MediaPipe topology)
+// MediaPipe 21-landmark connection topology
 const CONNECTIONS = [
-  [0, 1], [1, 2], [2, 3], [3, 4],         // thumb
-  [0, 5], [5, 6], [6, 7], [7, 8],         // index
-  [0, 9], [9, 10], [10, 11], [11, 12],    // middle
-  [0, 13], [13, 14], [14, 15], [15, 16],  // ring
-  [0, 17], [17, 18], [18, 19], [19, 20],  // pinky
-  [5, 9], [9, 13], [13, 17],            // palm cross
+  [0, 1], [1, 2], [2, 3], [3, 4],
+  [0, 5], [5, 6], [6, 7], [7, 8],
+  [0, 9], [9, 10], [10, 11], [11, 12],
+  [0, 13], [13, 14], [14, 15], [15, 16],
+  [0, 17], [17, 18], [18, 19], [19, 20],
+  [5, 9], [9, 13], [13, 17],
 ]
 
 export default function ISLCamera({ onSymptomDetected }) {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
-  const handsRef = useRef(null)    // MediaPipe Hands instance
-  const modelRef = useRef(null)    // TF.js model
+  const modelRef = useRef(null)
   const smoothRef = useRef(new PredictionSmoother({ windowSize: 8 }))
-  const rafRef = useRef(null)    // requestAnimationFrame id
-  const lockRef = useRef({ label: null, count: 0 }) // consecutive-frame lock
-  const lastFire = useRef(null)    // last fired label (prevents repeat firing)
+  const lockRef = useRef({ label: null, count: 0 })
+  const lastFireRef = useRef(null)
 
-  const [status, setStatus] = useState('idle')   // idle | loading | ready | error
-  const [prediction, setPrediction] = useState(null)     // { label, confidence }
-  const [sentence, setSentence] = useState([])       // running sentence builder
+  const [status, setStatus] = useState('loading')   // loading | ready | no-model
+  const [prediction, setPrediction] = useState(null)
   const [handVisible, setHandVisible] = useState(false)
+  const [sentence, setSentence] = useState([])
 
-  // ── 1. Boot: load model + init MediaPipe ────────────────────────────────────
+  // ── Load TF.js model ────────────────────────────────────────────────────────
   useEffect(() => {
-    let cancelled = false
-
-    async function boot() {
-      setStatus('loading')
-      try {
-        // Load TF.js model from /public/tfjs_model/model.json
-        modelRef.current = await loadModel('/tfjs_model/model.json')
-
-        // Init MediaPipe Hands
-        const { Hands } = await import('@mediapipe/hands')
-        const hands = new Hands({
-          locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`,
-        })
-        hands.setOptions({
-          maxNumHands: 1,
-          modelComplexity: 1,
-          minDetectionConfidence: 0.7,
-          minTrackingConfidence: 0.6,
-        })
-        hands.onResults(onMediaPipeResults)
-        handsRef.current = hands
-
-        if (!cancelled) setStatus('ready')
-      } catch (err) {
-        console.error('[ISLCamera] boot error:', err)
-        if (!cancelled) setStatus('error')
-      }
-    }
-
-    boot()
-    return () => { cancelled = true }
+    loadModel('/tfjs_model/model.json')
+      .then(m => { modelRef.current = m; setStatus('ready') })
+      .catch(() => { setStatus('no-model') })
   }, [])
 
-  // ── 2. Start webcam once component mounts ───────────────────────────────────
-  useEffect(() => {
-    let stream = null
-
-    async function startCamera() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 640, height: 480, facingMode: 'user' },
-          audio: false,
-        })
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream
-          videoRef.current.play()
-        }
-      } catch (err) {
-        console.error('[ISLCamera] camera error:', err)
-        setStatus('error')
-      }
-    }
-
-    startCamera()
-    return () => {
-      if (stream) stream.getTracks().forEach(t => t.stop())
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
-  }, [])
-
-  // ── 3. rAF loop — feeds frames to MediaPipe ─────────────────────────────────
-  const tick = useCallback(async () => {
-    const video = videoRef.current
-    const hands = handsRef.current
-    if (video && hands && video.readyState >= 2) {
-      await hands.send({ image: video })
-    }
-    rafRef.current = requestAnimationFrame(tick)
-  }, [])
-
-  useEffect(() => {
-    if (status === 'ready') {
-      rafRef.current = requestAnimationFrame(tick)
-    }
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
-  }, [status, tick])
-
-  // ── 4. MediaPipe results handler ─────────────────────────────────────────────
-  const onMediaPipeResults = useCallback((results) => {
+  // ── MediaPipe results callback ──────────────────────────────────────────────
+  const onResults = useCallback((results) => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
-    const { width, height } = canvas
-
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height)
+    // Sync canvas internal resolution to its actual rendered size
+    const W = canvas.clientWidth || canvas.width
+    const H = canvas.clientHeight || canvas.height
+    if (canvas.width !== W || canvas.height !== H) {
+      canvas.width = W
+      canvas.height = H
+    }
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     if (!results.multiHandLandmarks?.length) {
       setHandVisible(false)
@@ -147,129 +79,157 @@ export default function ISLCamera({ onSymptomDetected }) {
     }
 
     setHandVisible(true)
-    const landmarks = results.multiHandLandmarks[0]  // first hand only
+    const lm = results.multiHandLandmarks[0]
+    drawSkeleton(ctx, lm, canvas.width, canvas.height)
 
-    // Draw skeleton overlay
-    drawLandmarks(ctx, landmarks, width, height)
+    if (!modelRef.current) return
 
-    // Normalize → predict
-    if (modelRef.current) {
-      const features = normalizeLandmarks(landmarks)  // Float32Array[63]
-      const result = predict(modelRef.current, features)  // { label, confidence }
+    const features = normalizeLandmarks(lm)
+    const raw = predict(modelRef.current, features)
+    const smoothed = smoothRef.current.update(raw)
+    setPrediction(smoothed)
 
-      // Smoothing filter
-      const smoothed = smoothRef.current.update(result)
-      setPrediction(smoothed)
-
-      // Consecutive-frame lock: only fire callback after LOCK_FRAMES stable frames
-      if (smoothed.confidence >= CONFIDENCE_MIN) {
-        const lock = lockRef.current
-        if (lock.label === smoothed.label) {
-          lock.count++
-          if (lock.count >= LOCK_FRAMES && lastFire.current !== smoothed.label) {
-            lastFire.current = smoothed.label
-            onSymptomDetected?.(smoothed.label)
-            // Reset so same sign can fire again after a gap
-            setTimeout(() => { lastFire.current = null }, 2500)
-          }
-        } else {
-          lockRef.current = { label: smoothed.label, count: 1 }
+    if (smoothed.confidence >= CONFIDENCE_MIN) {
+      const lock = lockRef.current
+      if (lock.label === smoothed.label) {
+        lock.count++
+        if (lock.count >= LOCK_FRAMES && lastFireRef.current !== smoothed.label) {
+          lastFireRef.current = smoothed.label
+          onSymptomDetected?.(smoothed.label)
+          setTimeout(() => { lastFireRef.current = null }, 2500)
         }
       } else {
-        lockRef.current = { label: null, count: 0 }
+        lockRef.current = { label: smoothed.label, count: 1 }
       }
+    } else {
+      lockRef.current = { label: null, count: 0 }
     }
   }, [onSymptomDetected])
 
-  // ── 5. Draw landmarks on canvas ──────────────────────────────────────────────
-  function drawLandmarks(ctx, landmarks, w, h) {
-    // Draw connections
-    ctx.strokeStyle = 'rgba(15,110,86,0.7)'
+  // ── Init webcam + MediaPipe Hands (dynamic import avoids Vite CJS issues) ───
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    let rafId = null
+    let handsInstance = null
+    let stream = null
+
+    async function init() {
+      // 1. Start webcam
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 640, height: 480, facingMode: 'user' },
+        audio: false,
+      })
+      video.srcObject = stream
+      await video.play()
+
+      // 2. Load MediaPipe Hands once (script-injected, cached across components)
+      const Hands = await loadMediaPipeHands()
+      handsInstance = new Hands({
+        locateFile: (file) =>
+          `https://unpkg.com/@mediapipe/hands@0.4.1646424915/${file}`,
+      })
+      handsInstance.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 1,
+        minDetectionConfidence: 0.7,
+        minTrackingConfidence: 0.6,
+      })
+      handsInstance.onResults(onResults)
+
+      // 3. rAF loop — send each frame to MediaPipe
+      async function tick() {
+        if (video.readyState >= 2) {
+          await handsInstance.send({ image: video })
+        }
+        rafId = requestAnimationFrame(tick)
+      }
+      rafId = requestAnimationFrame(tick)
+    }
+
+    init().catch(console.error)
+
+    return () => {
+      if (rafId) cancelAnimationFrame(rafId)
+      if (stream) stream.getTracks().forEach(t => t.stop())
+      if (handsInstance) handsInstance.close()
+    }
+  }, [onResults])
+
+  // ── Draw skeleton overlay ───────────────────────────────────────────────────
+  function drawSkeleton(ctx, lm, w, h) {
+    // Mirror X to match the flipped video display
+    const mx = (x) => (1 - x) * w
+    ctx.strokeStyle = 'rgba(15,110,86,0.75)'
     ctx.lineWidth = 2
     CONNECTIONS.forEach(([a, b]) => {
-      const pa = landmarks[a], pb = landmarks[b]
       ctx.beginPath()
-      ctx.moveTo(pa.x * w, pa.y * h)
-      ctx.lineTo(pb.x * w, pb.y * h)
+      ctx.moveTo(mx(lm[a].x), lm[a].y * h)
+      ctx.lineTo(mx(lm[b].x), lm[b].y * h)
       ctx.stroke()
     })
-
-    // Draw joint dots
-    landmarks.forEach((lm, i) => {
+    lm.forEach((p, i) => {
       ctx.beginPath()
-      ctx.arc(lm.x * w, lm.y * h, i === 0 ? 7 : 4, 0, Math.PI * 2)
+      ctx.arc(mx(p.x), p.y * h, i === 0 ? 7 : 4, 0, Math.PI * 2)
       ctx.fillStyle = i === 0 ? TEAL : 'rgba(15,110,86,0.9)'
       ctx.strokeStyle = '#fff'
       ctx.lineWidth = 1.5
-      ctx.fill()
-      ctx.stroke()
+      ctx.fill(); ctx.stroke()
     })
   }
 
-  // ── 6. Sentence builder helpers ───────────────────────────────────────────────
-  const addToSentence = () => {
-    if (prediction?.label) {
-      setSentence(prev => [...prev, prediction.label])
-    }
-  }
-  const clearSentence = () => setSentence([])
-  const speakSentence = () => {
+  // ── Sentence builder helpers ────────────────────────────────────────────────
+  const confirmed = prediction?.confidence >= CONFIDENCE_MIN ? prediction : null
+
+  const addWord = () => { if (confirmed) setSentence(p => [...p, confirmed.label]) }
+  const clear = () => setSentence([])
+  const speak = () => {
     if (!sentence.length) return
-    const text = sentence.join(' ')
-    const utt = new SpeechSynthesisUtterance(text)
-    utt.rate = 0.9
-    window.speechSynthesis.speak(utt)
+    const u = new SpeechSynthesisUtterance(sentence.join(' '))
+    u.rate = 0.9
+    window.speechSynthesis.speak(u)
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────────
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
 
       {/* Camera card */}
       <div style={{
         position: 'relative', borderRadius: 20, overflow: 'hidden',
-        background: '#0f172a', boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
-        aspectRatio: '4/3', maxHeight: 420,
+        background: '#0f172a', aspectRatio: '4/3', maxHeight: 420,
       }}>
-        {/* Mirrored video */}
+        {/* Video is mirrored so it feels like a mirror to the user */}
         <video
           ref={videoRef}
           style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }}
           muted playsInline
         />
-
-        {/* Canvas overlay — must match video dimensions */}
+        {/* Canvas overlay — X coords are flipped in drawSkeleton to match mirrored video */}
         <canvas
-          ref={canvasRef}
-          width={640} height={480}
+          ref={canvasRef} width={640} height={480}
           style={{
-            position: 'absolute', inset: 0, width: '100%', height: '100%',
-            transform: 'scaleX(-1)',   // mirror to match video
+            position: 'absolute', inset: 0,
+            width: '100%', height: '100%',
             pointerEvents: 'none',
           }}
         />
-
-        {/* Status badge */}
         <StatusBadge status={status} handVisible={handVisible} />
-
-        {/* Prediction overlay */}
-        {prediction && prediction.confidence >= CONFIDENCE_MIN && (
+        {confirmed && (
           <PredictionOverlay
-            label={prediction.label}
-            confidence={prediction.confidence}
+            label={confirmed.label}
+            confidence={confirmed.confidence}
             lockCount={lockRef.current.count}
             lockMax={LOCK_FRAMES}
           />
         )}
       </div>
 
-      {/* Sentence builder bar */}
-      <SentenceBuilder
+      {/* Sentence builder */}
+      <SentenceBar
         sentence={sentence}
-        onAdd={addToSentence}
-        onClear={clearSentence}
-        onSpeak={speakSentence}
-        currentLabel={prediction?.confidence >= CONFIDENCE_MIN ? prediction.label : null}
+        currentLabel={confirmed?.label ?? null}
+        onAdd={addWord} onClear={clear} onSpeak={speak}
       />
     </div>
   )
@@ -278,14 +238,10 @@ export default function ISLCamera({ onSymptomDetected }) {
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatusBadge({ status, handVisible }) {
-  const map = {
-    idle: { color: '#64748b', text: 'Initialising…' },
-    loading: { color: '#f59e0b', text: 'Loading model…' },
-    ready: { color: handVisible ? '#0F6E56' : '#64748b', text: handVisible ? 'Hand detected' : 'Show your hand' },
-    error: { color: '#ef4444', text: 'Error — check console' },
-  }
-  const { color, text } = map[status] || map.idle
-
+  const cfg = status === 'loading' ? { dot: '#f59e0b', text: 'Loading model…' }
+    : status === 'no-model' ? { dot: '#ef4444', text: 'No model — run training first' }
+      : handVisible ? { dot: TEAL, text: '● Hand detected' }
+        : { dot: '#64748b', text: 'Show your hand' }
   return (
     <div style={{
       position: 'absolute', top: 12, left: 12,
@@ -294,76 +250,72 @@ function StatusBadge({ status, handVisible }) {
       display: 'flex', alignItems: 'center', gap: 7,
     }}>
       <span style={{
-        width: 8, height: 8, borderRadius: '50%', background: color, display: 'inline-block',
-        boxShadow: status === 'ready' && handVisible ? `0 0 0 3px ${color}44` : 'none'
+        width: 8, height: 8, borderRadius: '50%', background: cfg.dot, display: 'inline-block',
+        boxShadow: handVisible && status === 'ready' ? `0 0 0 3px ${TEAL}44` : 'none',
       }} />
-      <span style={{ color: '#e2e8f0', fontSize: '0.72rem', fontWeight: 600 }}>{text}</span>
+      <span style={{ color: '#e2e8f0', fontSize: '0.72rem', fontWeight: 600 }}>{cfg.text}</span>
     </div>
   )
 }
 
 function PredictionOverlay({ label, confidence, lockCount, lockMax }) {
   const pct = Math.min(lockCount / lockMax, 1)
-  const isReady = pct >= 1
-
+  const locked = pct >= 1
   return (
     <div style={{
       position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)',
-      background: isReady ? 'rgba(15,110,86,0.92)' : 'rgba(0,0,0,0.65)',
-      backdropFilter: 'blur(8px)',
-      borderRadius: 16, padding: '10px 22px', textAlign: 'center',
-      minWidth: 180, transition: 'background 0.3s',
+      background: locked ? 'rgba(15,110,86,0.92)' : 'rgba(0,0,0,0.65)',
+      backdropFilter: 'blur(8px)', borderRadius: 16,
+      padding: '10px 22px', textAlign: 'center', minWidth: 180,
+      transition: 'background 0.3s',
     }}>
-      <div style={{ color: '#fff', fontWeight: 900, fontSize: '1.3rem', letterSpacing: '0.05em' }}>{label}</div>
+      <div style={{ color: '#fff', fontWeight: 900, fontSize: '1.3rem', letterSpacing: '0.05em' }}>
+        {label}
+      </div>
       <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.7rem', marginTop: 2 }}>
         {(confidence * 100).toFixed(0)}% confidence
       </div>
-      {/* Lock progress bar */}
       <div style={{ marginTop: 6, height: 3, background: 'rgba(255,255,255,0.2)', borderRadius: 2 }}>
         <div style={{
-          height: '100%', borderRadius: 2,
-          width: `${pct * 100}%`, background: '#fff',
-          transition: 'width 0.1s linear',
+          height: '100%', borderRadius: 2, background: '#fff',
+          width: `${pct * 100}%`, transition: 'width 0.1s linear',
         }} />
       </div>
     </div>
   )
 }
 
-function SentenceBuilder({ sentence, onAdd, onClear, onSpeak, currentLabel }) {
+function SentenceBar({ sentence, currentLabel, onAdd, onClear, onSpeak }) {
   return (
     <div style={{
       background: '#fff', borderRadius: 16, padding: '1rem 1.25rem',
       border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '0.75rem',
     }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.06em' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+        <span style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', letterSpacing: '0.06em' }}>
           SENTENCE BUILDER
         </span>
-        <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={onAdd} disabled={!currentLabel} style={btnStyle('#0F6E56', !currentLabel)}>
-            + Add "{currentLabel || '…'}"
-          </button>
-          <button onClick={onSpeak} disabled={!sentence.length} style={btnStyle('#3b82f6', !sentence.length)}>
-            🔊 Speak
-          </button>
-          <button onClick={onClear} disabled={!sentence.length} style={btnStyle('#ef4444', !sentence.length)}>
-            Clear
-          </button>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          <Btn onClick={onAdd} disabled={!currentLabel} bg="#0F6E56">
+            + Add {currentLabel ? `"${currentLabel}"` : '…'}
+          </Btn>
+          <Btn onClick={onSpeak} disabled={!sentence.length} bg="#3b82f6">🔊 Speak</Btn>
+          <Btn onClick={onClear} disabled={!sentence.length} bg="#ef4444">Clear</Btn>
         </div>
       </div>
-
       <div style={{
         minHeight: 44, background: '#f8fafc', borderRadius: 10,
         padding: '0.6rem 1rem', display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center',
       }}>
         {sentence.length === 0
-          ? <span style={{ color: '#94a3b8', fontSize: '0.85rem' }}>Hold a sign to detect → click "Add" to build sentence</span>
-          : sentence.map((word, i) => (
+          ? <span style={{ color: '#94a3b8', fontSize: '0.82rem' }}>
+            Hold a sign to detect → click "Add" to build a sentence
+          </span>
+          : sentence.map((w, i) => (
             <span key={i} style={{
               background: 'rgba(15,110,86,0.12)', color: '#0F6E56',
               borderRadius: 8, padding: '3px 10px', fontWeight: 700, fontSize: '0.85rem',
-            }}>{word}</span>
+            }}>{w}</span>
           ))
         }
       </div>
@@ -371,13 +323,14 @@ function SentenceBuilder({ sentence, onAdd, onClear, onSpeak, currentLabel }) {
   )
 }
 
-function btnStyle(bg, disabled) {
-  return {
-    background: disabled ? '#e2e8f0' : bg,
-    color: disabled ? '#94a3b8' : '#fff',
-    border: 'none', borderRadius: 8,
-    padding: '5px 12px', fontSize: '0.72rem', fontWeight: 700,
-    cursor: disabled ? 'not-allowed' : 'pointer',
-    transition: 'opacity 0.2s',
-  }
+function Btn({ onClick, disabled, bg, children }) {
+  return (
+    <button onClick={onClick} disabled={disabled} style={{
+      background: disabled ? '#e2e8f0' : bg,
+      color: disabled ? '#94a3b8' : '#fff',
+      border: 'none', borderRadius: 8, padding: '5px 12px',
+      fontSize: '0.72rem', fontWeight: 700,
+      cursor: disabled ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap',
+    }}>{children}</button>
+  )
 }

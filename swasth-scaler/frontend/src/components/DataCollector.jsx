@@ -1,23 +1,23 @@
 /**
  * DataCollector.jsx
  * ─────────────────────────────────────────────────────────────────────────────
- * Standalone tool for capturing hand-landmark training data.
- * Use this to build / expand your gesture dataset before training.
+ * Capture & label hand-landmark data for training.
+ *
+ * Route: add  <Route path="/data-collector" element={<DataCollector/>}/>
+ *        to your router (App.jsx / router config) temporarily.
  *
  * Workflow:
- *   1. Select a gesture class (e.g. "FEVER")
- *   2. Hold the sign in front of the camera
- *   3. Click "Capture sample" (or press Space) → saves normalised features
- *   4. Repeat for all classes
- *   5. Click "Export JSON" → downloads training_data.json
- *
- * The exported JSON has shape:
- *   { "FEVER": [[f0,f1,…,f62], …], "COUGH": [[…], …], … }
+ *   1. Select a class (e.g. FEVER)
+ *   2. Hold the sign — skeleton confirms detection
+ *   3. Press Space or click "Capture" — saves the 63-feature vector
+ *   4. Aim for ≥ 150 samples per class
+ *   5. Export → training_data.json → run train_model.py
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { normalizeLandmarks } from '../utils/normalize'
+import { loadMediaPipeHands } from '../utils/loadMediaPipeHands'
 
 const TEAL = '#0F6E56'
 const CLASS_LIST = ['FEVER', 'COUGH', 'PAIN', 'VOMIT', 'WEAKNESS', 'DIZZINESS', 'BREATHLESS']
@@ -34,219 +34,230 @@ const CONNECTIONS = [
 export default function DataCollector() {
   const videoRef = useRef(null)
   const canvasRef = useRef(null)
-  const handsRef = useRef(null)
-  const latestRef = useRef(null)    // latest detected landmarks
-  const rafRef = useRef(null)
+  const latestLm = useRef(null)   // last detected landmarks
 
   const [selectedClass, setSelectedClass] = useState('FEVER')
-  const [data, setData] = useState({})  // { className: [[…],…] }
-  const [flash, setFlash] = useState(false)
+  const [data, setData] = useState({})
   const [handReady, setHandReady] = useState(false)
+  const [flash, setFlash] = useState(false)
 
-  // Count per class
-  const counts = CLASS_LIST.reduce((acc, c) => ({
-    ...acc, [c]: (data[c] || []).length,
-  }), {})
+  const counts = CLASS_LIST.reduce((a, c) => ({ ...a, [c]: (data[c]?.length || 0) }), {})
+  const total = Object.values(counts).reduce((s, n) => s + n, 0)
 
-  // ── Boot camera + MediaPipe ──────────────────────────────────────────────────
+  // ── MediaPipe results ────────────────────────────────────────────────────────
+  const onResults = useCallback((results) => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    const video = videoRef.current
+
+    // Sync canvas to the video's actual rendered pixel size (not the container)
+    const W = video ? video.clientWidth : canvas.clientWidth
+    const H = video ? video.clientHeight : canvas.clientHeight
+    if (canvas.width !== W || canvas.height !== H) {
+      canvas.width = W
+      canvas.height = H
+    }
+    ctx.clearRect(0, 0, W, H)
+
+    if (!results.multiHandLandmarks?.length) {
+      setHandReady(false); latestLm.current = null; return
+    }
+    const lm = results.multiHandLandmarks[0]
+    setHandReady(true); latestLm.current = lm
+
+    // Draw skeleton — mirror X to match the flipped video display
+    const mx = (x) => (1 - x) * W
+    ctx.strokeStyle = 'rgba(15,110,86,0.8)'; ctx.lineWidth = 2
+    CONNECTIONS.forEach(([a, b]) => {
+      ctx.beginPath()
+      ctx.moveTo(mx(lm[a].x), lm[a].y * H)
+      ctx.lineTo(mx(lm[b].x), lm[b].y * H)
+      ctx.stroke()
+    })
+    lm.forEach((p, i) => {
+      ctx.beginPath()
+      ctx.arc(mx(p.x), p.y * H, i === 0 ? 6 : 3.5, 0, Math.PI * 2)
+      ctx.fillStyle = i === 0 ? TEAL : 'rgba(15,110,86,0.9)'
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5
+      ctx.fill(); ctx.stroke()
+    })
+  }, [])
+
+  // ── Init webcam + MediaPipe (dynamic import avoids Vite CJS issues) ───────
   useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    let rafId = null
+    let handsInstance = null
     let stream = null
 
     async function init() {
       stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: 640, height: 480 },
-        audio: false,
+        video: { width: 640, height: 480 }, audio: false,
       })
-      videoRef.current.srcObject = stream
-      videoRef.current.play()
+      video.srcObject = stream
+      await video.play()
 
-      const { Hands } = await import('@mediapipe/hands')
-      const hands = new Hands({
-        locateFile: f => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`,
+      const Hands = await loadMediaPipeHands()
+      handsInstance = new Hands({
+        locateFile: (file) =>
+          `https://unpkg.com/@mediapipe/hands@0.4.1646424915/${file}`,
       })
-      hands.setOptions({
+      handsInstance.setOptions({
         maxNumHands: 1, modelComplexity: 1,
-        minDetectionConfidence: 0.7, minTrackingConfidence: 0.6
+        minDetectionConfidence: 0.7, minTrackingConfidence: 0.6,
       })
-      hands.onResults((results) => {
-        const canvas = canvasRef.current
-        if (!canvas) return
-        const ctx = canvas.getContext('2d')
-        ctx.clearRect(0, 0, canvas.width, canvas.height)
+      handsInstance.onResults(onResults)
 
-        if (results.multiHandLandmarks?.length) {
-          setHandReady(true)
-          latestRef.current = results.multiHandLandmarks[0]
-          drawSkeleton(ctx, latestRef.current, canvas.width, canvas.height)
-        } else {
-          setHandReady(false)
-          latestRef.current = null
-        }
-      })
-      handsRef.current = hands
+      async function tick() {
+        if (video.readyState >= 2) await handsInstance.send({ image: video })
+        rafId = requestAnimationFrame(tick)
+      }
+      rafId = requestAnimationFrame(tick)
     }
 
     init().catch(console.error)
 
     return () => {
+      if (rafId) cancelAnimationFrame(rafId)
       if (stream) stream.getTracks().forEach(t => t.stop())
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+      if (handsInstance) handsInstance.close()
     }
-  }, [])
+  }, [onResults])
 
-  // ── rAF loop ─────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    function tick() {
-      const v = videoRef.current, h = handsRef.current
-      if (v && h && v.readyState >= 2) h.send({ image: v })
-      rafRef.current = requestAnimationFrame(tick)
-    }
-    rafRef.current = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafRef.current)
-  }, [])
-
-  // ── Capture one sample ────────────────────────────────────────────────────────
+  // ── Capture ─────────────────────────────────────────────────────────────────
   const capture = useCallback(() => {
-    if (!latestRef.current) return
-    const features = normalizeLandmarks(latestRef.current)
+    if (!latestLm.current) return
+    const features = normalizeLandmarks(latestLm.current)
     setData(prev => ({
       ...prev,
       [selectedClass]: [...(prev[selectedClass] || []), Array.from(features)],
     }))
-    // Flash visual feedback
     setFlash(true)
-    setTimeout(() => setFlash(false), 150)
+    setTimeout(() => setFlash(false), 120)
   }, [selectedClass])
 
   // Space bar shortcut
   useEffect(() => {
-    const handler = (e) => { if (e.code === 'Space') { e.preventDefault(); capture() } }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
+    const h = (e) => { if (e.code === 'Space') { e.preventDefault(); capture() } }
+    window.addEventListener('keydown', h)
+    return () => window.removeEventListener('keydown', h)
   }, [capture])
 
-  // ── Export ────────────────────────────────────────────────────────────────────
+  // ── Export JSON ──────────────────────────────────────────────────────────────
   const exportJSON = () => {
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'training_data.json'
-    a.click()
+    Object.assign(document.createElement('a'), { href: url, download: 'training_data.json' }).click()
     URL.revokeObjectURL(url)
   }
 
-  // ── Skeleton drawing ──────────────────────────────────────────────────────────
-  function drawSkeleton(ctx, landmarks, w, h) {
-    ctx.strokeStyle = 'rgba(15,110,86,0.8)'
-    ctx.lineWidth = 2
-    CONNECTIONS.forEach(([a, b]) => {
-      ctx.beginPath()
-      ctx.moveTo(landmarks[a].x * w, landmarks[a].y * h)
-      ctx.lineTo(landmarks[b].x * w, landmarks[b].y * h)
-      ctx.stroke()
-    })
-    landmarks.forEach((lm, i) => {
-      ctx.beginPath()
-      ctx.arc(lm.x * w, lm.y * h, i === 0 ? 6 : 3.5, 0, Math.PI * 2)
-      ctx.fillStyle = i === 0 ? TEAL : 'rgba(15,110,86,0.9)'
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5
-      ctx.fill(); ctx.stroke()
-    })
-  }
-
-  const total = Object.values(counts).reduce((s, n) => s + n, 0)
-
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', padding: '1.5rem', fontFamily: 'Inter, system-ui, sans-serif' }}>
-      <h2 style={{ color: TEAL, fontWeight: 900, fontSize: '1.4rem', marginBottom: '1.25rem' }}>
-        Data Collection Tool
-      </h2>
+    <div style={{
+      minHeight: '100vh', background: '#f8fafc', padding: '1.5rem',
+      fontFamily: 'Inter, system-ui, sans-serif',
+    }}>
+      <div style={{ maxWidth: 900, margin: '0 auto' }}>
+        <h2 style={{ color: TEAL, fontWeight: 900, fontSize: '1.5rem', marginBottom: '1.5rem' }}>
+          Data Collection Tool
+        </h2>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '1.5rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: '1.5rem' }}>
 
-        {/* Camera */}
-        <div style={{ position: 'relative', borderRadius: 16, overflow: 'hidden', background: '#0f172a' }}>
-          <video ref={videoRef} style={{ width: '100%', transform: 'scaleX(-1)', display: 'block' }} muted playsInline />
-          <canvas ref={canvasRef} width={640} height={480}
-            style={{
-              position: 'absolute', inset: 0, width: '100%', height: '100%',
-              transform: 'scaleX(-1)', pointerEvents: 'none'
-            }} />
-          {flash && (
-            <div style={{
-              position: 'absolute', inset: 0, background: 'rgba(15,110,86,0.35)',
-              borderRadius: 16, pointerEvents: 'none'
-            }} />
-          )}
-          <div style={{
-            position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)',
-            background: 'rgba(0,0,0,0.6)', borderRadius: 12, padding: '6px 16px',
-            color: handReady ? '#4ade80' : '#94a3b8', fontSize: '0.75rem', fontWeight: 700
-          }}>
-            {handReady ? '✓ Hand detected' : 'Show your hand'}
-          </div>
-        </div>
-
-        {/* Controls */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-
-          {/* Class selector */}
-          <div>
-            <label style={{
-              fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8',
-              letterSpacing: '0.05em', display: 'block', marginBottom: 6
-            }}>SELECT CLASS</label>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {CLASS_LIST.map(cls => (
-                <button key={cls} onClick={() => setSelectedClass(cls)} style={{
-                  padding: '8px 14px', borderRadius: 10, fontWeight: 700, fontSize: '0.8rem',
-                  cursor: 'pointer', border: '1.5px solid',
-                  borderColor: selectedClass === cls ? TEAL : '#e2e8f0',
-                  background: selectedClass === cls ? 'rgba(15,110,86,0.1)' : '#fff',
-                  color: selectedClass === cls ? TEAL : '#475569',
-                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                }}>
-                  <span>{cls}</span>
-                  <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '0.7rem' }}>
-                    {counts[cls]} samples
-                  </span>
-                </button>
-              ))}
+          {/* Camera — video + canvas wrapped together so canvas covers exactly the video */}
+          <div style={{ borderRadius: 16, overflow: 'hidden', background: '#0f172a' }}>
+            <div style={{ position: 'relative', width: '100%' }}>
+              <video ref={videoRef}
+                style={{ width: '100%', display: 'block', transform: 'scaleX(-1)' }}
+                muted playsInline
+              />
+              <canvas ref={canvasRef} width={640} height={480} style={{
+                position: 'absolute', top: 0, left: 0,
+                width: '100%', height: '100%',
+                pointerEvents: 'none',
+              }} />
+              {/* Flash overlay on capture */}
+              {flash && (
+                <div style={{
+                  position: 'absolute', inset: 0, background: 'rgba(15,110,86,0.35)',
+                  pointerEvents: 'none',
+                }} />
+              )}
+              <div style={{
+                position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)',
+                background: 'rgba(0,0,0,0.6)', borderRadius: 12, padding: '6px 16px',
+                color: handReady ? '#4ade80' : '#94a3b8', fontSize: '0.75rem', fontWeight: 700,
+              }}>
+                {handReady ? '✓ Hand detected' : 'Show your hand'}
+              </div>
             </div>
           </div>
 
-          {/* Capture button */}
-          <button onClick={capture} disabled={!handReady} style={{
-            padding: '12px', borderRadius: 12, fontWeight: 800, fontSize: '0.9rem',
-            background: handReady ? TEAL : '#e2e8f0',
-            color: handReady ? '#fff' : '#94a3b8',
-            border: 'none', cursor: handReady ? 'pointer' : 'not-allowed',
-          }}>
-            📸 Capture sample
-            <div style={{ fontSize: '0.65rem', fontWeight: 400, marginTop: 2, opacity: 0.8 }}>
-              or press Space
-            </div>
-          </button>
+          {/* Controls */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
 
-          {/* Stats */}
-          <div style={{ background: '#f8fafc', borderRadius: 10, padding: '10px 14px' }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8', marginBottom: 6 }}>
-              DATASET STATS
+            {/* Class selector */}
+            <div>
+              <div style={{
+                fontSize: '0.72rem', fontWeight: 700, color: '#94a3b8',
+                letterSpacing: '0.05em', marginBottom: 6
+              }}>SELECT CLASS</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                {CLASS_LIST.map(cls => (
+                  <button key={cls} onClick={() => setSelectedClass(cls)} style={{
+                    padding: '7px 12px', borderRadius: 9, fontWeight: 700,
+                    fontSize: '0.78rem', cursor: 'pointer',
+                    border: '1.5px solid',
+                    borderColor: selectedClass === cls ? TEAL : '#e2e8f0',
+                    background: selectedClass === cls ? 'rgba(15,110,86,0.1)' : '#fff',
+                    color: selectedClass === cls ? TEAL : '#475569',
+                    display: 'flex', justifyContent: 'space-between',
+                  }}>
+                    <span>{cls}</span>
+                    <span style={{ fontWeight: 400, color: '#94a3b8', fontSize: '0.68rem' }}>
+                      {counts[cls]}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: TEAL }}>{total}</div>
-            <div style={{ fontSize: '0.72rem', color: '#64748b' }}>total samples</div>
+
+            {/* Capture */}
+            <button onClick={capture} disabled={!handReady} style={{
+              padding: '11px', borderRadius: 11, fontWeight: 800, fontSize: '0.88rem',
+              background: handReady ? TEAL : '#e2e8f0',
+              color: handReady ? '#fff' : '#94a3b8',
+              border: 'none', cursor: handReady ? 'pointer' : 'not-allowed',
+            }}>
+              📸 Capture sample
+              <div style={{ fontSize: '0.62rem', fontWeight: 400, marginTop: 2, opacity: 0.75 }}>
+                or press Space
+              </div>
+            </button>
+
+            {/* Stats */}
+            <div style={{ background: '#f8fafc', borderRadius: 10, padding: '10px 12px' }}>
+              <div style={{ fontSize: '0.68rem', fontWeight: 700, color: '#94a3b8', marginBottom: 4 }}>
+                DATASET TOTAL
+              </div>
+              <div style={{ fontSize: '1.6rem', fontWeight: 900, color: TEAL, lineHeight: 1 }}>
+                {total}
+              </div>
+              <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: 2 }}>samples</div>
+            </div>
+
+            {/* Export */}
+            <button onClick={exportJSON} disabled={total === 0} style={{
+              padding: '9px', borderRadius: 10, fontWeight: 700, fontSize: '0.78rem',
+              background: total > 0 ? '#1e293b' : '#e2e8f0',
+              color: total > 0 ? '#fff' : '#94a3b8',
+              border: 'none', cursor: total > 0 ? 'pointer' : 'not-allowed',
+            }}>
+              ⬇ Export training_data.json
+            </button>
           </div>
-
-          {/* Export */}
-          <button onClick={exportJSON} disabled={total === 0} style={{
-            padding: '10px', borderRadius: 10, fontWeight: 700, fontSize: '0.8rem',
-            background: total > 0 ? '#1e293b' : '#e2e8f0',
-            color: total > 0 ? '#fff' : '#94a3b8',
-            border: 'none', cursor: total > 0 ? 'pointer' : 'not-allowed',
-          }}>
-            ⬇️ Export training_data.json
-          </button>
         </div>
       </div>
     </div>
