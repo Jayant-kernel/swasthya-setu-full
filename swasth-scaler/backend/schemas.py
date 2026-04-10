@@ -38,3 +38,5 @@ class TriageCreate(BaseModel):
     sickle_cell_risk: bool
     brief: str
     district: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None

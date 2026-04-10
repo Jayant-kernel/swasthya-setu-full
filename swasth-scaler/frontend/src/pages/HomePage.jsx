@@ -2,14 +2,15 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import ProfileOverlay from '../components/ProfileOverlay.jsx'
+import logo from '../images/logo/logo.png'
 
 /* ── Constants ─────────────────────────────────────────── */
 const ALL_DISTRICTS = [
-  "Ahilyanagar","Akola","Amravati","Beed","Bhandara","Buldhana","Chandrapur",
-  "Chhatrapati Sambhajinagar","Dharashiv","Dhule","Gadchiroli","Gondia","Hingoli",
-  "Jalgaon","Jalna","Kolhapur","Latur","Mumbai City","Mumbai Suburban","Nagpur",
-  "Nanded","Nandurbar","Nashik","Palghar","Parbhani","Pune","Raigad","Ratnagiri",
-  "Sangli","Satara","Sindhudurg","Solapur","Thane","Wardha","Washim","Yavatmal",
+  "Ahilyanagar", "Akola", "Amravati", "Beed", "Bhandara", "Buldhana", "Chandrapur",
+  "Chhatrapati Sambhajinagar", "Dharashiv", "Dhule", "Gadchiroli", "Gondia", "Hingoli",
+  "Jalgaon", "Jalna", "Kolhapur", "Latur", "Mumbai City", "Mumbai Suburban", "Nagpur",
+  "Nanded", "Nandurbar", "Nashik", "Palghar", "Parbhani", "Pune", "Raigad", "Ratnagiri",
+  "Sangli", "Satara", "Sindhudurg", "Solapur", "Thane", "Wardha", "Washim", "Yavatmal",
 ]
 const SEVERITY_ORDER = { red: 0, yellow: 1, green: 2 }
 
@@ -30,9 +31,9 @@ function formatDate(iso) {
 
 /* ── Sidebar nav items ─────────────────────────────────── */
 const NAV_ITEMS = [
-  { id: 'home',    label: 'Dashboard',     icon: GridIcon,    path: '/home' },
-  { id: 'patient', label: 'New Patient',   icon: PatientIcon, path: '/patient' },
-  { id: 'chat',    label: 'AI Chat',       icon: ChatIcon,    path: '/chat' },
+  { id: 'home', label: 'Dashboard', icon: GridIcon, path: '/home' },
+  { id: 'patient', label: 'New Patient', icon: PatientIcon, path: '/patient' },
+  { id: 'chat', label: 'AI Chat', icon: ChatIcon, path: '/chat' },
 ]
 
 const DISTRICT_GROUPS = [
@@ -45,56 +46,64 @@ const DISTRICT_GROUPS = [
 function GridIcon({ size = 16, color = 'currentColor', active }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill={active ? color : "none"} stroke={color} strokeWidth={active ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-      <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+      <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+      <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
     </svg>
   )
 }
 function PatientIcon({ size = 16, color = 'currentColor', active }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={active ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-      <circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="16" y1="11" x2="22" y2="11" />
     </svg>
   )
 }
 function ListIcon({ size = 16, color = 'currentColor' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
-      <circle cx="3" cy="6" r="1" fill={color}/><circle cx="3" cy="12" r="1" fill={color}/><circle cx="3" cy="18" r="1" fill={color}/>
+      <line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" />
+      <circle cx="3" cy="6" r="1" fill={color} /><circle cx="3" cy="12" r="1" fill={color} /><circle cx="3" cy="18" r="1" fill={color} />
     </svg>
   )
 }
 function ChatIcon({ size = 16, color = 'currentColor', active }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill={active ? color : "none"} stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  )
+}
+function ProfileIcon({ size = 16, color = 'currentColor', active }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill={active ? color : "none"} stroke={color} strokeWidth={active ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
     </svg>
   )
 }
 function HandIcon({ size = 16, color = 'currentColor' }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0"/>
-      <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2"/>
-      <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8"/>
-      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+      <path d="M18 11V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v0" />
+      <path d="M14 10V4a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v2" />
+      <path d="M10 10.5V6a2 2 0 0 0-2-2v0a2 2 0 0 0-2 2v8" />
+      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" />
     </svg>
   )
 }
 function SearchIcon({ size = 16 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
     </svg>
   )
 }
 function BellIcon({ size = 20 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+      <path d="M13.73 21a2 2 0 0 1-3.46 0" />
     </svg>
   )
 }
@@ -102,30 +111,30 @@ function ChevronIcon({ size = 14, dir = 'right' }) {
   const r = dir === 'right' ? 0 : dir === 'down' ? 90 : 180
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: `rotate(${r}deg)` }}>
-      <polyline points="9 18 15 12 9 6"/>
+      <polyline points="9 18 15 12 9 6" />
     </svg>
   )
 }
 function FilterIcon({ size = 15 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+      <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
     </svg>
   )
 }
 function TrashIcon({ size = 13 }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+      <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" />
     </svg>
   )
 }
 
 /* ── Severity helpers ──────────────────────────────────── */
 const SEV_META = {
-  red:    { label: 'Emergency', color: '#ef4444', bg: '#fef2f2', border: '#fecaca' },
-  yellow: { label: 'Moderate',  color: '#f59e0b', bg: '#fffbeb', border: '#fde68a' },
-  green:  { label: 'Stable',    color: '#10b981', bg: '#f0fdf4', border: '#bbf7d0' },
+  red: { label: 'Emergency', color: '#ef4444', bg: '#fef2f2', border: '#fecaca' },
+  yellow: { label: 'Moderate', color: '#f59e0b', bg: '#fffbeb', border: '#fde68a' },
+  green: { label: 'Stable', color: '#10b981', bg: '#f0fdf4', border: '#bbf7d0' },
 }
 
 function SeverityPill({ severity }) {
@@ -147,7 +156,7 @@ function SeverityPill({ severity }) {
 function PriorityBadge({ severity }) {
   const labels = { red: 'High', yellow: 'Medium', green: 'Low' }
   const colors = { red: '#ef4444', yellow: '#f59e0b', green: '#10b981' }
-  const bgs    = { red: '#fef2f2', yellow: '#fffbeb', green: '#f0fdf4' }
+  const bgs = { red: '#fef2f2', yellow: '#fffbeb', green: '#f0fdf4' }
   const label = labels[severity] || '—'
   return (
     <span style={{
@@ -163,7 +172,7 @@ function PriorityBadge({ severity }) {
    Main Page
    ══════════════════════════════════════════════════════════ */
 const ThemeMorphIcon = ({ isDark, color, idSuffix }) => (
-  <svg 
+  <svg
     width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
     style={{
       color: color,
@@ -173,21 +182,21 @@ const ThemeMorphIcon = ({ isDark, color, idSuffix }) => (
   >
     <mask id={`moon-mask-${idSuffix}`}>
       <rect x="0" y="0" width="100%" height="100%" fill="white" />
-      <circle 
-        cx={isDark ? "15" : "28"} 
-        cy={isDark ? "6" : "-8"} 
-        r="8" fill="black" 
-        style={{ transition: 'cx 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), cy 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)' }} 
+      <circle
+        cx={isDark ? "15" : "28"}
+        cy={isDark ? "6" : "-8"}
+        r="8" fill="black"
+        style={{ transition: 'cx 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), cy 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)' }}
       />
     </mask>
-    <circle 
-      cx="12" cy="12" 
-      r={isDark ? "9" : "5"} 
+    <circle
+      cx="12" cy="12"
+      r={isDark ? "9" : "5"}
       mask={`url(#moon-mask-${idSuffix})`}
       fill={isDark ? "currentColor" : "transparent"}
-      style={{ 
-        transition: 'r 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), fill 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)' 
-      }} 
+      style={{
+        transition: 'r 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), fill 0.5s cubic-bezier(0.4, 0.0, 0.2, 1)'
+      }}
     />
     <g style={{
       transform: isDark ? 'scale(0)' : 'scale(1)',
@@ -212,22 +221,21 @@ export default function HomePage() {
   const location = useLocation()
   const { user, logout } = useAuth()
 
-  const [activeTab,      setActiveTab]      = useState('ALL')
-  const [viewTab,        setViewTab]        = useState('Table')   // Table | Board
-  const [sortMode,       setSortMode]       = useState('latest')
-  const [query,          setQuery]          = useState('')
+  const [activeTab, setActiveTab] = useState('ALL')
+  const [viewTab, setViewTab] = useState('Table')   // Table | Board
+  const [sortMode, setSortMode] = useState('latest')
+  const [query, setQuery] = useState('')
   const [districtFilter, setDistrictFilter] = useState('')
-  const [sidebarOpen,    setSidebarOpen]    = useState(true)
-  const [showProfile,    setShowProfile]    = useState(false)
-  const [theme,          setTheme]          = useState(localStorage.getItem('theme') || 'light')
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
   const debounceRef = useRef(null)
 
   const [patientResults, setPatientResults] = useState([])
-  const [loading,        setLoading]        = useState(false)
-  const [totalCount,     setTotalCount]     = useState(0)
-  const [showCount,      setShowCount]      = useState(50)
-  const [dashError,      setDashError]      = useState(null)
-  const [summaryCounts,  setSummaryCounts]  = useState({ red: 0, yellow: 0, green: 0 })
+  const [loading, setLoading] = useState(false)
+  const [totalCount, setTotalCount] = useState(0)
+  const [showCount, setShowCount] = useState(50)
+  const [dashError, setDashError] = useState(null)
+  const [summaryCounts, setSummaryCounts] = useState({ red: 0, yellow: 0, green: 0 })
 
   // Theme sync
   useEffect(() => {
@@ -236,9 +244,11 @@ export default function HomePage() {
   }, [theme])
 
   // Prompt profile if missing
+  /* MOVED TO PROFILE PAGE OR OBSOLETE
   useEffect(() => {
     if (user && (!user.full_name || !user.location)) setShowProfile(true)
   }, [user])
+  */
 
   // Summary counts
   useEffect(() => {
@@ -309,40 +319,40 @@ export default function HomePage() {
 
   // Group patients by severity for the table sections
   const groups = [
-    { key: 'red',    label: '🔴 Emergency',   dot: '#ef4444', patients: visiblePatients.filter(p => p.latestSeverity === 'red') },
-    { key: 'yellow', label: '🟡 Moderate',    dot: '#f59e0b', patients: visiblePatients.filter(p => p.latestSeverity === 'yellow') },
-    { key: 'green',  label: '🟢 Stable',      dot: '#10b981', patients: visiblePatients.filter(p => p.latestSeverity === 'green') },
-    { key: 'none',   label: '⚪ Unclassified', dot: '#9ca3af', patients: visiblePatients.filter(p => !p.latestSeverity) },
+    { key: 'red', label: '🔴 Emergency', dot: '#ef4444', patients: visiblePatients.filter(p => p.latestSeverity === 'red') },
+    { key: 'yellow', label: '🟡 Moderate', dot: '#f59e0b', patients: visiblePatients.filter(p => p.latestSeverity === 'yellow') },
+    { key: 'green', label: '🟢 Stable', dot: '#10b981', patients: visiblePatients.filter(p => p.latestSeverity === 'green') },
+    { key: 'none', label: '⚪ Unclassified', dot: '#9ca3af', patients: visiblePatients.filter(p => !p.latestSeverity) },
   ].filter(g => g.patients.length > 0)
 
   const isDark = theme === 'dark'
 
   const clr = {
-    bg:      isDark 
-               ? 'linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%)' 
-               : 'linear-gradient(135deg, #f0fdf4 0%, #d1fae5 100%)', // Very light green background
+    bg: isDark
+      ? 'linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%)'
+      : 'linear-gradient(135deg, #ffffff 0%, #f0fbf5 100%)', // Almost white with a tiny hint of green
     surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(209, 250, 229, 0.4)',
-    blur:    'blur(24px) saturate(150%)',
-    border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.2)',
+    blur: 'blur(24px) saturate(150%)',
+    border: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.2)',
     borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.35)',
-    
+
     topText: isDark ? '#f8fafc' : '#022c22',
     topMuted: isDark ? '#cbd5e1' : '#047857',
-    
-    text:    isDark ? '#f8fafc' : '#0f172a',
-    muted:   isDark ? '#cbd5e1' : '#475569',
-    
-    activeBg: isDark ? 'rgba(59, 130, 246, 0.2)' : 'linear-gradient(135deg, #065f46, #064e3b)',
-    activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : '0 4px 12px rgba(6, 78, 59, 0.3)',
-    activeBorder: isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(6, 78, 59, 0.6)',
-    activeText: isDark ? '#60a5fa' : '#ffffff',
-    
+
+    text: isDark ? '#f8fafc' : '#0f172a',
+    muted: isDark ? '#cbd5e1' : '#475569',
+
+    activeBg: isDark ? 'rgba(59, 130, 246, 0.25)' : '#065f46',
+    activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : '0 4px 16px rgba(6, 78, 59, 0.45)',
+    activeBorder: isDark ? 'rgba(59, 130, 246, 0.4)' : 'rgba(4, 120, 87, 0.9)',
+    activeText: isDark ? '#93c5fd' : '#ffffff',
+
     iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.15)',
     iconText: isDark ? '#93c5fd' : '#ffffff',
-    
-    hover:   isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(16, 185, 129, 0.15)',
 
-    primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #059669)',
+    hover: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(6, 78, 59, 0.12)',
+
+    primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
     primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
     primaryColor: isDark ? '#3b82f6' : '#10b981',
 
@@ -370,7 +380,7 @@ export default function HomePage() {
       backdropFilter: clr.blur, WebkitBackdropFilter: clr.blur,
       borderRight: `1px solid ${clr.border}`,
     },
-    sidebarInner: { 
+    sidebarInner: {
       width: 220, display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden',
     },
     /* Main */
@@ -394,9 +404,9 @@ export default function HomePage() {
         ::-webkit-scrollbar { width: 5px; height: 5px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: ${isDark ? '#2d3148' : '#e5e7eb'}; border-radius: 99px; }
-        .nav-btn:hover { background: ${isDark ? '#1e2030' : '#f3f4f6'} !important; }
-        .row-btn:hover { background: ${isDark ? '#1e2030' : '#f9fafb'} !important; cursor: pointer; }
-        .action-btn:hover { background: ${isDark ? '#2d3148' : '#f3f4f6'} !important; }
+        .nav-btn:hover { background: ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(6, 78, 59, 0.12)'} !important; }
+        .row-btn:hover { background: ${isDark ? '#1e2030' : '#dcfce7'} !important; cursor: pointer; }
+        .action-btn:hover { background: ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(6, 78, 59, 0.12)'} !important; }
         .del-btn:hover { background: #fef2f2 !important; color: #ef4444 !important; }
         .stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08) !important; }
       `}</style>
@@ -406,17 +416,17 @@ export default function HomePage() {
         <div style={S.sidebarInner}>
           {/* Dropdown arrow replacing hamburger */}
           <div style={{ padding: '1.25rem 1rem 0.75rem', borderBottom: `1px solid ${isDark ? '#1f2230' : '#f3f4f6'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-              <div style={{ width: 34, height: 34, borderRadius: 10, background: 'linear-gradient(135deg, #0F6E56, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <span style={{ color: '#fff', fontSize: '1rem' }}>🏥</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, filter: isDark ? 'drop-shadow(0 0 10px rgba(16, 185, 129, 0.4))' : 'drop-shadow(0 0 10px rgba(16, 185, 129, 0.2))' }}>
+                <img src={logo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               </div>
               <div>
-                <div style={{ fontWeight: 800, fontSize: '0.9375rem', color: clr.topText, lineHeight: 1.2, letterSpacing: '-0.02em' }}>Swasthya Setu</div>
+                <div style={{ fontWeight: 800, fontSize: '1rem', color: clr.topText, lineHeight: 1.2, letterSpacing: '-0.02em' }}>Swasthya Setu</div>
                 <div style={{ fontSize: '0.65rem', color: clr.topMuted, fontWeight: 500 }}>ASHA Dashboard</div>
               </div>
             </div>
             <button className="action-btn" onClick={() => setSidebarOpen(o => !o)}
-              style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${clr.border}`, background: clr.surface, boxShadow: isDark ? '0 2px 5px rgba(0,0,0,0.2)' : '0 2px 5px rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.topMuted }}>
+              style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(16,185,129,0.45)'}`, background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 12px rgba(16,185,129,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s', color: isDark ? '#e2e8f0' : '#065f46' }}>
               <ChevronIcon size={14} dir="down" />
             </button>
           </div>
@@ -441,8 +451,8 @@ export default function HomePage() {
                     fontWeight: isActive ? 600 : 500, fontSize: '0.875rem',
                     cursor: 'pointer', textAlign: 'left', marginBottom: 4, transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
-                  onMouseEnter={(e) => { if(!isActive) e.currentTarget.style.background = clr.hover }}
-                  onMouseLeave={(e) => { if(!isActive) e.currentTarget.style.background = 'transparent' }}
+                  onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = clr.hover }}
+                  onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = 'transparent' }}
                 >
                   <div style={{
                     width: 28, height: 28, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -474,8 +484,8 @@ export default function HomePage() {
                     fontWeight: active ? 600 : 500, fontSize: '0.875rem', cursor: 'pointer', textAlign: 'left', marginBottom: 4,
                     transition: 'all 0.2s',
                   }}
-                  onMouseEnter={(e) => { if(!active) e.currentTarget.style.background = clr.hover }}
-                  onMouseLeave={(e) => { if(!active) e.currentTarget.style.background = 'transparent' }}
+                  onMouseEnter={(e) => { if (!active) e.currentTarget.style.background = clr.hover }}
+                  onMouseLeave={(e) => { if (!active) e.currentTarget.style.background = 'transparent' }}
                 >
                   <div style={{ width: 24, height: 24, borderRadius: 6, background: `${d.color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <span style={{ width: 8, height: 8, borderRadius: 4, background: d.color, boxShadow: active ? `0 0 8px ${d.color}` : 'none', transition: 'all 0.2s' }} />
@@ -489,8 +499,8 @@ export default function HomePage() {
 
           {/* User profile bottom */}
           <div style={{ padding: '0.875rem 1rem', borderTop: `1px solid ${clr.border}` }}>
-            <button className="nav-btn" onClick={() => setShowProfile(true)}
-              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.5rem 0.5rem', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left',  color: clr.topText, transition: 'all 0.15s' }}
+            <button className="nav-btn" onClick={() => navigate('/profile')}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.5rem 0.5rem', borderRadius: 8, border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', color: clr.topText, transition: 'all 0.15s' }}
               onMouseEnter={(e) => e.currentTarget.style.background = clr.hover}
               onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
             >
@@ -513,21 +523,22 @@ export default function HomePage() {
         {/* Top bar */}
         <div style={S.topbar}>
 
-          {/* Re-expand Sidebar Button (only visible if sidebar is collapsed) */}
-          {!sidebarOpen && (
-            <button className="action-btn" onClick={() => setSidebarOpen(true)}
-              style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.15s', color: clr.topText }}
-              onMouseEnter={(e) => e.currentTarget.style.background = clr.hover}
-              onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-              </svg>
-            </button>
-          )}
+          {/* Left wrapper */}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+            {/* Re-expand Sidebar Button (only visible if sidebar is collapsed) */}
+            {!sidebarOpen && (
+              <button className="action-btn" onClick={() => setSidebarOpen(true)}
+                style={{ width: 36, height: 36, borderRadius: 9, border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(16,185,129,0.45)'}`, background: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 12px rgba(16,185,129,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, transition: 'all 0.2s', color: isDark ? '#e2e8f0' : '#065f46' }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              </button>
+            )}
+          </div>
 
           {/* Search */}
-          <div style={{ flex: 1, position: 'relative', maxWidth: 340 }}>
+          <div style={{ width: '100%', maxWidth: 340, position: 'relative' }}>
             <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: clr.topMuted, pointerEvents: 'none' }}>
               <SearchIcon size={15} />
             </span>
@@ -550,46 +561,45 @@ export default function HomePage() {
             <span style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', fontSize: '0.65rem', color: clr.topMuted, fontWeight: 600, background: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.5)', padding: '2px 5px', borderRadius: 4, pointerEvents: 'none' }}>⌘ K</span>
           </div>
 
-          <div style={{ flex: 1 }} />
+          {/* Right wrapper */}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '1rem' }}>
+            {/* Theme toggle */}
+            <button
+              className="action-btn"
+              aria-label="Toggle theme"
+              onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
+              onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.7)'}
+              onMouseLeave={(e) => { e.currentTarget.style.background = clr.glassBg; e.currentTarget.style.transform = 'scale(1)' }}
+              onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.85)'}
+              onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
+              style={{
+                width: 42, height: 38, borderRadius: '50%', // Perfect circle
+                border: `1px solid ${clr.borderSolid}`,
+                background: clr.glassBg,
+                backdropFilter: clr.glassBlur, WebkitBackdropFilter: clr.glassBlur,
+                boxShadow: clr.glassGlow,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)',
+                flexShrink: 0
+              }}
+            >
+              <ThemeMorphIcon isDark={isDark} color={clr.topText} idSuffix="home" />
+            </button>
 
-          {/* Theme toggle */}
-          <button 
-            className="action-btn" 
-            aria-label="Toggle theme"
-            onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')}
-            onMouseEnter={(e) => e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.7)'}
-            onMouseLeave={(e) => { e.currentTarget.style.background = clr.glassBg; e.currentTarget.style.transform = 'scale(1)' }}
-            onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.85)'}
-            onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-            style={{ 
-              width: 38, height: 38, borderRadius: '50%', // Perfect circle
-              border: `1px solid ${clr.borderSolid}`, 
-              background: clr.glassBg, 
-              backdropFilter: clr.glassBlur, WebkitBackdropFilter: clr.glassBlur,
-              boxShadow: clr.glassGlow,
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              transition: 'all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1)', 
-              flexShrink: 0 
-            }}
-          >
-            <ThemeMorphIcon isDark={isDark} color={clr.topText} idSuffix="home" />
-          </button>
-
-          {/* Bell */}
-          <button className="action-btn"
-            style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${clr.border}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: clr.topMuted, position: 'relative', transition: 'all 0.15s', flexShrink: 0 }}
-            onMouseEnter={(e) => e.currentTarget.style.background = clr.hover}
-            onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-          >
-            <BellIcon size={17} />
-            {summaryCounts.red > 0 && <span style={{ position: 'absolute', top: 7, right: 8, width: 7, height: 7, borderRadius: '50%', background: '#ef4444', border: '1.5px solid transparent' }} />}
-          </button>
-
-          {/* New Patient CTA */}
-          <button onClick={() => navigate('/patient')}
-            style={{ height: 36, padding: '0 1rem', borderRadius: 8, border: `1px solid rgba(255,255,255,0.15)`, background: clr.primaryBg, color: '#fff', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.375rem', flexShrink: 0, transition: 'all 0.15s', boxShadow: clr.primaryShadow }}>
-            + New Patient
-          </button>
+            {/* New Patient CTA */}
+            <button onClick={() => navigate('/patient')}
+              style={{
+                height: 36, padding: '0 1rem', borderRadius: 8,
+                border: '1px solid rgba(255,255,255,0.2)',
+                background: 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
+                color: '#fff', fontWeight: 600, fontSize: '0.875rem',
+                cursor: 'pointer', display: 'flex', alignItems: 'center',
+                gap: '0.375rem', flexShrink: 0, transition: 'all 0.15s',
+                boxShadow: '0 4px 14px rgba(16, 185, 129, 0.3)'
+              }}>
+              + New Patient
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -610,9 +620,9 @@ export default function HomePage() {
               All ({totalCount})
             </button>
             {[
-              { sev: 'red',    emoji: '🚨', label: 'Emergency',  count: summaryCounts.red,    color: isDark ? '#ef4444' : '#dc2626', activeBg: isDark ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.8)' },
-              { sev: 'yellow', emoji: '⚠️', label: 'Moderate',   count: summaryCounts.yellow, color: isDark ? '#f59e0b' : '#d97706', activeBg: isDark ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.8)' },
-              { sev: 'green',  emoji: '✅', label: 'Stable',     count: summaryCounts.green,  color: clr.primaryColor, activeBg: isDark ? 'rgba(16, 185, 129, 0.2)' : clr.primaryBg },
+              { sev: 'red', emoji: '🚨', label: 'Emergency', count: summaryCounts.red, color: isDark ? '#ef4444' : '#dc2626', activeBg: isDark ? 'rgba(239, 68, 68, 0.2)' : 'rgba(239, 68, 68, 0.8)' },
+              { sev: 'yellow', emoji: '⚠️', label: 'Moderate', count: summaryCounts.yellow, color: isDark ? '#f59e0b' : '#d97706', activeBg: isDark ? 'rgba(245, 158, 11, 0.2)' : 'rgba(245, 158, 11, 0.8)' },
+              { sev: 'green', emoji: '✅', label: 'Stable', count: summaryCounts.green, color: clr.primaryColor, activeBg: isDark ? 'rgba(16, 185, 129, 0.2)' : clr.primaryBg },
             ].map(s => {
               const active = activeTab === s.sev.toUpperCase();
               return (
@@ -630,10 +640,10 @@ export default function HomePage() {
                   }}>
                   <span>{s.emoji}</span>
                   <span>{s.label}</span>
-                  <span style={{ 
-                    background: active ? '#fff' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(16, 185, 129, 0.15)'), 
-                    color: active ? s.color : clr.text, 
-                    padding: '0 6px', borderRadius: 99, fontSize: '0.7rem' 
+                  <span style={{
+                    background: active ? '#fff' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(16, 185, 129, 0.15)'),
+                    color: active ? s.color : clr.text,
+                    padding: '0 6px', borderRadius: 99, fontSize: '0.7rem'
                   }}>{s.count}</span>
                 </button>
               )
@@ -827,7 +837,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {showProfile && <ProfileOverlay onClose={() => setShowProfile(false)} />}
+      {/* ProfileOverlay removed in favor of standalone /profile page */}
     </div>
   )
 }

@@ -162,6 +162,8 @@ export default function PatientFormPage() {
     gender: prefill?.gender || '',
     district: prefill?.district || '',
     symptomText: prefill?.symptomText || '',
+    latitude: null,
+    longitude: null,
   })
   const [saveError, setSaveError] = useState('')
   const [saving, setSaving] = useState(false)
@@ -174,6 +176,37 @@ export default function PatientFormPage() {
   const recognitionRef = useRef(null)
 
   const [islModalOpen, setIslModalOpen] = useState(false)
+  const [capturingLoc, setCapturingLoc] = useState(false)
+  const [locSuccess, setLocSuccess] = useState(false)
+
+  function captureLocation() {
+    setCapturingLoc(true)
+    setLocSuccess(false)
+    setSaveError('')
+    
+    if (!navigator.geolocation) {
+      setSaveError('Geolocation is not supported by your browser.')
+      setCapturingLoc(false)
+      return
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setForm(prev => ({ 
+          ...prev, 
+          latitude: pos.coords.latitude, 
+          longitude: pos.coords.longitude 
+        }))
+        setLocSuccess(true)
+        setCapturingLoc(false)
+      },
+      (err) => {
+        setSaveError('Could not capture location. Please ensure GPS is on and permissions are granted.')
+        setCapturingLoc(false)
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    )
+  }
 
   // Deduplication state
   const [duplicateMatches, setDuplicateMatches] = useState(null)
@@ -340,6 +373,8 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
         symptoms:         triaged.symptoms,
         sickle_cell_risk: triaged.sickle_cell_risk,
         brief:            triaged.brief,
+        latitude:         patientObj.latitude || null,
+        longitude:        patientObj.longitude || null,
       }
       const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
         method: 'POST',
@@ -375,6 +410,8 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
       gender: form.gender,
       district: form.district,
       symptomText: form.symptomText.trim(),
+      latitude: form.latitude,
+      longitude: form.longitude,
     }
 
     // STEP 1: Check for duplicates before triage (only when patient not already resolved)
@@ -609,6 +646,55 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
               onChange={handleChange}
               rows={4}
             />
+          </div>
+
+          {/* GPS Location Capture */}
+          <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+            <label className="form-label">
+              GPS Location (Optional)
+              <span className="odia-label">ଜିପିଏସ୍ ଅବସ୍ଥିତି (ଐଚ୍ଛିକ)</span>
+            </label>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: 12, border: '1px solid var(--island-border)' }}>
+              <button
+                type="button"
+                onClick={captureLocation}
+                disabled={capturingLoc}
+                style={{
+                  background: locSuccess ? '#10b981' : '#0F6E56',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 10,
+                  padding: '0.625rem 1rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 700,
+                  cursor: capturingLoc ? 'default' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {capturingLoc ? (
+                  <>
+                    <span className="spinner" style={{ width: 16, height: 16 }} />
+                    <span>Capturing...</span>
+                  </>
+                ) : locSuccess ? (
+                  <>
+                    <span>✓ Captured</span>
+                  </>
+                ) : (
+                  <>
+                    <span>📍 Capture Location</span>
+                  </>
+                )}
+              </button>
+              <div style={{ fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+                {locSuccess 
+                  ? `Coords: ${form.latitude?.toFixed(4)}, ${form.longitude?.toFixed(4)}` 
+                  : 'Capture the exact location of the patient.'}
+              </div>
+            </div>
           </div>
 
           {/* Voice Input — Odia / Hindi / English */}

@@ -70,7 +70,12 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
               <div style={{ color: '#22c55e' }}>Mild: {pt.mild}</div>
               <hr style={{ margin: '6px 0' }} />
               <div style={{ color: '#64748b' }}>Last reported: {pt.lastReported}</div>
-              <div style={{ color: '#64748b' }}>ASHA: {pt.ashaWorker}</div>
+              {pt.ashaWorker && <div style={{ color: '#64748b' }}>ASHA: {pt.ashaWorker}</div>}
+              {pt.lat && pt.lng && (
+                <div style={{ color: '#2563eb', marginTop: '6px', fontWeight: 'bold' }}>
+                  📍 {Number(pt.lat).toFixed(5)}, {Number(pt.lng).toFixed(5)}
+                </div>
+              )}
             </div>
           </Popup>
         </CircleMarker>
