@@ -259,36 +259,18 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
           position: 'relative', zIndex: 10,
           boxShadow: isDark ? '0 2px 20px rgba(0,0,0,0.30)' : '0 2px 16px rgba(16,185,129,0.08)',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {isMobile && !sidebarOpen && (
-              <button className="dl-btn" onClick={() => setSidebarOpen(true)} style={{
-                width: 36, height: 36, borderRadius: 9, flexShrink: 0,
-                background: g.btn, border: `1px solid ${g.btnBdr}`,
-                backdropFilter: 'blur(12px)', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: g.btnT, transition: 'all .18s',
-              }}><MenuBars /></button>
-            )}
-            {topbarContent}
-          </div>
+          {isMobile && !sidebarOpen && (
+            <button className="dl-btn" onClick={() => setSidebarOpen(true)} style={{
+              width: 36, height: 36, borderRadius: 9, flexShrink: 0,
+              background: g.btn, border: `1px solid ${g.btnBdr}`,
+              backdropFilter: 'blur(12px)', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: g.btnT, transition: 'all .18s',
+            }}><MenuBars /></button>
+          )}
 
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-            <div style={{ position: 'relative', width: '100%', maxWidth: 340 }}>
-              <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: g.muted, pointerEvents: 'none' }}><SearchIcon /></span>
-              <input placeholder="Search patients…" style={{
-                width: '100%', height: 36, paddingLeft: '2.1rem', paddingRight: '2.75rem',
-                borderRadius: 10,
-                background: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.70)',
-                border: `1px solid ${g.btnBdr}`,
-                backdropFilter: 'blur(18px)', WebkitBackdropFilter: 'blur(18px)',
-                color: g.text, fontSize: '0.845rem', outline: 'none',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04)', transition: 'all .2s',
-              }}
-                onFocus={e => { e.target.style.borderColor = g.accent; e.target.style.boxShadow = `0 0 0 3px ${g.accentL}` }}
-                onBlur={e => { e.target.style.borderColor = g.btnBdr; e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.04)' }}
-              />
-              <span style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', fontSize: '0.6rem', fontWeight: 700, color: g.muted, background: g.btn, border: `1px solid ${g.btnBdr}`, padding: '2px 5px', borderRadius: 5, pointerEvents: 'none', backdropFilter: 'blur(8px)' }}>⌘K</span>
-            </div>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', height: '100%', gap: '0.75rem' }}>
+            {topbarContent}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexShrink: 0 }}>
@@ -302,15 +284,6 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
             }}>
               {isDark ? <SunIcon /> : <MoonIcon />}
             </button>
-            <button className="dl-cta" onClick={() => navigate('/patient')} style={{
-              height: 36, padding: '0 1rem', borderRadius: 10,
-              background: 'linear-gradient(135deg,#0d9488 0%,#10b981 100%)',
-              border: '1px solid rgba(255,255,255,0.28)',
-              color: '#fff', fontWeight: 700, fontSize: '0.845rem',
-              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
-              boxShadow: '0 4px 14px rgba(16,185,129,0.38)',
-              transition: 'all .2s', letterSpacing: '-0.01em',
-            }}>+ New Patient</button>
           </div>
         </header>
 

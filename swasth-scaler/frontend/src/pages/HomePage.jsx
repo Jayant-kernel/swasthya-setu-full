@@ -304,10 +304,6 @@ export default function HomePage() {
 
   const topbar = (
     <>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 10px #10b981' }} />
-        <span style={{ fontWeight: 700, fontSize: '0.8125rem', letterSpacing: '0.01em' }}>System Online</span>
-      </div>
 
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
         <div style={{ position: 'relative', width: '100%', maxWidth: 340 }}>
@@ -356,22 +352,6 @@ export default function HomePage() {
 
         <div style={{ padding: 'clamp(1rem, 3.5vw, 2.25rem)', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1.25rem' }}>
-            <div>
-              <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.25rem)', fontWeight: 800, color: g.text, letterSpacing: '-0.03em', lineHeight: 1.1 }}>ASHA Worker <span style={{ color: g.accent }}>Dashboard</span></h1>
-              <p style={{ color: g.muted, fontSize: '0.9375rem', marginTop: '0.375rem', fontWeight: 500 }}>Welcome back, track and manage your patient visits effectively.</p>
-            </div>
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              <div style={{ ...card, padding: '0.75rem 1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                <span style={{ fontSize: '1.25rem', fontWeight: 800, color: g.accent }}>{patientResults.length}</span>
-                <span style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: g.muted, letterSpacing: '0.05em' }}>Total Patients</span>
-              </div>
-              <div style={{ ...card, padding: '0.75rem 1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
-                <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ff4d4d' }}>{patientResults.filter(p => (p.latestSeverity || '').toLowerCase() === 'red').length}</span>
-                <span style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: g.muted, letterSpacing: '0.05em' }}>Critical</span>
-              </div>
-            </div>
-          </div>
 
           {/* ── Stat chips row ── */}
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
