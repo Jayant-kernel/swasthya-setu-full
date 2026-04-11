@@ -110,27 +110,44 @@ export default function AdminDashboardPage() {
   }, [triageRecords])
 
   const mapPoints = useMemo(() => {
-    const groups = {}
-    triageRecords.forEach(r => {
-      const d = r.district || 'Unknown'
-      if (!groups[d]) groups[d] = { village: d, total: 0, critical: 0, moderate: 0, mild: 0, lastReported: r.created_at }
-      groups[d].total++
-      if (r.severity === 'red') groups[d].critical++
-      else if (r.severity === 'yellow') groups[d].moderate++
-      else groups[d].mild++
-      if (r.created_at > groups[d].lastReported) groups[d].lastReported = r.created_at
-    })
+    const withGps = triageRecords.filter(r => r.latitude && r.longitude);
+    const withoutGps = triageRecords.filter(r => !r.latitude || !r.longitude);
 
-    return Object.entries(groups).map(([district, g]) => {
-      const coords = DISTRICT_CENTERS[district]
-      if (!coords) return null
+    const gpsPoints = withGps.map(r => ({
+      village: r.patient_name || 'Patient',
+      total: 1,
+      critical: r.severity === 'red' ? 1 : 0,
+      moderate: r.severity === 'yellow' ? 1 : 0,
+      mild: r.severity === 'green' ? 1 : 0,
+      lastReported: new Date(r.created_at).toLocaleString('en-IN'),
+      lat: r.latitude,
+      lng: r.longitude,
+      ashaWorker: r.user_name || undefined
+    }));
+
+    const groups = {};
+    withoutGps.forEach(r => {
+      const d = r.district || 'Unknown';
+      if (!groups[d]) groups[d] = { village: d, total: 0, critical: 0, moderate: 0, mild: 0, lastReported: r.created_at };
+      groups[d].total++;
+      if (r.severity === 'red') groups[d].critical++;
+      else if (r.severity === 'yellow') groups[d].moderate++;
+      else groups[d].mild++;
+      if (r.created_at > groups[d].lastReported) groups[d].lastReported = r.created_at;
+    });
+
+    const legacyPoints = Object.entries(groups).map(([district, g]) => {
+      const coords = DISTRICT_CENTERS[district];
+      if (!coords) return null;
       return { 
         ...g, 
         lat: coords[0], 
         lng: coords[1], 
         lastReported: new Date(g.lastReported).toLocaleString('en-IN') 
-      }
-    }).filter(Boolean)
+      };
+    }).filter(Boolean);
+
+    return [...gpsPoints, ...legacyPoints];
   }, [triageRecords])
 
   return (
