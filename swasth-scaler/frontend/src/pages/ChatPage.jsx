@@ -40,29 +40,19 @@ export default function ChatPage() {
   const navigate = useNavigate()
   const { patientData, setPatientData, triageResult, setTriageResult } = usePatient()
 
-  const [isDark, setIsDark] = useState(document.documentElement.getAttribute('data-theme') === 'dark')
-
-  useEffect(() => {
-    const observer = new MutationObserver(() => {
-      setIsDark(document.documentElement.getAttribute('data-theme') === 'dark')
-    })
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
-    return () => observer.disconnect()
-  }, [])
-
   const clr = {
-    bg:      isDark ? 'linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%)' : 'linear-gradient(135deg, #ffffff 0%, #f0fbf5 100%)',
-    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(209, 250, 229, 0.4)',
-    blur:    'blur(24px) saturate(150%)',
-    border:  isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.2)',
-    borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.35)',
-    topText: isDark ? '#f8fafc' : '#022c22',
-    topMuted: isDark ? '#cbd5e1' : '#047857',
-    text:    isDark ? '#f8fafc' : '#0f172a',
-    muted:   isDark ? '#cbd5e1' : '#475569',
-    glassGlow: isDark ? '0 4px 15px rgba(0,0,0,0.3)' : '0 4px 16px rgba(16, 185, 129, 0.25)',
-    primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981, #059669)',
-    primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
+    bg:          'var(--g-chat-bg)',
+    surface:     'var(--g-chat-surface)',
+    blur:        'blur(24px) saturate(150%)',
+    border:      'var(--g-chat-border)',
+    borderSolid: 'var(--g-chat-border)',
+    topText:     'var(--g-text)',
+    topMuted:    'var(--g-muted)',
+    text:        'var(--g-text)',
+    muted:       'var(--g-muted)',
+    glassGlow:   'var(--g-card-shd)',
+    primaryBg:   'var(--g-chat-primary)',
+    primaryShadow: '0 4px 14px rgba(16, 185, 129, 0.4)',
   }
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')

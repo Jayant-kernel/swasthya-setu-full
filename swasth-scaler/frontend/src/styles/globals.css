@@ -42,6 +42,32 @@
   --island-grad-4: #aee8ff;
   --island-bg: rgba(255, 255, 255, 0.85);
   --island-border: rgba(255, 255, 255, 0.6);
+
+  /* ── Mystical Glassmorphism Tokens ── */
+  --g-panel-bg: rgba(255,255,255,0.55);
+  --g-panel-bdr: rgba(200,240,220,0.70);
+  --g-text: #0c2a1d;
+  --g-muted: #4a7a68;
+  --g-label: #88b09e;
+  --g-hover: rgba(16,185,129,0.09);
+  --g-row-hover: rgba(16,185,129,0.06);
+  --g-card-bg: rgba(255,255,255,0.75);
+  --g-card-bdr: rgba(255,255,255,0.25);
+  --g-card-shd: 0 8px 30px rgba(13,148,136,0.08);
+  --g-divider: rgba(255,255,255,0.52);
+  --g-btn: rgba(255,255,255,0.58);
+  --g-btn-bdr: rgba(255,255,255,0.78);
+  --g-blur: blur(28px) saturate(160%);
+  --g-accent: #10b981;
+  --g-nav-active-t: #10b981;
+  --g-nav-active-bg: rgba(16,185,129,0.08);
+  --g-nav-icon-bg: rgba(16,185,129,0.12);
+  --g-page-bg: linear-gradient(135deg, #f0fdf8 0%, #dcfce7 40%, #f0fdfa 70%, #f8fff9 100%);
+  --g-btn-hover: rgba(255,255,255,0.95);
+  --g-chat-bg: linear-gradient(135deg, #ffffff 0%, #f0fbf5 100%);
+  --g-chat-surface: rgba(209, 250, 229, 0.4);
+  --g-chat-border: rgba(16, 185, 129, 0.2);
+  --g-chat-primary: linear-gradient(135deg, #10b981, #059669);
 }
 
 /* ── Resets & Base ── */
@@ -548,6 +574,32 @@ html[data-theme="dark"] {
   --island-grad-4: #020617;
   --island-bg: rgba(30, 41, 59, 0.85);
   --island-border: rgba(100, 116, 139, 0.3);
+
+  /* ── Mystical Glassmorphism Tokens (Dark) ── */
+  --g-panel-bg: rgba(6,12,30,0.60);
+  --g-panel-bdr: rgba(255,255,255,0.10);
+  --g-text: #ddeeff;
+  --g-muted: #6a84aa;
+  --g-label: #3a5070;
+  --g-hover: rgba(255,255,255,0.07);
+  --g-row-hover: rgba(255,255,255,0.06);
+  --g-card-bg: rgba(11,21,45,0.65);
+  --g-card-bdr: rgba(255,255,255,0.12);
+  --g-card-shd: 0 12px 40px rgba(0,0,0,0.5);
+  --g-divider: rgba(255,255,255,0.08);
+  --g-btn: rgba(255,255,255,0.08);
+  --g-btn-bdr: rgba(255,255,255,0.14);
+  --g-blur: blur(28px) saturate(160%);
+  --g-accent: #10b981;
+  --g-nav-active-t: #10b981;
+  --g-nav-active-bg: rgba(16,185,129,0.12);
+  --g-nav-icon-bg: rgba(16,185,129,0.20);
+  --g-page-bg: #04060f;
+  --g-btn-hover: rgba(255,255,255,0.14);
+  --g-chat-bg: linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%);
+  --g-chat-surface: rgba(15, 23, 42, 0.4);
+  --g-chat-border: rgba(255, 255, 255, 0.1);
+  --g-chat-primary: linear-gradient(135deg, #3b82f6, #2563eb);
 }
 
 body {

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import logo from '../images/logo/logo.png'
+import DashboardLayout from '../components/DashboardLayout.jsx'
 
 /* ─── Icons (same as HomePage) ─────────────────────────────── */
 const GridIcon = ({ active }) => (
@@ -184,48 +185,29 @@ export default function ProfilePage() {
     } catch (err) { alert('Failed to delete account: ' + err.message) }
   }
 
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
-
-  /* ── Glass tokens (identical to HomePage) ── */
   const g = {
-    panelBg: isDark ? 'rgba(6,12,30,0.52)' : 'rgba(255,255,255,0.28)',
-    panelBdr: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(200,240,220,0.70)',
-    blur: 'blur(28px) saturate(170%)',
-
-    cardBg: isDark ? 'rgba(10,18,42,0.48)' : 'rgba(255,255,255,0.26)',
-    cardBdr: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.58)',
-    cardShd: isDark
-      ? '0 8px 32px rgba(0,0,0,0.40),inset 0 1px 0 rgba(255,255,255,0.05)'
-      : '0 8px 32px rgba(13,148,136,0.10),inset 0 1px 0 rgba(255,255,255,0.80)',
-
-    insetBg: isDark ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.20)',
-    rowHover: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.38)',
-
-    text: isDark ? '#ddeeff' : '#0c2a1d',
-    muted: isDark ? '#6a84aa' : '#4a7a68',
-    label: isDark ? '#3a5070' : '#88b09e',
-    accent: '#10b981',
-    accentL: isDark ? 'rgba(16,185,129,0.22)' : 'rgba(16,185,129,0.16)',
-    accentB: isDark ? 'rgba(16,185,129,0.50)' : 'rgba(16,185,129,0.55)',
-    accentT: isDark ? '#6ee7b7' : '#065f46',
-
-    navActiveBg: isDark ? 'rgba(16,185,129,0.22)' : 'rgba(16,185,129,0.16)',
-    navActiveBdr: isDark ? 'rgba(16,185,129,0.50)' : 'rgba(16,185,129,0.55)',
-    navActiveT: isDark ? '#6ee7b7' : '#065f46',
-    navIconBg: isDark ? 'rgba(16,185,129,0.28)' : 'rgba(16,185,129,0.18)',
-    navShd: '0 2px 14px rgba(16,185,129,0.20)',
-
-    hover: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(16,185,129,0.09)',
-    divider: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(180,230,210,0.55)',
-    btn: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.70)',
-    btnBdr: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(200,240,220,0.80)',
-    btnT: isDark ? '#b8cce4' : '#065f46',
+    panelBg: 'var(--g-panel-bg)',
+    panelBdr: 'var(--g-panel-bdr)',
+    blur: 'var(--g-blur)',
+    cardBg: 'var(--g-card-bg)',
+    cardBdr: 'var(--g-card-bdr)',
+    cardShd: 'var(--g-card-shd)',
+    insetBg: 'rgba(0,0,0,0.18)',
+    rowHover: 'var(--g-row-hover)',
+    text: 'var(--g-text)',
+    muted: 'var(--g-muted)',
+    label: 'var(--g-label)',
+    accent: 'var(--g-accent)',
+    hover: 'var(--g-hover)',
+    divider: 'var(--g-divider)',
+    btn: 'var(--g-btn)',
+    btnBdr: 'var(--g-btn-bdr)',
   }
 
   const panel = { background: g.panelBg, backdropFilter: g.blur, WebkitBackdropFilter: g.blur }
   const card = { background: g.cardBg, backdropFilter: g.blur, WebkitBackdropFilter: g.blur, border: `1px solid ${g.cardBdr}`, borderRadius: 16, boxShadow: g.cardShd }
   const glassInput = {
-    background: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.52)',
+    background: 'var(--g-btn)',
     border: `1.5px solid ${g.btnBdr}`, backdropFilter: 'blur(16px)',
     color: g.text, outline: 'none', transition: 'all .2s',
     fontFamily: "'Plus Jakarta Sans','DM Sans',sans-serif",
@@ -250,9 +232,9 @@ export default function ProfilePage() {
       <style>{`
         ::-webkit-scrollbar{width:4px;}
         ::-webkit-scrollbar-track{background:transparent;}
-        ::-webkit-scrollbar-thumb{background:${g.divider};border-radius:99px;}
-        .pp-row:hover{background:${g.rowHover}!important;}
-        .pp-input:focus{border-color:${g.accent}!important;box-shadow:0 0 0 3px ${g.accentL}!important;}
+        ::-webkit-scrollbar-thumb{background:var(--g-divider);border-radius:99px;}
+        .pp-row:hover{background:var(--g-row-hover)!important;}
+        .pp-input:focus{border-color:var(--g-accent)!important;box-shadow:0 0 0 3px rgba(16,185,129,0.15)!important;}
       `}</style>
 
 

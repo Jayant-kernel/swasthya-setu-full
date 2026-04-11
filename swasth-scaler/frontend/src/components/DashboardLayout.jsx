@@ -89,38 +89,26 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
   const isDark = theme === 'dark'
 
   const g = {
-    panelBg: isDark ? 'rgba(6,12,30,0.60)' : 'rgba(255,255,255,0.55)',
-    panelBdr: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(200,240,220,0.70)',
-    blur: 'blur(28px) saturate(160%)',
-
-    text: isDark ? '#ddeeff' : '#0c2a1d',
-    muted: isDark ? '#6a84aa' : '#4a7a68',
-    label: isDark ? '#3a5070' : '#88b09e',
-    accent: '#10b981',
-    accentL: isDark ? 'rgba(16,185,129,0.22)' : 'rgba(16,185,129,0.16)',
-    accentB: isDark ? 'rgba(16,185,129,0.50)' : 'rgba(16,185,129,0.55)',
-    accentT: isDark ? '#6ee7b7' : '#065f46',
-
-    navActiveBg: isDark ? 'rgba(16,185,129,0.22)' : 'rgba(16,185,129,0.16)',
-    navActiveBdr: isDark ? 'rgba(16,185,129,0.50)' : 'rgba(16,185,129,0.55)',
-    navActiveT: isDark ? '#6ee7b7' : '#065f46',
-    navActiveShd: '0 2px 14px rgba(16,185,129,0.20)',
-    navIconBg: isDark ? 'rgba(16,185,129,0.28)' : 'rgba(16,185,129,0.18)',
-
-    hover: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(16,185,129,0.09)',
-    divider: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(180,230,210,0.55)',
-
-    btn: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.70)',
-    btnBdr: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(200,240,220,0.80)',
-    btnT: isDark ? '#b8cce4' : '#065f46',
-  }
+    panelBg: 'var(--g-panel-bg)',
+    panelBdr: 'var(--g-panel-bdr)',
+    blur: 'var(--g-blur)',
+    text: 'var(--g-text)',
+    muted: 'var(--g-muted)',
+    label: 'var(--g-label)',
+    accent: 'var(--g-accent)',
+    accentL: 'var(--g-nav-active-bg)',
+    hover: 'var(--g-hover)',
+    divider: 'var(--g-divider)',
+    btn: 'var(--g-btn)',
+    btnBdr: 'var(--g-btn-bdr)',
+    btnT: 'var(--g-text)',
+    navActiveT: 'var(--g-nav-active-t)',
+    navActiveShd: '0 4px 12px rgba(16,185,129,0.15)',
+    navIconBg: 'var(--g-nav-icon-bg)',
+  };
 
   const panel = { background: g.panelBg, backdropFilter: g.blur, WebkitBackdropFilter: g.blur }
-
-  /* Soft white-green gradient background */
-  const pageBg = isDark
-    ? '#04060f'
-    : 'linear-gradient(135deg, #f0fdf8 0%, #dcfce7 40%, #f0fdfa 70%, #f8fff9 100%)'
+  const pageBg = 'var(--g-page-bg)'
 
   return (
     <div style={{
@@ -134,9 +122,9 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
         *{box-sizing:border-box;}
         ::-webkit-scrollbar{width:4px;}
         ::-webkit-scrollbar-track{background:transparent;}
-        ::-webkit-scrollbar-thumb{background:${g.divider};border-radius:99px;}
-        .dl-nav:hover{background:${g.hover}!important;}
-        .dl-btn:hover{background:${isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.95)'}!important;}
+        ::-webkit-scrollbar-thumb{background:var(--g-divider);border-radius:99px;}
+        .dl-nav:hover{background:var(--g-hover)!important;}
+        .dl-btn:hover{background:var(--g-btn-hover)!important;}
         .dl-cta:hover{opacity:0.87!important;transform:translateY(-1px)!important;box-shadow:0 6px 22px rgba(16,185,129,0.45)!important;}
         input::placeholder{color:${g.muted};opacity:0.8;}
         select option{background:${isDark ? '#0a1525' : '#edfaf5'};color:${g.text};}

@@ -249,23 +249,22 @@ export default function HomePage() {
     return <span style={{ marginLeft: 4 }}>{sortOrder === 'asc' ? '↑' : '↓'}</span>
   }
 
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
   const g = {
-    panelBg: isDark ? 'rgba(6,12,30,0.60)' : 'rgba(255,255,255,0.55)',
-    panelBdr: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(200,240,220,0.70)',
-    blur: 'blur(28px) saturate(160%)',
-    text: isDark ? '#ddeeff' : '#0c2a1d',
-    muted: isDark ? '#6a84aa' : '#4a7a68',
-    label: isDark ? '#3a5070' : '#88b09e',
-    accent: '#10b981',
-    hover: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(16,185,129,0.09)',
-    rowHover: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(16,185,129,0.06)',
-    cardBg: isDark ? 'rgba(11,21,45,0.65)' : 'rgba(255,255,255,0.75)',
-    cardBdr: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.25)',
-    cardShd: isDark ? '0 12px 40px rgba(0,0,0,0.5)' : '0 8px 30px rgba(13,148,136,0.08)',
-    divider: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.52)',
-    btn: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.58)',
-    btnBdr: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.78)',
+    panelBg: 'var(--g-panel-bg)',
+    panelBdr: 'var(--g-panel-bdr)',
+    blur: 'var(--g-blur)',
+    text: 'var(--g-text)',
+    muted: 'var(--g-muted)',
+    label: 'var(--g-label)',
+    accent: 'var(--g-accent)',
+    hover: 'var(--g-hover)',
+    rowHover: 'var(--g-row-hover)',
+    cardBg: 'var(--g-card-bg)',
+    cardBdr: 'var(--g-card-bdr)',
+    cardShd: 'var(--g-card-shd)',
+    divider: 'var(--g-divider)',
+    btn: 'var(--g-btn)',
+    btnBdr: 'var(--g-btn-bdr)',
   };
 
   const card = {
@@ -273,7 +272,7 @@ export default function HomePage() {
     border: `1px solid ${g.cardBdr}`, borderRadius: 16, boxShadow: g.cardShd,
   }
   const glassInput = {
-    background: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.52)',
+    background: 'var(--g-btn)',
     border: `1px solid ${g.btnBdr}`,
     backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
     color: g.text, outline: 'none', transition: 'all .2s',
@@ -343,11 +342,11 @@ export default function HomePage() {
         ::-webkit-scrollbar{width:4px;}
         ::-webkit-scrollbar-track{background:transparent;}
         ::-webkit-scrollbar-thumb{background:${g.divider};border-radius:99px;}
-        .hp-row:hover{background:${g.rowHover}!important;cursor:pointer;}
-        .hp-btn:hover{background:${isDark ? 'rgba(255,255,255,0.13)' : 'rgba(255,255,255,0.85)'}!important;}
+        .hp-row:hover{background:var(--g-row-hover)!important;cursor:pointer;}
+        .hp-btn:hover{background:var(--g-btn-hover)!important;}
         .hp-del:hover{background:rgba(239,68,68,0.15)!important;color:#f87171!important;}
         .hp-cta:hover{opacity:0.87!important;transform:translateY(-1px)!important;}
-        .hp-nav:hover{background:${g.hover}!important;}
+        .hp-nav:hover{background:var(--g-hover)!important;}
       `}</style>
 
         <div style={{ padding: 'clamp(1rem, 3.5vw, 2.25rem)', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
