@@ -62,13 +62,24 @@ const NAV_ITEMS = [
   { id: 'chat', label: 'AI Chat', Icon: ChatIcon, path: '/chat' },
 ]
 
-export default function DashboardLayout({ children, topbarContent, contentStyle = {} }) {
+export default function DashboardLayout({ children, topbarContent, sidebarExtra, contentStyle = {} }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { user } = useAuth()
 
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024)
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const isExpanded = isMobile ? sidebarOpen : isHovered
+  const sidebarWidth = isMobile ? (sidebarOpen ? 220 : 0) : (isHovered ? 220 : 72)
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
@@ -132,20 +143,23 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
       `}</style>
 
       {/* ══ SIDEBAR ══ */}
-      <aside style={{
-        ...panel,
-        width: sidebarOpen ? 220 : 0,
-        minWidth: sidebarOpen ? 220 : 0,
-        borderRight: `1px solid ${g.panelBdr}`,
-        overflow: 'hidden', flexShrink: 0,
-        display: 'flex', flexDirection: 'column',
-        transition: 'width .28s cubic-bezier(.4,0,.2,1),min-width .28s cubic-bezier(.4,0,.2,1)',
-        position: 'relative', zIndex: 20,
-        boxShadow: isDark ? '2px 0 24px rgba(0,0,0,0.35)' : '2px 0 20px rgba(16,185,129,0.08)',
-      }}>
+      <aside 
+        onMouseEnter={() => !isMobile && setIsHovered(true)}
+        onMouseLeave={() => !isMobile && setIsHovered(false)}
+        style={{
+          ...panel,
+          width: sidebarWidth,
+          minWidth: sidebarWidth,
+          borderRight: `1px solid ${g.panelBdr}`,
+          overflow: 'hidden', flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
+          transition: 'width .28s cubic-bezier(.4,0,.2,1),min-width .28s cubic-bezier(.4,0,.2,1)',
+          position: isMobile ? 'absolute' : 'relative', zIndex: 20,
+          height: '100%',
+          boxShadow: isDark ? '2px 0 24px rgba(0,0,0,0.35)' : '2px 0 20px rgba(16,185,129,0.08)',
+        }}>
         <div style={{ width: 220, display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-          {/* Logo */}
           <div style={{ padding: '1.125rem 1rem 0.875rem', borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
               <div style={{
@@ -157,23 +171,24 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
               }}>
                 <img src={logo} alt="logo" style={{ width: '82%', height: '82%', objectFit: 'contain' }} />
               </div>
-              <div>
+              <div style={{ opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
                 <div style={{ fontWeight: 800, fontSize: '0.9rem', color: g.text, letterSpacing: '-0.022em', lineHeight: 1.15 }}>Swasthya Setu</div>
                 <div style={{ fontSize: '0.58rem', fontWeight: 700, color: g.accent, letterSpacing: '0.09em', textTransform: 'uppercase' }}>ASHA Dashboard</div>
               </div>
             </div>
-            <button className="dl-btn" onClick={() => setSidebarOpen(false)} style={{
-              width: 28, height: 28, borderRadius: 7,
-              background: g.btn, border: `1px solid ${g.btnBdr}`,
-              backdropFilter: 'blur(8px)', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: g.btnT, transition: 'all .18s', flexShrink: 0,
-            }}><ChevronDown /></button>
+            {isMobile && (
+              <button className="dl-btn" onClick={() => setSidebarOpen(false)} style={{
+                width: 28, height: 28, borderRadius: 7,
+                background: g.btn, border: `1px solid ${g.btnBdr}`,
+                backdropFilter: 'blur(8px)', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: g.btnT, transition: 'all .18s', flexShrink: 0,
+              }}><ChevronDown /></button>
+            )}
           </div>
 
-          {/* Nav */}
           <nav style={{ flex: 1, overflowY: 'auto', padding: '0.875rem 0.625rem' }}>
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem' }}>Menu</div>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', opacity: isExpanded ? 1 : 0 }}>Menu</div>
             {NAV_ITEMS.map(({ id, label, Icon, path }) => {
               const on = location.pathname.startsWith(path)
               return (
@@ -194,11 +209,18 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
                   <div style={{ width: 28, height: 28, borderRadius: 7, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: on ? g.navIconBg : 'transparent', color: on ? g.navActiveT : 'inherit', transition: 'all .18s' }}>
                     <Icon active={on} />
                   </div>
-                  <span style={{ flex: 1 }}>{label}</span>
-                  {on && <ChevronRight />}
+                  <span style={{ flex: 1, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>{label}</span>
+                  {on && isExpanded && <ChevronRight />}
                 </button>
               )
             })}
+
+            {/* Extra content (e.g. Districts) */}
+            {isExpanded && sidebarExtra && (
+              <div style={{ marginTop: '1.25rem' }}>
+                {sidebarExtra}
+              </div>
+            )}
           </nav>
 
           {/* User */}
@@ -214,11 +236,11 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
               <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg,#0d9488,#10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 2.5px rgba(16,185,129,0.40)' }}>
                 <span style={{ color: '#fff', fontSize: '0.78rem', fontWeight: 700 }}>{(user?.full_name || user?.employee_id || 'A')[0].toUpperCase()}</span>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flex: 1, minWidth: 0, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
                 <div style={{ fontWeight: 600, fontSize: '0.79rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.full_name || 'ASHA Worker'}</div>
                 <div style={{ fontSize: '0.64rem', color: g.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.employee_id}</div>
               </div>
-              <ChevronRight />
+              {isExpanded && <ChevronRight />}
             </button>
           </div>
         </div>
@@ -238,7 +260,7 @@ export default function DashboardLayout({ children, topbarContent, contentStyle 
           boxShadow: isDark ? '0 2px 20px rgba(0,0,0,0.30)' : '0 2px 16px rgba(16,185,129,0.08)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {!sidebarOpen && (
+            {isMobile && !sidebarOpen && (
               <button className="dl-btn" onClick={() => setSidebarOpen(true)} style={{
                 width: 36, height: 36, borderRadius: 9, flexShrink: 0,
                 background: g.btn, border: `1px solid ${g.btnBdr}`,

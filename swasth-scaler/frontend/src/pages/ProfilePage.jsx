@@ -95,20 +95,6 @@ export default function ProfilePage() {
   const location = useLocation()
   const { user: authUser, logout } = useAuth()
 
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024)
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 1024)
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  const isExpanded = isMobile ? sidebarOpen : isHovered
-  const sidebarWidth = isMobile ? (sidebarOpen ? 220 : 0) : (isHovered ? 220 : 72)
-
   // Profile state
   const [user, setUser] = useState(null)
   const [avatar, setAvatar] = useState(null)
@@ -122,10 +108,6 @@ export default function ProfilePage() {
 
   const fileInputRef = useRef(null)
 
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('theme', theme)
-  }, [theme])
 
   useEffect(() => {
     async function loadProfile() {
@@ -255,163 +237,25 @@ export default function ProfilePage() {
     green: { label: 'Stable', color: '#34d399', bg: 'rgba(52,211,153,0.14)', bdr: 'rgba(52,211,153,0.30)' },
   }
 
+  const breadcrumbs = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8125rem', color: g.muted }}>
+      <span style={{ cursor: 'pointer' }} onClick={() => navigate('/home')}>Dashboard</span>
+      <span style={{ opacity: 0.5 }}>›</span>
+      <span style={{ color: g.text, fontWeight: 600 }}>Profile</span>
+    </div>
+  )
+
   return (
-    <div style={{
-      display: 'flex', height: '100dvh', overflow: 'hidden',
-      fontFamily: "'Plus Jakarta Sans','DM Sans',sans-serif",
-      color: g.text,
-      background: isDark ? '#04060f' : 'linear-gradient(135deg, #f0fdf8 0%, #dcfce7 40%, #f0fdfa 70%, #f8fff9 100%)',
-      position: 'relative',
-    }}>
+    <DashboardLayout topbarContent={breadcrumbs}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        *{box-sizing:border-box;}
         ::-webkit-scrollbar{width:4px;}
         ::-webkit-scrollbar-track{background:transparent;}
         ::-webkit-scrollbar-thumb{background:${g.divider};border-radius:99px;}
-        .pp-nav:hover{background:${g.hover}!important;}
-        .pp-btn:hover{background:${isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.85)'}!important;}
-        .pp-cta:hover{opacity:0.87!important;transform:translateY(-1px)!important;}
         .pp-row:hover{background:${g.rowHover}!important;}
         .pp-input:focus{border-color:${g.accent}!important;box-shadow:0 0 0 3px ${g.accentL}!important;}
-        input::placeholder{color:${g.muted};opacity:0.8;}
       `}</style>
 
 
-      {/* ══ SIDEBAR (exact replica of HomePage sidebar) ══ */}
-      <aside 
-        onMouseEnter={() => !isMobile && setIsHovered(true)}
-        onMouseLeave={() => !isMobile && setIsHovered(false)}
-        style={{
-          ...panel,
-          width: sidebarWidth, minWidth: sidebarWidth,
-          borderRight: `1px solid ${g.panelBdr}`,
-          overflow: 'hidden', flexShrink: 0,
-          display: 'flex', flexDirection: 'column',
-          transition: 'width .28s cubic-bezier(.4,0,.2,1),min-width .28s cubic-bezier(.4,0,.2,1)',
-          position: isMobile ? 'absolute' : 'relative', zIndex: 20,
-          height: '100dvh',
-          boxShadow: isDark ? '2px 0 24px rgba(0,0,0,0.35)' : '2px 0 20px rgba(13,148,136,0.12)',
-        }}
-      >
-        <div style={{ width: 220, display: 'flex', flexDirection: 'column', height: '100%' }}>
-
-          {/* Logo */}
-          <div style={{ padding: '1.125rem 1rem 0.875rem', borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 11, flexShrink: 0, overflow: 'hidden', background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: 'drop-shadow(0 0 10px rgba(16,185,129,0.5))' }}>
-                <img src={logo} alt="logo" style={{ width: '82%', height: '82%', objectFit: 'contain' }} />
-              </div>
-              <div style={{ opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
-                <div style={{ fontWeight: 800, fontSize: '0.9rem', color: g.text, letterSpacing: '-0.022em', lineHeight: 1.15 }}>Swasthya Setu</div>
-                <div style={{ fontSize: '0.58rem', fontWeight: 700, color: g.accent, letterSpacing: '0.09em', textTransform: 'uppercase' }}>ASHA Dashboard</div>
-              </div>
-            </div>
-            {isMobile && (
-              <button className="pp-btn" onClick={() => setSidebarOpen(false)} style={{ width: 28, height: 28, borderRadius: 7, background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(8px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .18s', flexShrink: 0 }}>
-                <ChevDown />
-              </button>
-            )}
-          </div>
-
-          {/* Nav */}
-          <nav style={{ flex: 1, overflowY: 'auto', padding: '0.875rem 0.625rem' }}>
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', opacity: isExpanded ? 1 : 0 }}>Menu</div>
-            {NAV_ITEMS.map(({ id, label, Icon, path }) => {
-              const on = location.pathname.startsWith(path)
-              return (
-                <button key={id} className="pp-nav" onClick={() => navigate(path)} style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem',
-                  padding: '0.5rem 0.625rem', borderRadius: 10, marginBottom: 3,
-                  background: on ? g.navActiveBg : 'transparent',
-                  border: on ? `1px solid ${g.navActiveBdr}` : '1px solid transparent',
-                  boxShadow: on ? g.navShd : 'none',
-                  color: on ? g.navActiveT : g.text, fontWeight: on ? 700 : 500, fontSize: '0.875rem',
-                  cursor: 'pointer', textAlign: 'left', transition: 'all .18s',
-                  backdropFilter: on ? 'blur(8px)' : 'none',
-                }}
-                  onMouseEnter={e => { if (!on) e.currentTarget.style.background = g.hover }}
-                  onMouseLeave={e => { if (!on) e.currentTarget.style.background = 'transparent' }}
-                >
-                  <div style={{ width: 28, height: 28, borderRadius: 7, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: on ? g.navIconBg : 'transparent', color: on ? g.navActiveT : 'inherit', transition: 'all .18s' }}>
-                    <Icon active={on} />
-                  </div>
-                  <span style={{ flex: 1, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>{label}</span>
-                  {on && isExpanded && <ChevRight />}
-                </button>
-              )
-            })}
-          </nav>
-
-          {/* User (active state since we're on /profile) */}
-          <div style={{ padding: '0.75rem 0.875rem', borderTop: `1px solid ${g.divider}` }}>
-            <div style={{
-              width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem',
-              padding: '0.5rem 0.375rem', borderRadius: 9,
-              background: g.navActiveBg, border: `1px solid ${g.navActiveBdr}`,
-              boxShadow: g.navShd,
-            }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: 'linear-gradient(135deg,#0d9488,#10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 2.5px rgba(16,185,129,0.40)' }}>
-                {avatar
-                  ? <img src={avatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  : <span style={{ color: '#fff', fontSize: '0.78rem', fontWeight: 700 }}>{(authUser?.full_name || authUser?.employee_id || 'A')[0].toUpperCase()}</span>
-                }
-              </div>
-              <div style={{ flex: 1, minWidth: 0, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
-                <div style={{ fontWeight: 600, fontSize: '0.79rem', color: g.navActiveT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{authUser?.full_name || 'ASHA Worker'}</div>
-                <div style={{ fontSize: '0.64rem', color: g.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{authUser?.employee_id}</div>
-              </div>
-              {isExpanded && <ChevRight />}
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* ══ MAIN ══ */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, position: 'relative', zIndex: 5 }}>
-
-        {/* ── Topbar (exact replica of HomePage topbar) ── */}
-        <header style={{
-          ...panel,
-          borderBottom: `1px solid ${g.panelBdr}`,
-          height: 62, flexShrink: 0,
-          display: 'flex', alignItems: 'center', padding: '0 1.25rem', gap: '0.75rem',
-          position: 'relative', zIndex: 10,
-          boxShadow: isDark ? '0 2px 20px rgba(0,0,0,0.30)' : '0 2px 16px rgba(13,148,136,0.10)',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {(isMobile || !isExpanded) && (
-              <button className="pp-btn" onClick={() => setSidebarOpen(true)} style={{ width: 36, height: 36, borderRadius: 9, background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(12px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .18s', flexShrink: 0 }}>
-                <MenuBars />
-              </button>
-            )}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8125rem', color: g.muted }}>
-              <span style={{ cursor: 'pointer' }} onClick={() => navigate('/home')}>Dashboard</span>
-              <span style={{ opacity: 0.5 }}>›</span>
-              <span style={{ color: g.text, fontWeight: 600 }}>Profile</span>
-            </div>
-          </div>
-
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-            <div style={{ position: 'relative', width: '100%', maxWidth: 340 }}>
-              <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: g.muted, pointerEvents: 'none' }}><SearchIcon /></span>
-              <input placeholder="Search patients…" style={{ ...glassInput, width: '100%', height: 36, paddingLeft: '2.1rem', paddingRight: '2.75rem', borderRadius: 10, fontSize: '0.845rem', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
-                onFocus={e => { e.target.style.borderColor = g.accent; e.target.style.boxShadow = `0 0 0 3px ${g.accentL}` }}
-                onBlur={e => { e.target.style.borderColor = g.btnBdr; e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)' }}
-              />
-              <span style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', fontSize: '0.6rem', fontWeight: 700, color: g.muted, background: g.btn, border: `1px solid ${g.btnBdr}`, padding: '2px 5px', borderRadius: 5, pointerEvents: 'none', backdropFilter: 'blur(8px)' }}>⌘K</span>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexShrink: 0 }}>
-            <button className="pp-btn" onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')} style={{ width: 36, height: 36, borderRadius: '50%', background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(12px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .2s', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-              {isDark ? <SunIcon /> : <MoonIcon />}
-            </button>
-            <button className="pp-cta" onClick={() => navigate('/patient')} style={{ height: 36, padding: '0 1rem', borderRadius: 10, background: 'linear-gradient(135deg,#0d9488 0%,#10b981 100%)', border: '1px solid rgba(255,255,255,0.28)', color: '#fff', fontWeight: 700, fontSize: '0.845rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, boxShadow: '0 4px 14px rgba(16,185,129,0.38)', transition: 'all .2s', letterSpacing: '-0.01em' }}>
-              + New Patient
-            </button>
-          </div>
-        </header>
 
         {/* ── Page Content ── */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative', zIndex: 1 }}>
@@ -625,7 +469,6 @@ export default function ProfilePage() {
             </>
           )}
         </div>
-      </div>
-    </div>
+    </DashboardLayout>
   )
 }

@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import logo from '../images/logo/logo.png'
+import DashboardLayout from '../components/DashboardLayout'
 
 /* ─── Constants ──────────────────────────────────────────── */
 const ALL_DISTRICTS = [
@@ -155,22 +156,9 @@ export default function HomePage() {
   const [viewTab, setViewTab] = useState('Table')
   const [query, setQuery] = useState('')
   const [districtFilter, setDistrictFilter] = useState('')
-  const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024)
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
   const [sortField, setSortField] = useState('date')
   const [sortOrder, setSortOrder] = useState('desc')
   const debounceRef = useRef(null)
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 1024)
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
-  }, [])
-
-  const isExpanded = isMobile ? sidebarOpen : isHovered
-  const sidebarWidth = isMobile ? (sidebarOpen ? 220 : 0) : (isHovered ? 220 : 72)
 
   const [patientResults, setPatientResults] = useState([])
   const [loading, setLoading] = useState(false)
@@ -178,11 +166,6 @@ export default function HomePage() {
   const [showCount, setShowCount] = useState(50)
   const [dashError, setDashError] = useState(null)
   const [summaryCounts, setSummaryCounts] = useState({ red: 0, yellow: 0, green: 0 })
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('theme', theme)
-  }, [theme])
 
   useEffect(() => {
     const c = { red: 0, yellow: 0, green: 0 }
@@ -238,13 +221,7 @@ export default function HomePage() {
   }
 
   const visible = patientResults.slice(0, showCount)
-
-  const groups = [
-    { key: 'red', label: 'Emergency', dot: '#f87171', items: visible.filter(p => p.latestSeverity === 'red') },
-    { key: 'yellow', label: 'Moderate', dot: '#fbbf24', items: visible.filter(p => p.latestSeverity === 'yellow') },
-    { key: 'green', label: 'Stable', dot: '#34d399', items: visible.filter(p => p.latestSeverity === 'green') },
-    { key: 'none', label: 'Unclassified', dot: '#9ca3af', items: visible.filter(p => !p.latestSeverity) },
-  ].filter(g => g.items.length > 0)
+  const SEV_ORDER = { red: 0, yellow: 1, green: 2, none: 3 }
 
   const sortedResults = [...visible].sort((a, b) => {
     let valA, valB
@@ -272,31 +249,20 @@ export default function HomePage() {
     return <span style={{ marginLeft: 4 }}>{sortOrder === 'asc' ? '↑' : '↓'}</span>
   }
 
-  const isDark = theme === 'dark'
-
-  /* Glass tokens */
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
   const g = {
-    panelBg: isDark ? 'rgba(6,12,30,0.52)' : 'rgba(255,255,255,0.28)',
-    panelBdr: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.62)',
-    blur: 'blur(28px) saturate(170%)',
-    cardBg: isDark ? 'rgba(10,18,42,0.48)' : 'rgba(255,255,255,0.26)',
-    cardBdr: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.58)',
-    cardShd: isDark ? '0 8px 32px rgba(0,0,0,0.40),inset 0 1px 0 rgba(255,255,255,0.05)' : '0 8px 32px rgba(13,148,136,0.10),inset 0 1px 0 rgba(255,255,255,0.80)',
-    rowHover: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.38)',
-    insetBg: isDark ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.20)',
+    panelBg: isDark ? 'rgba(6,12,30,0.60)' : 'rgba(255,255,255,0.55)',
+    panelBdr: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(200,240,220,0.70)',
+    blur: 'blur(28px) saturate(160%)',
     text: isDark ? '#ddeeff' : '#0c2a1d',
     muted: isDark ? '#6a84aa' : '#4a7a68',
     label: isDark ? '#3a5070' : '#88b09e',
     accent: '#10b981',
-    accentL: isDark ? 'rgba(16,185,129,0.22)' : 'rgba(16,185,129,0.16)',
-    accentB: isDark ? 'rgba(16,185,129,0.50)' : 'rgba(16,185,129,0.55)',
-    accentT: isDark ? '#6ee7b7' : '#065f46',
-    navActiveBg: isDark ? 'rgba(16,185,129,0.22)' : 'rgba(16,185,129,0.16)',
-    navActiveBdr: isDark ? 'rgba(16,185,129,0.50)' : 'rgba(16,185,129,0.55)',
-    navActiveT: isDark ? '#6ee7b7' : '#065f46',
-    navIconBg: isDark ? 'rgba(16,185,129,0.28)' : 'rgba(16,185,129,0.18)',
-    navShd: '0 2px 14px rgba(16,185,129,0.20)',
     hover: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(16,185,129,0.09)',
+    rowHover: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(16,185,129,0.06)',
+    cardBg: isDark ? 'rgba(11,21,45,0.65)' : 'rgba(255,255,255,0.75)',
+    cardBdr: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.25)',
+    cardShd: isDark ? '0 12px 40px rgba(0,0,0,0.5)' : '0 8px 30px rgba(13,148,136,0.08)',
     divider: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.52)',
     btn: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.58)',
     btnBdr: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.78)',
@@ -313,176 +279,102 @@ export default function HomePage() {
     color: g.text, outline: 'none', transition: 'all .2s',
   }
 
+  const districtsExtra = (
+    <>
+      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', marginTop: '1.125rem' }}>Districts</div>
+      {DISTRICT_GROUPS.map(d => {
+        const on = districtFilter === d.label
+        return (
+          <button key={d.label} className="hp-nav"
+            onClick={() => setDistrictFilter(on ? '' : d.label)}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.4rem 0.625rem', borderRadius: 10, marginBottom: 3, background: on ? `${d.color}18` : 'transparent', boxShadow: on ? `inset 3px 0 0 ${d.color}` : 'none', border: '1px solid transparent', color: on ? d.color : g.text, fontWeight: on ? 700 : 500, fontSize: '0.875rem', cursor: 'pointer', textAlign: 'left', transition: 'all .18s' }}
+            onMouseEnter={e => { if (!on) e.currentTarget.style.background = g.hover }}
+            onMouseLeave={e => { if (!on) e.currentTarget.style.background = 'transparent' }}
+          >
+            <div style={{ width: 24, height: 24, borderRadius: 6, background: `${d.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: d.color, boxShadow: on ? `0 0 8px ${d.color}` : 'none', transition: 'all .2s' }} />
+            </div>
+            <span style={{ flex: 1, whiteSpace: 'nowrap' }}>{d.label}</span>
+            {on && <ChevRight color={d.color} />}
+          </button>
+        )
+      })}
+    </>
+  )
+
+  const topbar = (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 10px #10b981' }} />
+        <span style={{ fontWeight: 700, fontSize: '0.8125rem', letterSpacing: '0.01em' }}>System Online</span>
+      </div>
+
+      <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+        <div style={{ position: 'relative', width: '100%', maxWidth: 340 }}>
+          <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: g.muted, pointerEvents: 'none' }}>
+            <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </span>
+          <input 
+            placeholder="Search patients…" 
+            style={{ ...glassInput, width: '100%', height: 36, paddingLeft: '2.1rem', paddingRight: '2.75rem', borderRadius: 10, fontSize: '0.845rem' }} 
+            value={query} 
+            onChange={e => setQuery(e.target.value)} 
+          />
+          {query && (
+            <button onClick={() => setQuery('')} style={{ position: 'absolute', right: 34, top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'transparent', color: g.muted, cursor: 'pointer' }}>
+              <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          )}
+          <span style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', fontSize: '0.6rem', fontWeight: 700, color: g.muted, background: g.btn, border: `1px solid ${g.btnBdr}`, padding: '2px 5px', borderRadius: 5, pointerEvents: 'none' }}>⌘K</span>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+        <button className="hp-cta" onClick={() => navigate('/patient')} style={{ height: 36, padding: '0 1rem', borderRadius: 10, background: 'linear-gradient(135deg,#0d9488 0%,#10b981 100%)', border: '1px solid rgba(255,255,255,0.28)', color: '#fff', fontWeight: 700, fontSize: '0.845rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(16,185,129,0.38)' }}>
+          + New Patient
+        </button>
+      </div>
+    </>
+  )
+
   return (
-    <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', fontFamily: "'Plus Jakarta Sans','DM Sans',sans-serif", color: g.text, background: isDark ? '#04060f' : '#a8e6d4', position: 'relative' }}>
+    <DashboardLayout sidebarExtra={districtsExtra} topbarContent={topbar}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-        *{box-sizing:border-box;}
         ::-webkit-scrollbar{width:4px;}
         ::-webkit-scrollbar-track{background:transparent;}
         ::-webkit-scrollbar-thumb{background:${g.divider};border-radius:99px;}
-        .hp-nav:hover{background:${g.hover}!important;}
         .hp-row:hover{background:${g.rowHover}!important;cursor:pointer;}
         .hp-btn:hover{background:${isDark ? 'rgba(255,255,255,0.13)' : 'rgba(255,255,255,0.85)'}!important;}
         .hp-del:hover{background:rgba(239,68,68,0.15)!important;color:#f87171!important;}
         .hp-cta:hover{opacity:0.87!important;transform:translateY(-1px)!important;}
-        .hp-chip:hover{transform:translateY(-1px);}
-        input::placeholder{color:${g.muted};opacity:0.8;}
-        select option{background:${isDark ? '#0a1525' : '#edfaf5'};color:${g.text};}
+        .hp-nav:hover{background:${g.hover}!important;}
       `}</style>
 
-
-      {/* ══ SIDEBAR ══ */}
-      <aside 
-        onMouseEnter={() => !isMobile && setIsHovered(true)}
-        onMouseLeave={() => !isMobile && setIsHovered(false)}
-        style={{
-          background: g.panelBg, backdropFilter: g.blur, WebkitBackdropFilter: g.blur,
-          width: sidebarWidth, minWidth: sidebarWidth,
-          borderRight: `1px solid ${g.panelBdr}`, overflow: 'hidden', flexShrink: 0,
-          display: 'flex', flexDirection: 'column',
-          transition: 'width .28s cubic-bezier(.4,0,.2,1),min-width .28s cubic-bezier(.4,0,.2,1)',
-          position: isMobile ? 'absolute' : 'relative', zIndex: 20,
-          height: '100dvh',
-          boxShadow: isDark ? '2px 0 24px rgba(0,0,0,0.35)' : '2px 0 20px rgba(13,148,136,0.12)',
-        }}
-      >
-        <div style={{ width: 220, display: 'flex', flexDirection: 'column', height: '100%' }}>
-
-          {/* Logo row */}
-          <div style={{ padding: '1.125rem 1rem 0.875rem', borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-              <div style={{ width: 40, height: 40, borderRadius: 11, flexShrink: 0, overflow: 'hidden', background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: 'drop-shadow(0 0 10px rgba(16,185,129,0.5))' }}>
-                <img src={logo} alt="logo" style={{ width: '82%', height: '82%', objectFit: 'contain' }} />
+        <div style={{ padding: 'clamp(1rem, 3.5vw, 2.25rem)', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+          
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1.25rem' }}>
+            <div>
+              <h1 style={{ fontSize: 'clamp(1.5rem, 4vw, 2.25rem)', fontWeight: 800, color: g.text, letterSpacing: '-0.03em', lineHeight: 1.1 }}>ASHA Worker <span style={{ color: g.accent }}>Dashboard</span></h1>
+              <p style={{ color: g.muted, fontSize: '0.9375rem', marginTop: '0.375rem', fontWeight: 500 }}>Welcome back, track and manage your patient visits effectively.</p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <div style={{ ...card, padding: '0.75rem 1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                <span style={{ fontSize: '1.25rem', fontWeight: 800, color: g.accent }}>{patientResults.length}</span>
+                <span style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: g.muted, letterSpacing: '0.05em' }}>Total Patients</span>
               </div>
-              <div style={{ opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
-                <div style={{ fontWeight: 800, fontSize: '0.9rem', color: g.text, letterSpacing: '-0.022em', lineHeight: 1.15 }}>Swasthya Setu</div>
-                <div style={{ fontSize: '0.58rem', fontWeight: 700, color: g.accent, letterSpacing: '0.09em', textTransform: 'uppercase' }}>ASHA Dashboard</div>
+              <div style={{ ...card, padding: '0.75rem 1.25rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                <span style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ff4d4d' }}>{patientResults.filter(p => (p.latestSeverity || '').toLowerCase() === 'red').length}</span>
+                <span style={{ fontSize: '0.625rem', fontWeight: 700, textTransform: 'uppercase', color: g.muted, letterSpacing: '0.05em' }}>Critical</span>
               </div>
             </div>
-            {isMobile && (
-              <button className="hp-btn" onClick={() => setSidebarOpen(false)} style={{ width: 28, height: 28, borderRadius: 7, background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(8px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .18s', flexShrink: 0 }}>
-                <ChevDown />
-              </button>
-            )}
           </div>
 
-          {/* Nav */}
-          <nav style={{ flex: 1, overflowY: 'auto', padding: '0.875rem 0.625rem' }}>
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', opacity: isExpanded ? 1 : 0 }}>Menu</div>
-            {NAV_ITEMS.map(({ id, label, Icon, path }) => {
-              const on = location.pathname.startsWith(path)
-              return (
-                <button key={id} className="hp-nav" onClick={() => navigate(path)} style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem',
-                  padding: '0.5rem 0.625rem', borderRadius: 10, marginBottom: 3,
-                  background: on ? g.navActiveBg : 'transparent',
-                  border: on ? `1px solid ${g.navActiveBdr}` : '1px solid transparent',
-                  boxShadow: on ? g.navShd : 'none',
-                  color: on ? g.navActiveT : g.text, fontWeight: on ? 700 : 500, fontSize: '0.875rem',
-                  cursor: 'pointer', textAlign: 'left', transition: 'all .18s',
-                  backdropFilter: on ? 'blur(8px)' : 'none',
-                }}
-                  onMouseEnter={e => { if (!on) e.currentTarget.style.background = g.hover }}
-                  onMouseLeave={e => { if (!on) e.currentTarget.style.background = 'transparent' }}
-                >
-                  <div style={{ width: 28, height: 28, borderRadius: 7, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: on ? g.navIconBg : 'transparent', color: on ? g.navActiveT : 'inherit', transition: 'all .18s' }}>
-                    <Icon active={on} />
-                  </div>
-                  <span style={{ flex: 1, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>{label}</span>
-                  {on && isExpanded && <ChevRight />}
-                </button>
-              )
-            })}
-
-            {/* Districts */}
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', marginTop: '1.125rem', opacity: isExpanded ? 1 : 0 }}>Districts</div>
-            {DISTRICT_GROUPS.map(d => {
-              const on = districtFilter === d.label
-              return (
-                <button key={d.label} className="hp-nav"
-                  onClick={() => setDistrictFilter(on ? '' : d.label)}
-                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.4rem 0.625rem', borderRadius: 10, marginBottom: 3, background: on ? `${d.color}18` : 'transparent', boxShadow: on ? `inset 3px 0 0 ${d.color}` : 'none', border: '1px solid transparent', color: on ? d.color : g.text, fontWeight: on ? 700 : 500, fontSize: '0.875rem', cursor: 'pointer', textAlign: 'left', transition: 'all .18s' }}
-                  onMouseEnter={e => { if (!on) e.currentTarget.style.background = g.hover }}
-                  onMouseLeave={e => { if (!on) e.currentTarget.style.background = 'transparent' }}
-                >
-                  <div style={{ width: 24, height: 24, borderRadius: 6, background: `${d.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: d.color, boxShadow: on ? `0 0 8px ${d.color}` : 'none', transition: 'all .2s' }} />
-                  </div>
-                  <span style={{ flex: 1, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>{d.label}</span>
-                  {on && isExpanded && <ChevRight color={d.color} />}
-                </button>
-              )
-            })}
-          </nav>
-
-          {/* User */}
-          <div style={{ padding: '0.75rem 0.875rem', borderTop: `1px solid ${g.divider}` }}>
-            <button className="hp-nav" onClick={() => navigate('/profile')} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0.375rem', borderRadius: 9, border: 'none', background: 'transparent', cursor: 'pointer', color: g.text, transition: 'all .15s' }}
-              onMouseEnter={e => e.currentTarget.style.background = g.hover}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            >
-              <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg,#0d9488,#10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 2.5px rgba(16,185,129,0.40)' }}>
-                <span style={{ color: '#fff', fontSize: '0.78rem', fontWeight: 700 }}>{(user?.full_name || user?.employee_id || 'A')[0].toUpperCase()}</span>
-              </div>
-              <div style={{ flex: 1, minWidth: 0, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
-                <div style={{ fontWeight: 600, fontSize: '0.79rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.full_name || 'ASHA Worker'}</div>
-                <div style={{ fontSize: '0.64rem', color: g.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.employee_id}</div>
-              </div>
-              {isExpanded && <ChevRight />}
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      {/* ══ MAIN ══ */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, position: 'relative', zIndex: 5 }}>
-
-        {/* Topbar */}
-        <header style={{
-          background: g.panelBg, backdropFilter: g.blur, WebkitBackdropFilter: g.blur,
-          borderBottom: `1px solid ${g.panelBdr}`,
-          height: 62, flexShrink: 0,
-          display: 'flex', alignItems: 'center', padding: '0 1.25rem', gap: '0.75rem',
-          position: 'relative', zIndex: 10,
-          boxShadow: isDark ? '0 2px 20px rgba(0,0,0,0.30)' : '0 2px 16px rgba(13,148,136,0.10)',
-        }}>
-          {/* Left */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {(isMobile || !isExpanded) && (
-              <button className="hp-btn" onClick={() => setSidebarOpen(true)} style={{ width: 36, height: 36, borderRadius: 9, background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(12px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .18s', flexShrink: 0 }}>
-                <MenuBars />
-              </button>
-            )}
-          </div>
-          {/* Centre – search */}
-          <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-            <div style={{ position: 'relative', width: '100%', maxWidth: 340 }}>
-              <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: g.muted, pointerEvents: 'none' }}><SearchIcon /></span>
-              <input placeholder="Search patients…" value={query} onChange={e => setQuery(e.target.value)} style={{ ...glassInput, width: '100%', height: 36, paddingLeft: '2.1rem', paddingRight: '2.75rem', borderRadius: 10, fontSize: '0.845rem', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
-                onFocus={e => { e.target.style.borderColor = g.accent; e.target.style.boxShadow = `0 0 0 3px ${g.accentL}` }}
-                onBlur={e => { e.target.style.borderColor = g.btnBdr; e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)' }}
-              />
-              <span style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', fontSize: '0.6rem', fontWeight: 700, color: g.muted, background: g.btn, border: `1px solid ${g.btnBdr}`, padding: '2px 5px', borderRadius: 5, pointerEvents: 'none', backdropFilter: 'blur(8px)' }}>⌘K</span>
-            </div>
-          </div>
-          {/* Right */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexShrink: 0 }}>
-            <button className="hp-btn" onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')} style={{ width: 36, height: 36, borderRadius: '50%', background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(12px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .2s', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-              {isDark ? <SunIcon /> : <MoonIcon />}
-            </button>
-            <button className="hp-cta" onClick={() => navigate('/patient')} style={{ height: 36, padding: '0 1rem', borderRadius: 10, background: 'linear-gradient(135deg,#0d9488 0%,#10b981 100%)', border: '1px solid rgba(255,255,255,0.28)', color: '#fff', fontWeight: 700, fontSize: '0.845rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, boxShadow: '0 4px 14px rgba(16,185,129,0.38)', transition: 'all .2s', letterSpacing: '-0.01em' }}>
-              + New Patient
-            </button>
-          </div>
-        </header>
-
-        {/* ── Content ── */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '1.375rem 1.5rem', position: 'relative', zIndex: 1 }}>
-
-          {/* ── Stat chips row (matches screenshot tab row) ── */}
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.25rem', alignItems: 'center' }}>
-            {/* ALL */}
+          {/* ── Stat chips row ── */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
             <button className="hp-chip" onClick={() => setActiveTab('ALL')} style={{
               padding: '0.4rem 1rem', borderRadius: 99, cursor: 'pointer', transition: 'all .18s',
               background: activeTab === 'ALL' ? g.accent : g.cardBg,
@@ -518,15 +410,8 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* ── Page header ── */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-            <h1 style={{ fontSize: '1.35rem', fontWeight: 800, color: g.text, letterSpacing: '-0.025em' }}>Your Patient List</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-            </div>
-          </div>
-
           {/* ── View tabs ── */}
-          <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', gap: '0.25rem' }}>
             {['Table', 'Board'].map(t => (
               <button key={t} onClick={() => setViewTab(t)} style={{
                 padding: '0.35rem 1rem', borderRadius: 8, cursor: 'pointer', transition: 'all .15s',
@@ -663,7 +548,6 @@ export default function HomePage() {
             </div>
           )}
         </div>
-      </div>
-    </div>
+    </DashboardLayout>
   )
 }
