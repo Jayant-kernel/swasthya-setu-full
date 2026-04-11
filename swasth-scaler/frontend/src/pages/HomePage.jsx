@@ -138,6 +138,8 @@ export default function HomePage() {
   const [districtFilter, setDistrictFilter] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
+  const [sortField, setSortField] = useState('date')
+  const [sortOrder, setSortOrder] = useState('desc')
   const debounceRef = useRef(null)
 
   const [patientResults, setPatientResults] = useState([])
@@ -176,14 +178,12 @@ export default function HomePage() {
         if (!grouped.has(k)) grouped.set(k, { id: r.patient_id || k, name: r.patient_name, age: r.age, gender: r.gender, district: r.district, triage_records: [] })
         grouped.get(k).triage_records.push({ id: r.id, severity: r.severity, brief: r.brief, created_at: r.created_at })
       }
-
-      let patients = Array.from(grouped.values()).map(p => {
+      const patients = Array.from(grouped.values()).map(p => {
         p.triage_records.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
         p.latestSeverity = p.triage_records[0]?.severity || null
         return p
       })
-      if (sortMode === 'critical') patients.sort((a, b) => (SEV_ORDER[a.latestSeverity] ?? 3) - (SEV_ORDER[b.latestSeverity] ?? 3))
-
+      
       setPatientResults(patients)
       setTotalCount(patients.length)
       setShowCount(50)
@@ -191,13 +191,13 @@ export default function HomePage() {
       setDashError(err?.message || 'Unknown error')
       setPatientResults([]); setTotalCount(0)
     } finally { setLoading(false) }
-  }, [activeTab, query, districtFilter, sortMode])
+  }, [activeTab, query, districtFilter])
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(fetchRecords, query ? 400 : 0)
     return () => clearTimeout(debounceRef.current)
-  }, [activeTab, query, districtFilter, sortMode, fetchRecords])
+  }, [activeTab, query, districtFilter, fetchRecords])
 
   const handlePatientClick = p => navigate('/patient', { state: { prefill: { name: p.name, age: p.age, gender: p.gender, district: p.district }, patientId: p.id } })
   const handleDelete = (e, id) => {
@@ -208,12 +208,39 @@ export default function HomePage() {
   }
 
   const visible = patientResults.slice(0, showCount)
+
   const groups = [
     { key: 'red', label: 'Emergency', dot: '#f87171', items: visible.filter(p => p.latestSeverity === 'red') },
     { key: 'yellow', label: 'Moderate', dot: '#fbbf24', items: visible.filter(p => p.latestSeverity === 'yellow') },
     { key: 'green', label: 'Stable', dot: '#34d399', items: visible.filter(p => p.latestSeverity === 'green') },
     { key: 'none', label: 'Unclassified', dot: '#9ca3af', items: visible.filter(p => !p.latestSeverity) },
   ].filter(g => g.items.length > 0)
+
+  const sortedResults = [...visible].sort((a, b) => {
+    let valA, valB
+    if (sortField === 'name') { valA = a.name?.toLowerCase(); valB = b.name?.toLowerCase() }
+    else if (sortField === 'date') { valA = new Date(a.triage_records?.[0]?.created_at || 0); valB = new Date(b.triage_records?.[0]?.created_at || 0) }
+    else if (sortField === 'district') { valA = a.district?.toLowerCase(); valB = b.district?.toLowerCase() }
+    else if (sortField === 'severity') { valA = SEV_ORDER[a.latestSeverity] ?? 3; valB = SEV_ORDER[b.latestSeverity] ?? 3 }
+    
+    if (valA < valB) return sortOrder === 'asc' ? -1 : 1
+    if (valA > valB) return sortOrder === 'asc' ? 1 : -1
+    return 0
+  })
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortOrder('asc')
+    }
+  }
+
+  const SortIndicator = ({ field }) => {
+    if (sortField !== field) return <span style={{ opacity: 0.3, marginLeft: 4 }}>⇅</span>
+    return <span style={{ marginLeft: 4 }}>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+  }
 
   const isDark = theme === 'dark'
 
@@ -222,14 +249,11 @@ export default function HomePage() {
     panelBg: isDark ? 'rgba(6,12,30,0.52)' : 'rgba(255,255,255,0.28)',
     panelBdr: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.62)',
     blur: 'blur(28px) saturate(170%)',
-
     cardBg: isDark ? 'rgba(10,18,42,0.48)' : 'rgba(255,255,255,0.26)',
     cardBdr: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.58)',
     cardShd: isDark ? '0 8px 32px rgba(0,0,0,0.40),inset 0 1px 0 rgba(255,255,255,0.05)' : '0 8px 32px rgba(13,148,136,0.10),inset 0 1px 0 rgba(255,255,255,0.80)',
-
     rowHover: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.38)',
     insetBg: isDark ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.20)',
-
     text: isDark ? '#ddeeff' : '#0c2a1d',
     muted: isDark ? '#6a84aa' : '#4a7a68',
     label: isDark ? '#3a5070' : '#88b09e',
@@ -237,19 +261,16 @@ export default function HomePage() {
     accentL: isDark ? 'rgba(16,185,129,0.22)' : 'rgba(16,185,129,0.16)',
     accentB: isDark ? 'rgba(16,185,129,0.50)' : 'rgba(16,185,129,0.55)',
     accentT: isDark ? '#6ee7b7' : '#065f46',
-
     navActiveBg: isDark ? 'rgba(16,185,129,0.22)' : 'rgba(16,185,129,0.16)',
     navActiveBdr: isDark ? 'rgba(16,185,129,0.50)' : 'rgba(16,185,129,0.55)',
     navActiveT: isDark ? '#6ee7b7' : '#065f46',
     navIconBg: isDark ? 'rgba(16,185,129,0.28)' : 'rgba(16,185,129,0.18)',
     navShd: '0 2px 14px rgba(16,185,129,0.20)',
-
     hover: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(16,185,129,0.09)',
     divider: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.52)',
     btn: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.58)',
     btnBdr: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.78)',
-    btnT: isDark ? '#b8cce4' : '#065f46',
-  }
+  };
 
   const card = {
     background: g.cardBg, backdropFilter: g.blur, WebkitBackdropFilter: g.blur,
@@ -522,58 +543,60 @@ export default function HomePage() {
           )}
 
           {/* ── TABLE VIEW ── */}
-          {viewTab === 'Table' && groups.length > 0 && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {groups.map(group => (
-                <div key={group.key} style={{ ...card, overflow: 'hidden' }}>
-                  {/* Group header */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1.375rem', background: g.insetBg, borderBottom: `1px solid ${g.divider}`, backdropFilter: 'blur(8px)' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', fontWeight: 700, color: g.text }}>
-                      <span style={{ width: 7, height: 7, borderRadius: '50%', background: group.dot, boxShadow: `0 0 6px ${group.dot}` }} />
-                      {group.label}
-                      <span style={{ fontWeight: 500, color: g.muted, fontSize: '0.8rem' }}>({group.items.length})</span>
+          {viewTab === 'Table' && sortedResults.length > 0 && (
+            <div style={{ ...card, overflow: 'hidden' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1.2fr 1fr 1fr 0.5fr', padding: '0.875rem 1.375rem', borderBottom: `1px solid ${g.divider}`, background: g.insetBg, backdropFilter: 'blur(8px)' }}>
+                {[
+                  { label: 'Name', field: 'name' },
+                  { label: 'Last Visit', field: 'date' },
+                  { label: 'District', field: 'district' },
+                  { label: 'Priority', field: 'severity' },
+                  { label: 'Status', field: 'severity' },
+                  { label: '', field: null }
+                ].map(col => (
+                  <div 
+                    key={col.label} 
+                    onClick={() => col.field && handleSort(col.field)}
+                    style={{ 
+                      fontSize: '0.65rem', fontWeight: 700, color: g.label, letterSpacing: '0.07em', 
+                      textTransform: 'uppercase', cursor: col.field ? 'pointer' : 'default',
+                      userSelect: 'none', display: 'flex', alignItems: 'center'
+                    }}
+                  >
+                    {col.label}
+                    {col.field && <SortIndicator field={col.field} />}
+                  </div>
+                ))}
+              </div>
+
+              {sortedResults.map((p, idx) => {
+                const last = p.triage_records?.[0]
+                return (
+                  <div key={p.id} className="hp-row" onClick={() => handlePatientClick(p)} style={{
+                    display: 'grid', gridTemplateColumns: '2fr 1.2fr 1.2fr 1fr 1fr 0.5fr',
+                    padding: '0.75rem 1.375rem', alignItems: 'center',
+                    borderBottom: idx < sortedResults.length - 1 ? `1px solid ${g.divider}` : 'none',
+                    transition: 'background .12s',
+                  }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                      <span style={{ fontWeight: 700, fontSize: '0.875rem', color: g.text }}>{p.name}</span>
+                      <span style={{ fontSize: '0.72rem', color: g.muted }}>
+                        {[p.age && `${p.age} yrs`, p.gender].filter(Boolean).join(' · ')}
+                        {last?.brief ? ` · ${last.brief.slice(0, 28)}${last.brief.length > 28 ? '…' : ''}` : ''}
+                      </span>
                     </div>
-                    <button onClick={() => navigate('/patient')} style={{ width: 24, height: 24, borderRadius: 6, border: `1px solid ${g.cardBdr}`, background: g.btn, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.muted, fontSize: '1rem', backdropFilter: 'blur(8px)' }}>+</button>
+                    <div style={{ fontSize: '0.8rem', color: g.text, fontWeight: 500 }}>{last ? timeAgo(last.created_at) : '—'}</div>
+                    <div style={{ fontSize: '0.8rem', color: g.text, fontWeight: 500 }}>{p.district || '—'}</div>
+                    <div><PriorityBadge severity={p.latestSeverity} /></div>
+                    <div><SeverityPill severity={p.latestSeverity} /></div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <button className="hp-del" onClick={e => handleDelete(e, p.id)} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${g.cardBdr}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.muted, transition: 'all .15s' }}>
+                        <TrashIcon />
+                      </button>
+                    </div>
                   </div>
-
-                  {/* Table header */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1.2fr 1fr 1fr 0.5fr', padding: '0.5rem 1.375rem', borderBottom: `1px solid ${g.divider}` }}>
-                    {['Name', 'Last Visit', 'District', 'Priority', 'Status', ''].map(col => (
-                      <div key={col} style={{ fontSize: '0.65rem', fontWeight: 700, color: g.label, letterSpacing: '0.07em', textTransform: 'uppercase' }}>{col}</div>
-                    ))}
-                  </div>
-
-                  {/* Rows */}
-                  {group.items.map((p, idx) => {
-                    const last = p.triage_records?.[0]
-                    return (
-                      <div key={p.id} className="hp-row" onClick={() => handlePatientClick(p)} style={{
-                        display: 'grid', gridTemplateColumns: '2fr 1.2fr 1.2fr 1fr 1fr 0.5fr',
-                        padding: '0.75rem 1.375rem', alignItems: 'center',
-                        borderBottom: idx < group.items.length - 1 ? `1px solid ${g.divider}` : 'none',
-                        transition: 'background .12s',
-                      }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                          <span style={{ fontWeight: 700, fontSize: '0.875rem', color: g.text }}>{p.name}</span>
-                          <span style={{ fontSize: '0.72rem', color: g.muted }}>
-                            {[p.age && `${p.age} yrs`, p.gender].filter(Boolean).join(' · ')}
-                            {last?.brief ? ` · ${last.brief.slice(0, 28)}${last.brief.length > 28 ? '…' : ''}` : ''}
-                          </span>
-                        </div>
-                        <div style={{ fontSize: '0.8rem', color: g.text, fontWeight: 500 }}>{last ? timeAgo(last.created_at) : '—'}</div>
-                        <div style={{ fontSize: '0.8rem', color: g.text, fontWeight: 500 }}>{p.district || '—'}</div>
-                        <div><PriorityBadge severity={p.latestSeverity} /></div>
-                        <div><SeverityPill severity={p.latestSeverity} /></div>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                          <button className="hp-del" onClick={e => handleDelete(e, p.id)} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${g.cardBdr}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.muted, transition: 'all .15s' }}>
-                            <TrashIcon />
-                          </button>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
 
