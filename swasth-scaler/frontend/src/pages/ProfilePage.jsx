@@ -266,7 +266,6 @@ export default function ProfilePage() {
         input::placeholder{color:${g.muted};opacity:0.8;}
       `}</style>
 
-      <Blobs isDark={isDark} />
 
       {/* ══ SIDEBAR (exact replica of HomePage sidebar) ══ */}
       <aside style={{

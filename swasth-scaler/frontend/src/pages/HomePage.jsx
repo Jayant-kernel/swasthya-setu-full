@@ -116,17 +116,6 @@ const PriorityBadge = ({ severity }) => {
   )
 }
 
-/* ─── Blobs (same as layout) ─────────────────────────────── */
-const Blobs = ({ isDark }) => (
-  <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-    <div style={{ position: 'absolute', top: '-25%', left: '-18%', width: '72vw', height: '72vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(13,148,136,0.70) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(13,148,136,0.75) 0%, transparent 68%)', filter: 'blur(90px)' }} />
-    <div style={{ position: 'absolute', top: '-12%', right: '-22%', width: '62vw', height: '62vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(124,58,237,0.55) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(167,139,250,0.65) 0%, transparent 68%)', filter: 'blur(95px)' }} />
-    <div style={{ position: 'absolute', bottom: '-22%', left: '22%', width: '68vw', height: '68vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(16,185,129,0.50) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(52,211,153,0.65) 0%, transparent 68%)', filter: 'blur(90px)' }} />
-    <div style={{ position: 'absolute', bottom: '8%', left: '-12%', width: '42vw', height: '42vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(6,182,212,0.40) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(6,182,212,0.55) 0%, transparent 68%)', filter: 'blur(75px)' }} />
-    <div style={{ position: 'absolute', top: '38%', right: '-8%', width: '38vw', height: '38vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(236,72,153,0.28) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(244,114,182,0.35) 0%, transparent 68%)', filter: 'blur(80px)' }} />
-    {isDark && <div style={{ position: 'absolute', inset: 0, background: 'rgba(4,8,22,0.50)' }} />}
-  </div>
-)
 
 const NAV_ITEMS = [
   { id: 'home', label: 'Dashboard', Icon: GridIcon, path: '/home' },
@@ -291,7 +280,6 @@ export default function HomePage() {
         select option{background:${isDark ? '#0a1525' : '#edfaf5'};color:${g.text};}
       `}</style>
 
-      <Blobs isDark={isDark} />
 
       {/* ══ SIDEBAR ══ */}
       <aside style={{
