@@ -95,8 +95,19 @@ export default function ProfilePage() {
   const location = useLocation()
   const { user: authUser, logout } = useAuth()
 
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024)
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const isExpanded = isMobile ? sidebarOpen : isHovered
+  const sidebarWidth = isMobile ? (sidebarOpen ? 220 : 0) : (isHovered ? 220 : 72)
 
   // Profile state
   const [user, setUser] = useState(null)
@@ -268,16 +279,21 @@ export default function ProfilePage() {
 
 
       {/* ══ SIDEBAR (exact replica of HomePage sidebar) ══ */}
-      <aside style={{
-        ...panel,
-        width: sidebarOpen ? 220 : 0, minWidth: sidebarOpen ? 220 : 0,
-        borderRight: `1px solid ${g.panelBdr}`,
-        overflow: 'hidden', flexShrink: 0,
-        display: 'flex', flexDirection: 'column',
-        transition: 'width .28s cubic-bezier(.4,0,.2,1),min-width .28s cubic-bezier(.4,0,.2,1)',
-        position: 'relative', zIndex: 20,
-        boxShadow: isDark ? '2px 0 24px rgba(0,0,0,0.35)' : '2px 0 20px rgba(13,148,136,0.12)',
-      }}>
+      <aside 
+        onMouseEnter={() => !isMobile && setIsHovered(true)}
+        onMouseLeave={() => !isMobile && setIsHovered(false)}
+        style={{
+          ...panel,
+          width: sidebarWidth, minWidth: sidebarWidth,
+          borderRight: `1px solid ${g.panelBdr}`,
+          overflow: 'hidden', flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
+          transition: 'width .28s cubic-bezier(.4,0,.2,1),min-width .28s cubic-bezier(.4,0,.2,1)',
+          position: isMobile ? 'absolute' : 'relative', zIndex: 20,
+          height: '100dvh',
+          boxShadow: isDark ? '2px 0 24px rgba(0,0,0,0.35)' : '2px 0 20px rgba(13,148,136,0.12)',
+        }}
+      >
         <div style={{ width: 220, display: 'flex', flexDirection: 'column', height: '100%' }}>
 
           {/* Logo */}
@@ -286,19 +302,21 @@ export default function ProfilePage() {
               <div style={{ width: 40, height: 40, borderRadius: 11, flexShrink: 0, overflow: 'hidden', background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: 'drop-shadow(0 0 10px rgba(16,185,129,0.5))' }}>
                 <img src={logo} alt="logo" style={{ width: '82%', height: '82%', objectFit: 'contain' }} />
               </div>
-              <div>
+              <div style={{ opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
                 <div style={{ fontWeight: 800, fontSize: '0.9rem', color: g.text, letterSpacing: '-0.022em', lineHeight: 1.15 }}>Swasthya Setu</div>
                 <div style={{ fontSize: '0.58rem', fontWeight: 700, color: g.accent, letterSpacing: '0.09em', textTransform: 'uppercase' }}>ASHA Dashboard</div>
               </div>
             </div>
-            <button className="pp-btn" onClick={() => setSidebarOpen(false)} style={{ width: 28, height: 28, borderRadius: 7, background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(8px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .18s', flexShrink: 0 }}>
-              <ChevDown />
-            </button>
+            {isMobile && (
+              <button className="pp-btn" onClick={() => setSidebarOpen(false)} style={{ width: 28, height: 28, borderRadius: 7, background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(8px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .18s', flexShrink: 0 }}>
+                <ChevDown />
+              </button>
+            )}
           </div>
 
           {/* Nav */}
           <nav style={{ flex: 1, overflowY: 'auto', padding: '0.875rem 0.625rem' }}>
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem' }}>Menu</div>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', opacity: isExpanded ? 1 : 0 }}>Menu</div>
             {NAV_ITEMS.map(({ id, label, Icon, path }) => {
               const on = location.pathname.startsWith(path)
               return (
@@ -318,8 +336,8 @@ export default function ProfilePage() {
                   <div style={{ width: 28, height: 28, borderRadius: 7, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: on ? g.navIconBg : 'transparent', color: on ? g.navActiveT : 'inherit', transition: 'all .18s' }}>
                     <Icon active={on} />
                   </div>
-                  <span style={{ flex: 1 }}>{label}</span>
-                  {on && <ChevRight />}
+                  <span style={{ flex: 1, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>{label}</span>
+                  {on && isExpanded && <ChevRight />}
                 </button>
               )
             })}
@@ -339,11 +357,11 @@ export default function ProfilePage() {
                   : <span style={{ color: '#fff', fontSize: '0.78rem', fontWeight: 700 }}>{(authUser?.full_name || authUser?.employee_id || 'A')[0].toUpperCase()}</span>
                 }
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flex: 1, minWidth: 0, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
                 <div style={{ fontWeight: 600, fontSize: '0.79rem', color: g.navActiveT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{authUser?.full_name || 'ASHA Worker'}</div>
                 <div style={{ fontSize: '0.64rem', color: g.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{authUser?.employee_id}</div>
               </div>
-              <ChevRight />
+              {isExpanded && <ChevRight />}
             </div>
           </div>
         </div>
@@ -362,7 +380,7 @@ export default function ProfilePage() {
           boxShadow: isDark ? '0 2px 20px rgba(0,0,0,0.30)' : '0 2px 16px rgba(13,148,136,0.10)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {!sidebarOpen && (
+            {(isMobile || !isExpanded) && (
               <button className="pp-btn" onClick={() => setSidebarOpen(true)} style={{ width: 36, height: 36, borderRadius: 9, background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(12px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .18s', flexShrink: 0 }}>
                 <MenuBars />
               </button>

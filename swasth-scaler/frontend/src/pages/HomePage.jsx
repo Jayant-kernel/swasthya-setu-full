@@ -94,9 +94,9 @@ const TrashIcon = () => (
 
 /* ─── Severity ───────────────────────────────────────────── */
 const SEV = {
-  red: { label: 'Emergency', color: '#f87171', bg: 'rgba(239,68,68,0.14)', bdr: 'rgba(239,68,68,0.30)' },
-  yellow: { label: 'Moderate', color: '#fbbf24', bg: 'rgba(245,158,11,0.14)', bdr: 'rgba(245,158,11,0.30)' },
-  green: { label: 'Stable', color: '#34d399', bg: 'rgba(52,211,153,0.14)', bdr: 'rgba(52,211,153,0.30)' },
+  red: { label: 'Emergency', color: '#ff4d4d', bg: 'rgba(255,77,77,0.18)', bdr: 'rgba(255,77,77,0.45)' },
+  yellow: { label: 'Moderate', color: '#f59e0b', bg: 'rgba(245,158,11,0.18)', bdr: 'rgba(245,158,11,0.45)' },
+  green: { label: 'Stable', color: '#10b981', bg: 'rgba(16,185,129,0.15)', bdr: 'rgba(16,185,129,0.35)' },
 }
 
 const SeverityPill = ({ severity }) => {
@@ -109,7 +109,11 @@ const SeverityPill = ({ severity }) => {
   )
 }
 const PriorityBadge = ({ severity }) => {
-  const map = { red: { l: 'High', c: '#f87171', bg: 'rgba(239,68,68,0.14)', b: 'rgba(239,68,68,0.28)' }, yellow: { l: 'Medium', c: '#fbbf24', bg: 'rgba(245,158,11,0.14)', b: 'rgba(245,158,11,0.28)' }, green: { l: 'Low', c: '#34d399', bg: 'rgba(52,211,153,0.14)', b: 'rgba(52,211,153,0.28)' } }
+  const map = { 
+    red: { l: 'High', c: '#ff4d4d', bg: 'rgba(255,77,77,0.18)', b: 'rgba(255,77,77,0.40)' }, 
+    yellow: { l: 'Medium', c: '#f59e0b', bg: 'rgba(245,158,11,0.18)', b: 'rgba(245,158,11,0.40)' }, 
+    green: { l: 'Low', c: '#10b981', bg: 'rgba(16,185,129,0.15)', b: 'rgba(16,185,129,0.35)' } 
+  }
   const m = map[severity] || { l: '—', c: '#9ca3af', bg: 'rgba(156,163,175,0.12)', b: 'rgba(156,163,175,0.25)' }
   return (
     <span style={{ display: 'inline-block', padding: '3px 10px', borderRadius: 99, background: m.bg, color: m.c, border: `1px solid ${m.b}`, fontSize: '0.71rem', fontWeight: 700, backdropFilter: 'blur(8px)' }}>{m.l}</span>
@@ -135,11 +139,22 @@ export default function HomePage() {
   const [viewTab, setViewTab] = useState('Table')
   const [query, setQuery] = useState('')
   const [districtFilter, setDistrictFilter] = useState('')
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 1024)
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
   const [sortField, setSortField] = useState('date')
   const [sortOrder, setSortOrder] = useState('desc')
   const debounceRef = useRef(null)
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 1024)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const isExpanded = isMobile ? sidebarOpen : isHovered
+  const sidebarWidth = isMobile ? (sidebarOpen ? 220 : 0) : (isHovered ? 220 : 72)
 
   const [patientResults, setPatientResults] = useState([])
   const [loading, setLoading] = useState(false)
@@ -302,15 +317,20 @@ export default function HomePage() {
 
 
       {/* ══ SIDEBAR ══ */}
-      <aside style={{
-        background: g.panelBg, backdropFilter: g.blur, WebkitBackdropFilter: g.blur,
-        width: sidebarOpen ? 220 : 0, minWidth: sidebarOpen ? 220 : 0,
-        borderRight: `1px solid ${g.panelBdr}`, overflow: 'hidden', flexShrink: 0,
-        display: 'flex', flexDirection: 'column',
-        transition: 'width .28s cubic-bezier(.4,0,.2,1),min-width .28s cubic-bezier(.4,0,.2,1)',
-        position: 'relative', zIndex: 20,
-        boxShadow: isDark ? '2px 0 24px rgba(0,0,0,0.35)' : '2px 0 20px rgba(13,148,136,0.12)',
-      }}>
+      <aside 
+        onMouseEnter={() => !isMobile && setIsHovered(true)}
+        onMouseLeave={() => !isMobile && setIsHovered(false)}
+        style={{
+          background: g.panelBg, backdropFilter: g.blur, WebkitBackdropFilter: g.blur,
+          width: sidebarWidth, minWidth: sidebarWidth,
+          borderRight: `1px solid ${g.panelBdr}`, overflow: 'hidden', flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
+          transition: 'width .28s cubic-bezier(.4,0,.2,1),min-width .28s cubic-bezier(.4,0,.2,1)',
+          position: isMobile ? 'absolute' : 'relative', zIndex: 20,
+          height: '100dvh',
+          boxShadow: isDark ? '2px 0 24px rgba(0,0,0,0.35)' : '2px 0 20px rgba(13,148,136,0.12)',
+        }}
+      >
         <div style={{ width: 220, display: 'flex', flexDirection: 'column', height: '100%' }}>
 
           {/* Logo row */}
@@ -319,19 +339,21 @@ export default function HomePage() {
               <div style={{ width: 40, height: 40, borderRadius: 11, flexShrink: 0, overflow: 'hidden', background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: 'drop-shadow(0 0 10px rgba(16,185,129,0.5))' }}>
                 <img src={logo} alt="logo" style={{ width: '82%', height: '82%', objectFit: 'contain' }} />
               </div>
-              <div>
+              <div style={{ opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
                 <div style={{ fontWeight: 800, fontSize: '0.9rem', color: g.text, letterSpacing: '-0.022em', lineHeight: 1.15 }}>Swasthya Setu</div>
                 <div style={{ fontSize: '0.58rem', fontWeight: 700, color: g.accent, letterSpacing: '0.09em', textTransform: 'uppercase' }}>ASHA Dashboard</div>
               </div>
             </div>
-            <button className="hp-btn" onClick={() => setSidebarOpen(false)} style={{ width: 28, height: 28, borderRadius: 7, background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(8px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .18s', flexShrink: 0 }}>
-              <ChevDown />
-            </button>
+            {isMobile && (
+              <button className="hp-btn" onClick={() => setSidebarOpen(false)} style={{ width: 28, height: 28, borderRadius: 7, background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(8px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .18s', flexShrink: 0 }}>
+                <ChevDown />
+              </button>
+            )}
           </div>
 
           {/* Nav */}
           <nav style={{ flex: 1, overflowY: 'auto', padding: '0.875rem 0.625rem' }}>
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem' }}>Menu</div>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', opacity: isExpanded ? 1 : 0 }}>Menu</div>
             {NAV_ITEMS.map(({ id, label, Icon, path }) => {
               const on = location.pathname.startsWith(path)
               return (
@@ -351,14 +373,14 @@ export default function HomePage() {
                   <div style={{ width: 28, height: 28, borderRadius: 7, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: on ? g.navIconBg : 'transparent', color: on ? g.navActiveT : 'inherit', transition: 'all .18s' }}>
                     <Icon active={on} />
                   </div>
-                  <span style={{ flex: 1 }}>{label}</span>
-                  {on && <ChevRight />}
+                  <span style={{ flex: 1, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>{label}</span>
+                  {on && isExpanded && <ChevRight />}
                 </button>
               )
             })}
 
             {/* Districts */}
-            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', marginTop: '1.125rem' }}>Districts</div>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', marginTop: '1.125rem', opacity: isExpanded ? 1 : 0 }}>Districts</div>
             {DISTRICT_GROUPS.map(d => {
               const on = districtFilter === d.label
               return (
@@ -371,8 +393,8 @@ export default function HomePage() {
                   <div style={{ width: 24, height: 24, borderRadius: 6, background: `${d.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                     <span style={{ width: 7, height: 7, borderRadius: '50%', background: d.color, boxShadow: on ? `0 0 8px ${d.color}` : 'none', transition: 'all .2s' }} />
                   </div>
-                  <span style={{ flex: 1 }}>{d.label}</span>
-                  {on && <ChevRight color={d.color} />}
+                  <span style={{ flex: 1, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>{d.label}</span>
+                  {on && isExpanded && <ChevRight color={d.color} />}
                 </button>
               )
             })}
@@ -387,11 +409,11 @@ export default function HomePage() {
               <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg,#0d9488,#10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 2.5px rgba(16,185,129,0.40)' }}>
                 <span style={{ color: '#fff', fontSize: '0.78rem', fontWeight: 700 }}>{(user?.full_name || user?.employee_id || 'A')[0].toUpperCase()}</span>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flex: 1, minWidth: 0, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
                 <div style={{ fontWeight: 600, fontSize: '0.79rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.full_name || 'ASHA Worker'}</div>
                 <div style={{ fontSize: '0.64rem', color: g.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.employee_id}</div>
               </div>
-              <ChevRight />
+              {isExpanded && <ChevRight />}
             </button>
           </div>
         </div>
@@ -411,7 +433,7 @@ export default function HomePage() {
         }}>
           {/* Left */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            {!sidebarOpen && (
+            {(isMobile || !isExpanded) && (
               <button className="hp-btn" onClick={() => setSidebarOpen(true)} style={{ width: 36, height: 36, borderRadius: 9, background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(12px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .18s', flexShrink: 0 }}>
                 <MenuBars />
               </button>
@@ -456,9 +478,9 @@ export default function HomePage() {
             }}>All ({totalCount})</button>
 
             {[
-              { sev: 'red', emoji: '🚨', label: 'Emergency', count: summaryCounts.red, c: '#f87171', activeBg: 'rgba(239,68,68,0.22)', activeBdr: 'rgba(239,68,68,0.55)' },
-              { sev: 'yellow', emoji: '⚠️', label: 'Moderate', count: summaryCounts.yellow, c: '#fbbf24', activeBg: 'rgba(245,158,11,0.22)', activeBdr: 'rgba(245,158,11,0.55)' },
-              { sev: 'green', emoji: '✅', label: 'Stable', count: summaryCounts.green, c: '#34d399', activeBg: 'rgba(52,211,153,0.22)', activeBdr: 'rgba(52,211,153,0.55)' },
+              { sev: 'red', emoji: '🚨', label: 'Emergency', count: summaryCounts.red, c: '#ff4d4d', activeBg: 'rgba(255,77,77,0.25)', activeBdr: 'rgba(255,77,77,0.60)' },
+              { sev: 'yellow', emoji: '⚠️', label: 'Moderate', count: summaryCounts.yellow, c: '#f59e0b', activeBg: 'rgba(245,158,11,0.25)', activeBdr: 'rgba(245,158,11,0.60)' },
+              { sev: 'green', emoji: '✅', label: 'Stable', count: summaryCounts.green, c: '#10b981', activeBg: 'rgba(16,185,129,0.22)', activeBdr: 'rgba(16,185,129,0.55)' },
             ].map(s => {
               const on = activeTab === s.sev.toUpperCase()
               return (
