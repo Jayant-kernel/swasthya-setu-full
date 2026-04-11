@@ -184,7 +184,7 @@ export default function ProfilePage() {
     } catch (err) { alert('Failed to delete account: ' + err.message) }
   }
 
-  const isDark = theme === 'dark'
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
 
   /* ── Glass tokens (identical to HomePage) ── */
   const g = {
