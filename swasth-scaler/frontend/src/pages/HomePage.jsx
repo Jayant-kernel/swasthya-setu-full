@@ -330,35 +330,35 @@ export default function HomePage() {
   const clr = {
     bg: isDark
       ? 'linear-gradient(135deg, #0f172a 0%, #172554 40%, #1e3a8a 100%)'
-      : 'linear-gradient(135deg, #ffffff 0%, #f0fbf5 100%)', // Almost white with a tiny hint of green
-    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(209, 250, 229, 0.4)',
-    blur: 'blur(24px) saturate(150%)',
-    border: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.2)',
-    borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.35)',
+      : 'linear-gradient(135deg, #E8F5F1 0%, #EFF6FF 50%, #F0FDF4 100%)',
+    surface: isDark ? 'rgba(15, 23, 42, 0.4)' : 'rgba(255, 255, 255, 0.72)',
+    blur: 'blur(24px) saturate(180%)',
+    border: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.18)',
+    borderSolid: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(16, 185, 129, 0.25)',
 
-    topText: isDark ? '#f8fafc' : '#022c22',
-    topMuted: isDark ? '#cbd5e1' : '#047857',
+    topText: isDark ? '#f8fafc' : '#0f172a',
+    topMuted: isDark ? '#cbd5e1' : '#64748b',
 
     text: isDark ? '#f8fafc' : '#0f172a',
     muted: isDark ? '#cbd5e1' : '#475569',
 
-    activeBg: isDark ? 'rgba(59, 130, 246, 0.25)' : '#065f46',
-    activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : '0 4px 16px rgba(6, 78, 59, 0.45)',
-    activeBorder: isDark ? 'rgba(59, 130, 246, 0.4)' : 'rgba(4, 120, 87, 0.9)',
-    activeText: isDark ? '#93c5fd' : '#ffffff',
+    activeBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(16, 185, 129, 0.15)',
+    activeShadow: isDark ? 'inset 0 0 12px rgba(59, 130, 246, 0.3)' : '0 2px 8px rgba(16, 185, 129, 0.2)',
+    activeBorder: isDark ? 'rgba(59, 130, 246, 0.4)' : 'rgba(16, 185, 129, 0.4)',
+    activeText: isDark ? '#93c5fd' : '#065f46',
 
-    iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(255, 255, 255, 0.15)',
-    iconText: isDark ? '#93c5fd' : '#ffffff',
+    iconBg: isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(16, 185, 129, 0.15)',
+    iconText: isDark ? '#93c5fd' : '#065f46',
 
-    hover: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(6, 78, 59, 0.12)',
+    hover: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(16, 185, 129, 0.08)',
 
     primaryBg: isDark ? 'linear-gradient(135deg, #3b82f6, #2563eb)' : 'linear-gradient(135deg, #10b981 0%, #3b82f6 100%)',
-    primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.4)',
+    primaryShadow: isDark ? '0 4px 14px rgba(37, 99, 235, 0.4)' : '0 4px 14px rgba(16, 185, 129, 0.35)',
     primaryColor: isDark ? '#3b82f6' : '#10b981',
 
-    glassBg: isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(255, 255, 255, 0.45)',
-    glassBlur: 'blur(12px)',
-    glassGlow: isDark ? '0 4px 15px rgba(0,0,0,0.3)' : '0 4px 16px rgba(16, 185, 129, 0.25)', // slight greener tint backdrop glow
+    glassBg: isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(255, 255, 255, 0.6)',
+    glassBlur: 'blur(16px)',
+    glassGlow: isDark ? '0 4px 15px rgba(0,0,0,0.3)' : '0 4px 20px rgba(16, 185, 129, 0.12)',
   }
 
   const S = {
