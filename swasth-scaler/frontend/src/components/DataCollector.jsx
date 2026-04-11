@@ -20,7 +20,7 @@ import { normalizeLandmarks } from '../utils/normalize'
 import { loadMediaPipeHands } from '../utils/loadMediaPipeHands'
 
 const TEAL = '#0F6E56'
-const CLASS_LIST = ['FEVER', 'COUGH', 'PAIN', 'VOMIT', 'WEAKNESS', 'DIZZINESS', 'BREATHLESS']
+const CLASS_LIST = ['FEVER', 'COUGH', 'PAIN', 'VOMIT', 'WEAKNESS', 'DIZZINESS', 'BREATHLESS', 'UNKNOWN']
 
 const CONNECTIONS = [
   [0, 1], [1, 2], [2, 3], [3, 4],
