@@ -96,13 +96,13 @@ function SvgBreathless() {
 
 // ─── Sign metadata ────────────────────────────────────────────────────────────
 const SIGNS_MAP = {
-  FEVER:      { odia: 'ଜ୍ୱର',       Diagram: SvgFever,      desc: 'Open palm facing outward' },
-  COUGH:      { odia: 'କାଶ',         Diagram: SvgCough,      desc: 'Fist on chest, thumb up'  },
-  PAIN:       { odia: 'ଯନ୍ତ୍ରଣା',    Diagram: SvgPain,       desc: 'Fist pushed toward camera' },
-  VOMIT:      { odia: 'ବାନ୍ତି',      Diagram: SvgVomit,      desc: 'Fingers out from mouth'   },
-  WEAKNESS:   { odia: 'ଦୁର୍ବଳତା',    Diagram: SvgWeakness,   desc: 'Wrist down, fingers limp' },
-  DIZZINESS:  { odia: 'ମୁଣ୍ଡ ବୁଲାଇ', Diagram: SvgDizziness,  desc: 'Index finger at forehead' },
-  BREATHLESS: { odia: 'ଶ୍ୱାସ କଷ୍ଟ',  Diagram: SvgBreathless, desc: 'Palm on chest, push out'  },
+  FEVER:      { odia: 'ଜ୍ୱର',       Diagram: SvgFever      },
+  COUGH:      { odia: 'କାଶ',         Diagram: SvgCough      },
+  PAIN:       { odia: 'ଯନ୍ତ୍ରଣା',    Diagram: SvgPain       },
+  VOMIT:      { odia: 'ବାନ୍ତି',      Diagram: SvgVomit      },
+  WEAKNESS:   { odia: 'ଦୁର୍ବଳତା',    Diagram: SvgWeakness   },
+  DIZZINESS:  { odia: 'ମୁଣ୍ଡ ବୁଲାଇ', Diagram: SvgDizziness  },
+  BREATHLESS: { odia: 'ଶ୍ୱାସ କଷ୍ଟ',  Diagram: SvgBreathless },
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -227,7 +227,6 @@ export default function ISLPage() {
                       {React.createElement(info.Diagram)}
                     </div>
                     <div style={{ fontSize: '0.75rem', fontWeight: 900, color: TEAL }}>{key}</div>
-                    <div style={{ fontSize: '0.6rem', color: '#94a3b8', marginTop: 3 }}>{info.desc}</div>
                     <div style={{ fontSize: '0.65rem', color: '#64748b', marginTop: 2 }}>{info.odia}</div>
                   </div>
                 )
