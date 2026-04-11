@@ -583,6 +583,7 @@ export default function ChatPage() {
             </button>
           </form>
         </div>
+      </div>
       {/* Mobile Drawer */}
       {showMobileInfo && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} onClick={() => setShowMobileInfo(false)}>
@@ -596,6 +597,7 @@ export default function ChatPage() {
            </div>
         </div>
       )}
+    </div>
     </DashboardLayout>
   )
 }
