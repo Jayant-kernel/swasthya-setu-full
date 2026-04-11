@@ -133,7 +133,6 @@ export default function HomePage() {
 
   const [activeTab, setActiveTab] = useState('ALL')
   const [viewTab, setViewTab] = useState('Table')
-  const [sortMode, setSortMode] = useState('latest')
   const [query, setQuery] = useState('')
   const [districtFilter, setDistrictFilter] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -485,19 +484,6 @@ export default function HomePage() {
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.75rem' }}>
             <h1 style={{ fontSize: '1.35rem', fontWeight: 800, color: g.text, letterSpacing: '-0.025em' }}>Your Patient List</h1>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <select value={districtFilter} onChange={e => setDistrictFilter(e.target.value)}
-                style={{ ...glassInput, height: 34, padding: '0 0.75rem', fontSize: '0.82rem', borderRadius: 8 }}>
-                <option value="">All Districts</option>
-                {ALL_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
-              </select>
-              <select value={sortMode} onChange={e => setSortMode(e.target.value)}
-                style={{ ...glassInput, height: 34, padding: '0 0.75rem', fontSize: '0.82rem', borderRadius: 8 }}>
-                <option value="latest">Latest first</option>
-                <option value="critical">Critical first</option>
-              </select>
-              <button className="hp-btn" style={{ height: 34, padding: '0 0.75rem', borderRadius: 8, ...glassInput, fontSize: '0.82rem', fontWeight: 500, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, color: g.muted }}>
-                <FilterIcon /> Filter
-              </button>
             </div>
           </div>
 
