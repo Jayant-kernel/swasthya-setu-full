@@ -1,318 +1,624 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect, useRef } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import logo from '../images/logo/logo.png'
 
-/* ── Custom SVG Icons ── */
-const ActivityIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
+/* ─── Icons (same as HomePage) ─────────────────────────────── */
+const GridIcon = ({ active }) => (
+  <svg width={16} height={16} viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth={active ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
+    <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
+    <rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" />
+  </svg>
 )
-const CalendarIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+const PatientIcon = ({ active }) => (
+  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={active ? "2.5" : "2"} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" /><line x1="19" y1="8" x2="19" y2="14" /><line x1="16" y1="11" x2="22" y2="11" />
+  </svg>
 )
-const LogoutIcon = ({ size = 18 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
+const ChatIcon = ({ active }) => (
+  <svg width={16} height={16} viewBox="0 0 24 24" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+)
+const SearchIcon = () => (
+  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+)
+const ChevRight = () => (
+  <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 18 15 12 9 6" />
+  </svg>
+)
+const ChevDown = () => (
+  <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="6 9 12 15 18 9" />
+  </svg>
+)
+const MenuBars = () => (
+  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+    <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+  </svg>
+)
+const SunIcon = () => (
+  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="5" />
+    <line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" />
+    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+    <line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" />
+    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+  </svg>
+)
+const MoonIcon = () => (
+  <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+)
+const EditIcon = () => (
+  <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+  </svg>
+)
+const LogoutIcon = () => (
+  <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+)
+const TrashIcon = () => (
+  <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    <line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" />
+  </svg>
+)
+const CameraIcon = () => (
+  <svg width={12} height={12} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+    <circle cx="12" cy="13" r="4" />
+  </svg>
 )
 
+const NAV_ITEMS = [
+  { id: 'home', label: 'Dashboard', Icon: GridIcon, path: '/home' },
+  { id: 'patient', label: 'New Patient', Icon: PatientIcon, path: '/patient' },
+  { id: 'chat', label: 'AI Chat', Icon: ChatIcon, path: '/chat' },
+]
+
+/* ─── Blobs (identical to HomePage) ────────────────────────── */
+const Blobs = ({ isDark }) => (
+  <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', top: '-25%', left: '-18%', width: '72vw', height: '72vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(13,148,136,0.70) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(13,148,136,0.75) 0%, transparent 68%)', filter: 'blur(90px)' }} />
+    <div style={{ position: 'absolute', top: '-12%', right: '-22%', width: '62vw', height: '62vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(124,58,237,0.55) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(167,139,250,0.65) 0%, transparent 68%)', filter: 'blur(95px)' }} />
+    <div style={{ position: 'absolute', bottom: '-22%', left: '22%', width: '68vw', height: '68vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(16,185,129,0.50) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(52,211,153,0.65) 0%, transparent 68%)', filter: 'blur(90px)' }} />
+    <div style={{ position: 'absolute', bottom: '8%', left: '-12%', width: '42vw', height: '42vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(6,182,212,0.40) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(6,182,212,0.55) 0%, transparent 68%)', filter: 'blur(75px)' }} />
+    <div style={{ position: 'absolute', top: '38%', right: '-8%', width: '38vw', height: '38vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(236,72,153,0.28) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(244,114,182,0.35) 0%, transparent 68%)', filter: 'blur(80px)' }} />
+    {isDark && <div style={{ position: 'absolute', inset: 0, background: 'rgba(4,8,22,0.50)' }} />}
+  </div>
+)
+
+/* ═══════════════════════════════════════════════════════════
+   ProfilePage
+   ═══════════════════════════════════════════════════════════ */
 export default function ProfilePage() {
   const navigate = useNavigate()
-  const { user, logout } = useAuth()
-  const [activeTab, setActiveTab] = useState('History')
-  const [stats, setStats] = useState({
-    patientCount: 0,
-    lastPatientTime: 'Checking...',
-    rawRecords: []
-  })
+  const location = useLocation()
+  const { user: authUser, logout } = useAuth()
+
+  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
+
+  // Profile state
+  const [user, setUser] = useState(null)
+  const [avatar, setAvatar] = useState(null)
+  const [history, setHistory] = useState([])
   const [loading, setLoading] = useState(true)
+  const [isEditing, setIsEditing] = useState(false)
+  const [forceOnboard, setForceOnboard] = useState(false)
+  const [fullName, setFullName] = useState('')
+  const [location2, setLocation2] = useState('')
+  const [saveLoading, setSaveLoading] = useState(false)
 
-  const handleLogout = async () => {
-    await logout()
-    navigate('/')
-  }
-
-  const fetchProfileData = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('access_token')
-      const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      const records = res.ok ? await res.json() : []
-      
-      const patientIds = new Set(records.map(r => r.patient_id).filter(Boolean))
-      const count = patientIds.size
-
-      let lastTime = 'No records'
-      if (records.length > 0) {
-        const sorted = [...records].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        const latest = sorted[0].created_at
-        lastTime = new Date(latest).toLocaleString('en-IN', {
-          day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-        })
-      }
-
-      setStats({
-        patientCount: count,
-        lastPatientTime: lastTime,
-        rawRecords: records
-      })
-    } catch (err) {
-      console.error('Failed to fetch profile stats:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
-    fetchProfileData()
-  }, [fetchProfileData])
+    document.documentElement.setAttribute('data-theme', theme)
+    localStorage.setItem('theme', theme)
+  }, [theme])
 
-  const MEDICAL_TABS = ['History', 'Medications', 'Reports']
+  useEffect(() => {
+    async function loadProfile() {
+      if (!authUser) { navigate('/login/asha'); return }
+      setUser(authUser)
+      const savedName = authUser.full_name || ''
+      const savedLoc = authUser.location || ''
+      setFullName(savedName)
+      setLocation2(savedLoc)
+      if (!savedName || !savedLoc) { setForceOnboard(true); setIsEditing(true) }
+      if (authUser.avatar_b64) setAvatar(authUser.avatar_b64)
+      try {
+        const token = localStorage.getItem('access_token')
+        const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+        if (res.ok) setHistory(await res.json())
+      } catch (err) { console.error('Failed to load history', err) }
+      setLoading(false)
+    }
+    loadProfile()
+  }, [authUser, navigate])
 
-  const glassStyle = {
-    background: 'rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(30px)',
-    WebkitBackdropFilter: 'blur(30px)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    borderRadius: 28,
-    boxShadow: '0 12px 40px 0 rgba(0, 0, 0, 0.25)',
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]; if (!file) return
+    const reader = new FileReader()
+    reader.onload = (ev) => {
+      const img = new Image()
+      img.onload = () => {
+        const MAX = 250, canvas = document.createElement('canvas')
+        let w = img.width, h = img.height
+        if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX } }
+        else { if (h > MAX) { w *= MAX / h; h = MAX } }
+        canvas.width = w; canvas.height = h
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.8)
+        setAvatar(dataUrl)
+        const token = localStorage.getItem('access_token')
+        fetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ avatar_b64: dataUrl })
+        })
+      }
+      img.src = ev.target.result
+    }
+    reader.readAsDataURL(file)
+  }
+
+  async function handleSaveProfile() {
+    if (!fullName.trim() || !location2.trim()) { alert('Name and Location are required.'); return }
+    setSaveLoading(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      await fetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ full_name: fullName.trim(), location: location2.trim() })
+      })
+      const updated = { ...user, full_name: fullName.trim(), location: location2.trim() }
+      setUser(updated)
+      localStorage.setItem('user', JSON.stringify(updated))
+      setIsEditing(false); setForceOnboard(false)
+    } catch (err) { alert('Failed to save: ' + err.message) }
+    finally { setSaveLoading(false) }
+  }
+
+  async function handleLogout() { await logout(); navigate('/') }
+
+  async function handleDeleteAccount() {
+    if (!window.confirm('Delete your account? All patient history will be permanently erased. This cannot be undone.')) return
+    try {
+      if (user?.id) { localStorage.removeItem(`avatar_${user.id}`); await logout(); navigate('/') }
+    } catch (err) { alert('Failed to delete account: ' + err.message) }
+  }
+
+  const isDark = theme === 'dark'
+
+  /* ── Glass tokens (identical to HomePage) ── */
+  const g = {
+    panelBg: isDark ? 'rgba(6,12,30,0.52)' : 'rgba(255,255,255,0.28)',
+    panelBdr: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.62)',
+    blur: 'blur(28px) saturate(170%)',
+
+    cardBg: isDark ? 'rgba(10,18,42,0.48)' : 'rgba(255,255,255,0.26)',
+    cardBdr: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.58)',
+    cardShd: isDark
+      ? '0 8px 32px rgba(0,0,0,0.40),inset 0 1px 0 rgba(255,255,255,0.05)'
+      : '0 8px 32px rgba(13,148,136,0.10),inset 0 1px 0 rgba(255,255,255,0.80)',
+
+    insetBg: isDark ? 'rgba(0,0,0,0.18)' : 'rgba(255,255,255,0.20)',
+    rowHover: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.38)',
+
+    text: isDark ? '#ddeeff' : '#0c2a1d',
+    muted: isDark ? '#6a84aa' : '#4a7a68',
+    label: isDark ? '#3a5070' : '#88b09e',
+    accent: '#10b981',
+    accentL: isDark ? 'rgba(16,185,129,0.22)' : 'rgba(16,185,129,0.16)',
+    accentB: isDark ? 'rgba(16,185,129,0.50)' : 'rgba(16,185,129,0.55)',
+    accentT: isDark ? '#6ee7b7' : '#065f46',
+
+    navActiveBg: isDark ? 'rgba(16,185,129,0.22)' : 'rgba(16,185,129,0.16)',
+    navActiveBdr: isDark ? 'rgba(16,185,129,0.50)' : 'rgba(16,185,129,0.55)',
+    navActiveT: isDark ? '#6ee7b7' : '#065f46',
+    navIconBg: isDark ? 'rgba(16,185,129,0.28)' : 'rgba(16,185,129,0.18)',
+    navShd: '0 2px 14px rgba(16,185,129,0.20)',
+
+    hover: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(16,185,129,0.09)',
+    divider: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.52)',
+    btn: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.58)',
+    btnBdr: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.78)',
+    btnT: isDark ? '#b8cce4' : '#065f46',
+  }
+
+  const panel = { background: g.panelBg, backdropFilter: g.blur, WebkitBackdropFilter: g.blur }
+  const card = { background: g.cardBg, backdropFilter: g.blur, WebkitBackdropFilter: g.blur, border: `1px solid ${g.cardBdr}`, borderRadius: 16, boxShadow: g.cardShd }
+  const glassInput = {
+    background: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.52)',
+    border: `1.5px solid ${g.btnBdr}`, backdropFilter: 'blur(16px)',
+    color: g.text, outline: 'none', transition: 'all .2s',
+    fontFamily: "'Plus Jakarta Sans','DM Sans',sans-serif",
+  }
+
+  const sevConfig = {
+    red: { label: 'Emergency', color: '#f87171', bg: 'rgba(239,68,68,0.14)', bdr: 'rgba(239,68,68,0.30)' },
+    yellow: { label: 'Moderate', color: '#fbbf24', bg: 'rgba(245,158,11,0.14)', bdr: 'rgba(245,158,11,0.30)' },
+    green: { label: 'Stable', color: '#34d399', bg: 'rgba(52,211,153,0.14)', bdr: 'rgba(52,211,153,0.30)' },
   }
 
   return (
     <div style={{
-      minHeight: '100dvh',
-      width: '100%',
-      background: '#004d40',
-      fontFamily: "'Inter', sans-serif",
-      color: '#fff',
+      display: 'flex', height: '100dvh', overflow: 'hidden',
+      fontFamily: "'Plus Jakarta Sans','DM Sans',sans-serif",
+      color: g.text,
+      background: isDark ? '#04060f' : '#a8e6d4',
       position: 'relative',
-      overflowX: 'hidden',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center'
     }}>
       <style>{`
-        @keyframes glowRed {
-          from { box-shadow: 0 0 5px rgba(239, 68, 68, 0.2); }
-          to { box-shadow: 0 0 20px rgba(239, 68, 68, 0.6); }
-        }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        *{box-sizing:border-box;}
+        ::-webkit-scrollbar{width:4px;}
+        ::-webkit-scrollbar-track{background:transparent;}
+        ::-webkit-scrollbar-thumb{background:${g.divider};border-radius:99px;}
+        .pp-nav:hover{background:${g.hover}!important;}
+        .pp-btn:hover{background:${isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.85)'}!important;}
+        .pp-cta:hover{opacity:0.87!important;transform:translateY(-1px)!important;}
+        .pp-row:hover{background:${g.rowHover}!important;}
+        .pp-input:focus{border-color:${g.accent}!important;box-shadow:0 0 0 3px ${g.accentL}!important;}
+        input::placeholder{color:${g.muted};opacity:0.8;}
       `}</style>
 
-      {/* Floating Blobs for extra depth */}
-      <div style={{ position: 'absolute', top: '10%', left: '5%', width: '40%', height: '40%', background: 'radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%)', zIndex: 0, pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: '10%', right: '5%', width: '50%', height: '50%', background: 'radial-gradient(circle, rgba(0, 116, 217, 0.15) 0%, transparent 70%)', zIndex: 0, pointerEvents: 'none' }} />
+      <Blobs isDark={isDark} />
 
-      {/* Minimal Header (Site Name Navigation) */}
-      <header style={{
-        width: '100%',
-        padding: '2rem 4rem',
-        display: 'flex',
-        justifyContent: 'flex-start',
-        zIndex: 10
+      {/* ══ SIDEBAR (exact replica of HomePage sidebar) ══ */}
+      <aside style={{
+        ...panel,
+        width: sidebarOpen ? 220 : 0, minWidth: sidebarOpen ? 220 : 0,
+        borderRight: `1px solid ${g.panelBdr}`,
+        overflow: 'hidden', flexShrink: 0,
+        display: 'flex', flexDirection: 'column',
+        transition: 'width .28s cubic-bezier(.4,0,.2,1),min-width .28s cubic-bezier(.4,0,.2,1)',
+        position: 'relative', zIndex: 20,
+        boxShadow: isDark ? '2px 0 24px rgba(0,0,0,0.35)' : '2px 0 20px rgba(13,148,136,0.12)',
       }}>
-          <div 
-            style={{ display: 'flex', alignItems: 'center', gap: '1rem', cursor: 'pointer', transition: 'all 0.3s' }} 
-            onClick={() => navigate('/home')}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.05)'; e.currentTarget.style.filter = 'brightness(1.2)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1)'; e.currentTarget.style.filter = 'brightness(1)'; }}
-          >
-            <img src={logo} alt="Logo" style={{ width: 52, height: 52, objectFit: 'contain', filter: 'drop-shadow(0 0 12px rgba(255,255,255,0.4))' }} />
-            <span style={{ fontWeight: 800, fontSize: '1.75rem', letterSpacing: '-0.04em', background: 'linear-gradient(to right, #fff, #7fdbff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              Swasthya Setu
-            </span>
-          </div>
-      </header>
+        <div style={{ width: 220, display: 'flex', flexDirection: 'column', height: '100%' }}>
 
-      {/* Main Content Area */}
-      <main style={{
-        flex: 1,
-        width: '100%',
-        maxWidth: '1100px',
-        padding: '1rem 2rem 4rem',
-        zIndex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '2.5rem'
-      }}>
-        
-        {/* Header Profile Card */}
-        <div style={{
-          ...glassStyle,
-          padding: '3rem',
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          gap: '3.5rem',
-          position: 'relative'
-        }}>
-          <div style={{ position: 'relative' }}>
-            <div style={{ 
-              width: 160, height: 160, borderRadius: '50%', 
-              background: 'linear-gradient(135deg, #10b981, #3b82f6)',
-              padding: 5, boxShadow: '0 0 40px rgba(16, 185, 129, 0.4)'
-            }}>
-              <div style={{ width: '100%', height: '100%', borderRadius: '50%', background: '#0a192f', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '3.5rem', overflow: 'hidden' }}>
-                {user?.avatar_b64 ? <img src={user.avatar_b64} style={{width:'100%', height:'100%', objectFit:'cover'}} /> : (user?.full_name || 'A')[0]}
+          {/* Logo */}
+          <div style={{ padding: '1.125rem 1rem 0.875rem', borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+              <div style={{ width: 40, height: 40, borderRadius: 11, flexShrink: 0, overflow: 'hidden', background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', filter: 'drop-shadow(0 0 10px rgba(16,185,129,0.5))' }}>
+                <img src={logo} alt="logo" style={{ width: '82%', height: '82%', objectFit: 'contain' }} />
+              </div>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: '0.9rem', color: g.text, letterSpacing: '-0.022em', lineHeight: 1.15 }}>Swasthya Setu</div>
+                <div style={{ fontSize: '0.58rem', fontWeight: 700, color: g.accent, letterSpacing: '0.09em', textTransform: 'uppercase' }}>ASHA Dashboard</div>
               </div>
             </div>
-            <div style={{ position: 'absolute', bottom: 8, right: 8, width: 24, height: 24, borderRadius: '50%', background: '#10b981', border: '4px solid #0a192f' }} />
+            <button className="pp-btn" onClick={() => setSidebarOpen(false)} style={{ width: 28, height: 28, borderRadius: 7, background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(8px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .18s', flexShrink: 0 }}>
+              <ChevDown />
+            </button>
           </div>
 
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-              <div>
-                <h1 style={{ fontSize: '2.75rem', fontWeight: 800, margin: '0 0 0.5rem', letterSpacing: '-0.02em' }}>{user?.full_name || 'ASHA Worker'}</h1>
-                <p style={{ fontSize: '1.25rem', color: 'rgba(255, 255, 255, 0.7)', margin: 0 }}>Registered ASHA • {user?.location || 'Pune District'}</p>
-                <div style={{ marginTop: '1.25rem', padding: '0.625rem 1.25rem', background: 'rgba(255, 255, 255, 0.1)', borderRadius: 12, display: 'inline-block', fontSize: '1rem', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  Employee ID: <span style={{ fontWeight: 700, color: '#7fdbff' }}>{user?.employee_id}</span>
+          {/* Nav */}
+          <nav style={{ flex: 1, overflowY: 'auto', padding: '0.875rem 0.625rem' }}>
+            <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem' }}>Menu</div>
+            {NAV_ITEMS.map(({ id, label, Icon, path }) => {
+              const on = location.pathname.startsWith(path)
+              return (
+                <button key={id} className="pp-nav" onClick={() => navigate(path)} style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem',
+                  padding: '0.5rem 0.625rem', borderRadius: 10, marginBottom: 3,
+                  background: on ? g.navActiveBg : 'transparent',
+                  border: on ? `1px solid ${g.navActiveBdr}` : '1px solid transparent',
+                  boxShadow: on ? g.navShd : 'none',
+                  color: on ? g.navActiveT : g.text, fontWeight: on ? 700 : 500, fontSize: '0.875rem',
+                  cursor: 'pointer', textAlign: 'left', transition: 'all .18s',
+                  backdropFilter: on ? 'blur(8px)' : 'none',
+                }}
+                  onMouseEnter={e => { if (!on) e.currentTarget.style.background = g.hover }}
+                  onMouseLeave={e => { if (!on) e.currentTarget.style.background = 'transparent' }}
+                >
+                  <div style={{ width: 28, height: 28, borderRadius: 7, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: on ? g.navIconBg : 'transparent', color: on ? g.navActiveT : 'inherit', transition: 'all .18s' }}>
+                    <Icon active={on} />
+                  </div>
+                  <span style={{ flex: 1 }}>{label}</span>
+                  {on && <ChevRight />}
+                </button>
+              )
+            })}
+          </nav>
+
+          {/* User (active state since we're on /profile) */}
+          <div style={{ padding: '0.75rem 0.875rem', borderTop: `1px solid ${g.divider}` }}>
+            <div style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: '0.5rem',
+              padding: '0.5rem 0.375rem', borderRadius: 9,
+              background: g.navActiveBg, border: `1px solid ${g.navActiveBdr}`,
+              boxShadow: g.navShd,
+            }}>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', flexShrink: 0, overflow: 'hidden', background: 'linear-gradient(135deg,#0d9488,#10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 0 2.5px rgba(16,185,129,0.40)' }}>
+                {avatar
+                  ? <img src={avatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  : <span style={{ color: '#fff', fontSize: '0.78rem', fontWeight: 700 }}>{(authUser?.full_name || authUser?.employee_id || 'A')[0].toUpperCase()}</span>
+                }
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 600, fontSize: '0.79rem', color: g.navActiveT, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{authUser?.full_name || 'ASHA Worker'}</div>
+                <div style={{ fontSize: '0.64rem', color: g.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{authUser?.employee_id}</div>
+              </div>
+              <ChevRight />
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* ══ MAIN ══ */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', minWidth: 0, position: 'relative', zIndex: 5 }}>
+
+        {/* ── Topbar (exact replica of HomePage topbar) ── */}
+        <header style={{
+          ...panel,
+          borderBottom: `1px solid ${g.panelBdr}`,
+          height: 62, flexShrink: 0,
+          display: 'flex', alignItems: 'center', padding: '0 1.25rem', gap: '0.75rem',
+          position: 'relative', zIndex: 10,
+          boxShadow: isDark ? '0 2px 20px rgba(0,0,0,0.30)' : '0 2px 16px rgba(13,148,136,0.10)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            {!sidebarOpen && (
+              <button className="pp-btn" onClick={() => setSidebarOpen(true)} style={{ width: 36, height: 36, borderRadius: 9, background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(12px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .18s', flexShrink: 0 }}>
+                <MenuBars />
+              </button>
+            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8125rem', color: g.muted }}>
+              <span style={{ cursor: 'pointer' }} onClick={() => navigate('/home')}>Dashboard</span>
+              <span style={{ opacity: 0.5 }}>›</span>
+              <span style={{ color: g.text, fontWeight: 600 }}>Profile</span>
+            </div>
+          </div>
+
+          <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+            <div style={{ position: 'relative', width: '100%', maxWidth: 340 }}>
+              <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: g.muted, pointerEvents: 'none' }}><SearchIcon /></span>
+              <input placeholder="Search patients…" style={{ ...glassInput, width: '100%', height: 36, paddingLeft: '2.1rem', paddingRight: '2.75rem', borderRadius: 10, fontSize: '0.845rem', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+                onFocus={e => { e.target.style.borderColor = g.accent; e.target.style.boxShadow = `0 0 0 3px ${g.accentL}` }}
+                onBlur={e => { e.target.style.borderColor = g.btnBdr; e.target.style.boxShadow = '0 2px 8px rgba(0,0,0,0.06)' }}
+              />
+              <span style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', fontSize: '0.6rem', fontWeight: 700, color: g.muted, background: g.btn, border: `1px solid ${g.btnBdr}`, padding: '2px 5px', borderRadius: 5, pointerEvents: 'none', backdropFilter: 'blur(8px)' }}>⌘K</span>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexShrink: 0 }}>
+            <button className="pp-btn" onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')} style={{ width: 36, height: 36, borderRadius: '50%', background: g.btn, border: `1px solid ${g.btnBdr}`, backdropFilter: 'blur(12px)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.btnT, transition: 'all .2s', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
+              {isDark ? <SunIcon /> : <MoonIcon />}
+            </button>
+            <button className="pp-cta" onClick={() => navigate('/patient')} style={{ height: 36, padding: '0 1rem', borderRadius: 10, background: 'linear-gradient(135deg,#0d9488 0%,#10b981 100%)', border: '1px solid rgba(255,255,255,0.28)', color: '#fff', fontWeight: 700, fontSize: '0.845rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5, boxShadow: '0 4px 14px rgba(16,185,129,0.38)', transition: 'all .2s', letterSpacing: '-0.01em' }}>
+              + New Patient
+            </button>
+          </div>
+        </header>
+
+        {/* ── Page Content ── */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem', position: 'relative', zIndex: 1 }}>
+
+          {loading ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 1, gap: '0.875rem', color: g.muted }}>
+              <div style={{ width: 32, height: 32, border: `3px solid ${g.cardBdr}`, borderTopColor: g.accent, borderRadius: '50%', animation: 'pp-spin 0.8s linear infinite' }} />
+              <style>{`@keyframes pp-spin{to{transform:rotate(360deg)}}`}</style>
+              Loading profile…
+            </div>
+          ) : (
+            <>
+              {/* ── Profile Header Card ── */}
+              <div style={{ ...card, padding: '1.75rem' }}>
+                <div style={{ display: 'flex', gap: '1.75rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+
+                  {/* Avatar */}
+                  <div style={{ position: 'relative', flexShrink: 0 }}>
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      style={{ width: 88, height: 88, borderRadius: '50%', background: g.insetBg, border: `3px solid ${g.cardBdr}`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: `0 0 0 4px ${g.accentL}` }}
+                      title="Change photo"
+                    >
+                      {avatar
+                        ? <img src={avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : <span style={{ fontSize: '2.25rem' }}>👩‍⚕️</span>
+                      }
+                    </div>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      style={{ position: 'absolute', bottom: 2, right: 2, width: 26, height: 26, borderRadius: '50%', background: g.accent, border: `2px solid ${g.cardBg}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', boxShadow: '0 2px 8px rgba(16,185,129,0.5)' }}
+                    ><CameraIcon /></button>
+                    <input type="file" accept="image/*" style={{ display: 'none' }} ref={fileInputRef} onChange={handleFileChange} />
+                  </div>
+
+                  {/* Name / edit form */}
+                  <div style={{ flex: 1, minWidth: 200 }}>
+                    {!isEditing ? (
+                      <>
+                        <h1 style={{ margin: '0 0 0.25rem', fontSize: '1.5rem', fontWeight: 800, color: g.text, letterSpacing: '-0.025em' }}>
+                          {user?.full_name || 'Set your name'}
+                        </h1>
+                        <div style={{ fontSize: '0.875rem', color: g.accent, fontWeight: 600, marginBottom: '0.25rem' }}>Healthcare Provider</div>
+                        {user?.location && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.8125rem', color: g.muted, marginBottom: '0.25rem' }}>
+                            <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                            {user.location}
+                          </div>
+                        )}
+                        {user?.employee_id && <div style={{ fontSize: '0.75rem', color: g.label, marginBottom: '1rem' }}>ID: {user.employee_id}</div>}
+                        {!forceOnboard && (
+                          <button
+                            onClick={() => setIsEditing(true)}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.5rem 1.125rem', borderRadius: 99, background: g.accentL, border: `1px solid ${g.accentB}`, color: g.accentT, fontWeight: 600, fontSize: '0.8125rem', cursor: 'pointer', transition: 'all .18s', fontFamily: "'Plus Jakarta Sans','DM Sans',sans-serif" }}
+                            onMouseEnter={e => e.currentTarget.style.background = isDark ? 'rgba(16,185,129,0.32)' : 'rgba(16,185,129,0.24)'}
+                            onMouseLeave={e => e.currentTarget.style.background = g.accentL}
+                          >
+                            <EditIcon /> Edit Profile
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        <div style={{ fontWeight: 800, fontSize: '1.125rem', color: g.text, marginBottom: 3 }}>
+                          {forceOnboard ? 'Complete your profile' : 'Edit Profile'}
+                        </div>
+                        <div style={{ fontSize: '0.8125rem', color: g.muted, marginBottom: '1.25rem' }}>
+                          {forceOnboard ? 'Required to serve patients' : 'Update your details below'}
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.875rem', marginBottom: '1.25rem' }}>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: g.label, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 5 }}>Full Name</label>
+                            <input
+                              className="pp-input"
+                              value={fullName} onChange={e => setFullName(e.target.value)}
+                              placeholder="E.g., Anjali Sharma"
+                              style={{ ...glassInput, width: '100%', padding: '0.625rem 0.875rem', borderRadius: 10, fontSize: '0.9rem' }}
+                            />
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', fontSize: '0.72rem', fontWeight: 700, color: g.label, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 5 }}>Location / Village</label>
+                            <input
+                              className="pp-input"
+                              value={location2} onChange={e => setLocation2(e.target.value)}
+                              placeholder="E.g., Pune District"
+                              style={{ ...glassInput, width: '100%', padding: '0.625rem 0.875rem', borderRadius: 10, fontSize: '0.9rem' }}
+                            />
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                          {!forceOnboard && (
+                            <button
+                              onClick={() => { setIsEditing(false); setFullName(user?.full_name || ''); setLocation2(user?.location || '') }}
+                              style={{ padding: '0.5rem 1.125rem', borderRadius: 99, background: 'transparent', border: `1px solid ${g.cardBdr}`, color: g.muted, fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans','DM Sans',sans-serif" }}
+                            >Cancel</button>
+                          )}
+                          <button
+                            onClick={handleSaveProfile} disabled={saveLoading}
+                            style={{ padding: '0.5rem 1.375rem', borderRadius: 99, background: 'linear-gradient(135deg,#0d9488,#10b981)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', fontWeight: 700, fontSize: '0.875rem', cursor: saveLoading ? 'not-allowed' : 'pointer', opacity: saveLoading ? 0.7 : 1, boxShadow: '0 4px 14px rgba(16,185,129,0.38)', fontFamily: "'Plus Jakarta Sans','DM Sans',sans-serif" }}
+                          >
+                            {saveLoading ? 'Saving…' : 'Save Details'}
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Meta grid (right side) */}
+                  {!isEditing && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: '1rem 2rem', alignSelf: 'center' }}>
+                      {[
+                        { label: 'Status', value: 'Active', accent: true },
+                        { label: 'Department', value: 'Primary Care' },
+                        { label: 'Employee ID', value: user?.employee_id || '—' },
+                        { label: 'Total Records', value: `${history.length} Visits` },
+                      ].map(m => (
+                        <div key={m.label}>
+                          <div style={{ fontSize: '0.68rem', fontWeight: 700, color: g.label, textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 3 }}>{m.label}</div>
+                          <div style={{ fontSize: '0.9rem', fontWeight: 600, color: m.accent ? g.accent : g.text }}>{m.value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-              <button 
-                onClick={handleLogout}
-                style={{ 
-                  padding: '1rem 2rem', borderRadius: 16, 
-                  background: 'rgba(239, 68, 68, 0.15)', 
-                  border: '1px solid rgba(239, 68, 68, 0.4)',
-                  color: '#f87171', fontWeight: 800, cursor: 'pointer',
-                  fontSize: '1rem', transition: 'all 0.3s',
-                  display: 'flex', alignItems: 'center', gap: '0.75rem',
-                  boxShadow: '0 0 15px rgba(239, 68, 68, 0.3)'
-                }}
-                onMouseEnter={(e) => { 
-                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.3)'; 
-                  e.currentTarget.style.transform = 'translateY(-3px)'; 
-                  e.currentTarget.style.boxShadow = '0 0 25px rgba(239, 68, 68, 0.6)';
-                }}
-                onMouseLeave={(e) => { 
-                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; 
-                  e.currentTarget.style.transform = 'translateY(0)'; 
-                  e.currentTarget.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.3)';
-                }}
-              >
-                <LogoutIcon size={20} />
-                Logout
-              </button>
-            </div>
-            <p style={{ marginTop: '2rem', maxWidth: 700, color: 'rgba(255, 255, 255, 0.8)', fontSize: '1.125rem', lineHeight: 1.7 }}>
-              Dedicated community health worker helping bridge the gap in rural healthcare since 2021. Specializing in maternal care and digital health record management.
-            </p>
-          </div>
-        </div>
 
-        {/* Health Stats Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '2rem' }}>
-          <div style={{
-            ...glassStyle,
-            padding: '2rem',
-            display: 'flex', flexDirection: 'column', gap: '0.75rem',
-            transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-            cursor: 'default'
-          }} 
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0, 0, 0, 0.2)'; e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '2rem' }}><ActivityIcon size={32} /></span>
-              <span style={{ fontSize: '0.875rem', fontWeight: 800, color: '#fbbf24', background: 'rgba(251, 191, 36, 0.2)', padding: '4px 12px', borderRadius: 8 }}>Total Reach</span>
-            </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 900, marginTop: '0.5rem', letterSpacing: '-0.01em' }}>{loading ? '...' : stats.patientCount}</div>
-            <div style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.6)', fontWeight: 600 }}>number of patients visited</div>
-          </div>
+              {/* ── Patient History Table ── */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.875rem' }}>
+                  <h2 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: g.text, letterSpacing: '-0.02em' }}>
+                    Patient History
+                    <span style={{ fontSize: '0.8125rem', color: g.muted, fontWeight: 500, marginLeft: 8 }}>रुग्ण इतिहास</span>
+                  </h2>
+                  <span style={{ background: g.accentL, color: g.accentT, padding: '0.25rem 0.875rem', borderRadius: 99, fontSize: '0.8125rem', fontWeight: 700, border: `1px solid ${g.accentB}` }}>
+                    {history.length} Visits
+                  </span>
+                </div>
 
-          <div style={{
-            ...glassStyle,
-            padding: '2rem',
-            display: 'flex', flexDirection: 'column', gap: '0.75rem',
-            transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-            cursor: 'default'
-          }} 
-          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(0, 0, 0, 0.2)'; e.currentTarget.style.transform = 'translateY(-10px)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.4)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)'; }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '2rem' }}><CalendarIcon size={32} /></span>
-              <span style={{ fontSize: '0.875rem', fontWeight: 800, color: '#10b981', background: 'rgba(16, 185, 129, 0.2)', padding: '4px 12px', borderRadius: 8 }}>Active</span>
-            </div>
-            <div style={{ fontSize: '1.75rem', fontWeight: 900, marginTop: '0.5rem', letterSpacing: '-0.01em' }}>{loading ? '...' : stats.lastPatientTime}</div>
-            <div style={{ fontSize: '1rem', color: 'rgba(255, 255, 255, 0.6)', fontWeight: 600 }}>last patient entered</div>
-          </div>
-        </div>
-
-        {/* Tabbed Info Section */}
-        <div style={{ ...glassStyle, padding: '3rem' }}>
-          <div style={{ display: 'flex', gap: '3.5rem', borderBottom: '1px solid rgba(255, 255, 255, 0.15)', marginBottom: '2.5rem' }}>
-            {MEDICAL_TABS.map(tab => (
-              <button 
-                key={tab} 
-                onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: '1.25rem 0',
-                  background: 'none', border: 'none',
-                  color: activeTab === tab ? '#10b981' : 'rgba(255, 255, 255, 0.5)',
-                  fontWeight: 800, fontSize: '1.125rem',
-                  position: 'relative', cursor: 'pointer', transition: 'all 0.3s'
-                }}
-              >
-                {tab}
-                {activeTab === tab && <div style={{ position: 'absolute', bottom: -1, left: 0, right: 0, height: 3, background: '#10b981', boxShadow: '0 0 15px #10b981' }} />}
-              </button>
-            ))}
-          </div>
-
-          <div style={{ minHeight: 250 }}>
-            {activeTab === 'History' && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-                {stats.rawRecords.length === 0 && !loading && (
-                    <div style={{ color: 'rgba(255,255,255,0.4)', textAlign: 'center', padding: '2rem' }}>No recent patient activity recorded.</div>
-                )}
-                {stats.rawRecords.slice(0, 5).map(record => (
-                  <div key={record.id} style={{ 
-                    padding: '1.75rem', 
-                    background: 'rgba(255, 255, 255, 0.04)', 
-                    borderRadius: 20, 
-                    border: '1px solid rgba(255, 255, 255, 0.1)', 
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    transition: 'all 0.3s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
-                  >
-                    <div>
-                      <div style={{ fontWeight: 800, fontSize: '1.125rem' }}>{record.patient_name || 'Patient Triage'}</div>
-                      <div style={{ fontSize: '0.9375rem', color: 'rgba(255, 255, 255, 0.5)', marginTop: 6 }}>{record.district} • {record.brief?.substring(0, 40)}...</div>
+                <div style={{ ...card, overflow: 'hidden' }}>
+                  {history.length === 0 ? (
+                    <div style={{ padding: '4rem', textAlign: 'center', color: g.muted }}>
+                      <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem', opacity: 0.5 }}>📂</div>
+                      <div style={{ fontWeight: 700, color: g.text, marginBottom: 4 }}>No patients triaged yet.</div>
+                      <div style={{ fontSize: '0.875rem' }}>Your submitted records will appear here.</div>
                     </div>
-                    <div style={{ textAlign: 'right' }}>
-                      <div style={{ 
-                          fontWeight: 800, 
-                          color: record.severity === 'red' ? '#ef4444' : record.severity === 'yellow' ? '#f59e0b' : '#10b981',
-                          textTransform: 'uppercase',
-                          fontSize: '0.75rem',
-                          background: 'rgba(0,0,0,0.2)',
-                          padding: '4px 8px',
-                          borderRadius: 6
-                      }}>
-                        {record.severity || 'STABLE'}
-                      </div>
-                      <div style={{ fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.4)', marginTop: 8 }}>
-                        {new Date(record.created_at).toLocaleDateString('en-IN')}
-                      </div>
-                    </div>
+                  ) : (
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr style={{ borderBottom: `1px solid ${g.divider}`, background: g.insetBg, backdropFilter: 'blur(8px)' }}>
+                          {['Patient', 'Age / Gender', 'District', 'Severity', 'Date'].map(h => (
+                            <th key={h} style={{ padding: '0.75rem 1.375rem', textAlign: 'left', fontSize: '0.65rem', fontWeight: 700, color: g.label, textTransform: 'uppercase', letterSpacing: '0.07em', whiteSpace: 'nowrap' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {history.map((record, i) => {
+                          const cfg = sevConfig[record.severity] || sevConfig.green
+                          const date = new Date(record.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                          return (
+                            <tr
+                              key={record.id}
+                              className="pp-row"
+                              style={{ borderBottom: i < history.length - 1 ? `1px solid ${g.divider}` : 'none', transition: 'background .12s', cursor: 'default' }}
+                            >
+                              <td style={{ padding: '0.875rem 1.375rem', fontWeight: 700, fontSize: '0.875rem', color: g.text }}>{record.patient_name}</td>
+                              <td style={{ padding: '0.875rem 1.375rem', fontSize: '0.8rem', color: g.muted }}>{record.age}y · {record.gender}</td>
+                              <td style={{ padding: '0.875rem 1.375rem', fontSize: '0.8rem', color: g.text }}>{record.district}</td>
+                              <td style={{ padding: '0.875rem 1.375rem' }}>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 10px', borderRadius: 99, background: cfg.bg, border: `1px solid ${cfg.bdr}`, fontSize: '0.71rem', fontWeight: 700, color: cfg.color, backdropFilter: 'blur(8px)' }}>
+                                  <span style={{ width: 5, height: 5, borderRadius: '50%', background: cfg.color, boxShadow: `0 0 5px ${cfg.color}` }} />
+                                  {cfg.label}
+                                </span>
+                              </td>
+                              <td style={{ padding: '0.875rem 1.375rem', fontSize: '0.8rem', color: g.muted, whiteSpace: 'nowrap' }}>{date}</td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              </div>
+
+              {/* ── Account Actions ── */}
+              {!forceOnboard && (
+                <div style={{ ...card, padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: g.text, marginBottom: 2 }}>Account Actions</div>
+                    <div style={{ fontSize: '0.8125rem', color: g.muted }}>Manage your session and account data</div>
                   </div>
-                ))}
-              </div>
-            )}
-            {activeTab !== 'History' && (
-              <div style={{ height: 250, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255, 255, 255, 0.4)', fontStyle: 'italic', fontSize: '1.125rem' }}>
-                No {activeTab.toLowerCase()} found in this category.
-              </div>
-            )}
-          </div>
+                  <div style={{ display: 'flex', gap: '0.875rem' }}>
+                    <button
+                      onClick={handleLogout}
+                      style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '0.6rem 1.25rem', borderRadius: 10, background: g.btn, border: `1px solid ${g.btnBdr}`, color: g.btnT, fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', transition: 'all .18s', backdropFilter: 'blur(12px)', fontFamily: "'Plus Jakarta Sans','DM Sans',sans-serif" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.85)'; e.currentTarget.style.color = isDark ? '#fff' : '#0c2a1d' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = g.btn; e.currentTarget.style.color = g.btnT }}
+                    >
+                      <LogoutIcon /> Sign Out
+                    </button>
+                    <button
+                      onClick={handleDeleteAccount}
+                      style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '0.6rem 1.25rem', borderRadius: 10, background: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)', color: '#f87171', fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', transition: 'all .18s', fontFamily: "'Plus Jakarta Sans','DM Sans',sans-serif" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = '#ef4444'; e.currentTarget.style.color = '#fff' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.10)'; e.currentTarget.style.color = '#f87171' }}
+                    >
+                      <TrashIcon /> Delete Account
+                    </button>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
         </div>
-
-      </main>
+      </div>
     </div>
   )
 }
