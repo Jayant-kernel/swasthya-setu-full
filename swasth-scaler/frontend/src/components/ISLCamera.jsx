@@ -87,6 +87,15 @@ export default function ISLCamera({ onSymptomDetected }) {
     const features = normalizeLandmarks(lm)
     const raw = predict(modelRef.current, features)
     const smoothed = smoothRef.current.update(raw)
+
+    // UNKNOWN class = open-set rejection — treat as no detection
+    if (smoothed.label === 'UNKNOWN') {
+      setPrediction(null)
+      lockRef.current = { label: null, count: 0 }
+      smoothRef.current.reset?.()
+      return
+    }
+
     setPrediction(smoothed)
 
     if (smoothed.confidence >= CONFIDENCE_MIN) {

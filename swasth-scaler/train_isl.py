@@ -50,7 +50,7 @@ model = keras.Sequential([
     keras.layers.Dense(64, activation='relu'),
     keras.layers.BatchNormalization(momentum=0.99, epsilon=0.001),
     keras.layers.Dropout(0.2),
-    keras.layers.Dense(len(ALL_LABELS), activation='softmax'),  # always 7 outputs
+    keras.layers.Dense(len(ALL_LABELS), activation='softmax'),  # dynamic — matches label_classes.json
 ], name="isl_gesture_mlp")
 
 model.compile(

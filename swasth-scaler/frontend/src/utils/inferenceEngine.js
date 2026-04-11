@@ -21,6 +21,7 @@ export const LABELS = [
     'PAIN',
     'VOMIT',
     'WEAKNESS',
+    'UNKNOWN',
 ]
 
 let _ready = false
