@@ -24,7 +24,7 @@ import { loadModel, predict } from '../utils/inferenceEngine'
 import { loadMediaPipeHands } from '../utils/loadMediaPipeHands'
 
 const TEAL = '#0F6E56'
-const CONFIDENCE_MIN = 0.80
+const CONFIDENCE_MIN = 0.97
 const LOCK_FRAMES = 18   // frames a prediction must hold before firing
 
 // MediaPipe 21-landmark connection topology
