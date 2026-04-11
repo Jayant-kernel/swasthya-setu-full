@@ -85,17 +85,7 @@ const NAV_ITEMS = [
   { id: 'chat', label: 'AI Chat', Icon: ChatIcon, path: '/chat' },
 ]
 
-/* ─── Blobs (identical to HomePage) ────────────────────────── */
-const Blobs = ({ isDark }) => (
-  <div style={{ position: 'fixed', inset: 0, zIndex: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-    <div style={{ position: 'absolute', top: '-25%', left: '-18%', width: '72vw', height: '72vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(13,148,136,0.70) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(13,148,136,0.75) 0%, transparent 68%)', filter: 'blur(90px)' }} />
-    <div style={{ position: 'absolute', top: '-12%', right: '-22%', width: '62vw', height: '62vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(124,58,237,0.55) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(167,139,250,0.65) 0%, transparent 68%)', filter: 'blur(95px)' }} />
-    <div style={{ position: 'absolute', bottom: '-22%', left: '22%', width: '68vw', height: '68vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(16,185,129,0.50) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(52,211,153,0.65) 0%, transparent 68%)', filter: 'blur(90px)' }} />
-    <div style={{ position: 'absolute', bottom: '8%', left: '-12%', width: '42vw', height: '42vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(6,182,212,0.40) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(6,182,212,0.55) 0%, transparent 68%)', filter: 'blur(75px)' }} />
-    <div style={{ position: 'absolute', top: '38%', right: '-8%', width: '38vw', height: '38vw', borderRadius: '50%', background: isDark ? 'radial-gradient(circle, rgba(236,72,153,0.28) 0%, transparent 68%)' : 'radial-gradient(circle, rgba(244,114,182,0.35) 0%, transparent 68%)', filter: 'blur(80px)' }} />
-    {isDark && <div style={{ position: 'absolute', inset: 0, background: 'rgba(4,8,22,0.50)' }} />}
-  </div>
-)
+
 
 /* ═══════════════════════════════════════════════════════════
    ProfilePage
@@ -206,7 +196,7 @@ export default function ProfilePage() {
   /* ── Glass tokens (identical to HomePage) ── */
   const g = {
     panelBg: isDark ? 'rgba(6,12,30,0.52)' : 'rgba(255,255,255,0.28)',
-    panelBdr: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.62)',
+    panelBdr: isDark ? 'rgba(255,255,255,0.10)' : 'rgba(200,240,220,0.70)',
     blur: 'blur(28px) saturate(170%)',
 
     cardBg: isDark ? 'rgba(10,18,42,0.48)' : 'rgba(255,255,255,0.26)',
@@ -233,9 +223,9 @@ export default function ProfilePage() {
     navShd: '0 2px 14px rgba(16,185,129,0.20)',
 
     hover: isDark ? 'rgba(255,255,255,0.07)' : 'rgba(16,185,129,0.09)',
-    divider: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.52)',
-    btn: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.58)',
-    btnBdr: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.78)',
+    divider: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(180,230,210,0.55)',
+    btn: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.70)',
+    btnBdr: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(200,240,220,0.80)',
     btnT: isDark ? '#b8cce4' : '#065f46',
   }
 
@@ -259,7 +249,7 @@ export default function ProfilePage() {
       display: 'flex', height: '100dvh', overflow: 'hidden',
       fontFamily: "'Plus Jakarta Sans','DM Sans',sans-serif",
       color: g.text,
-      background: isDark ? '#04060f' : '#a8e6d4',
+      background: isDark ? '#04060f' : 'linear-gradient(135deg, #f0fdf8 0%, #dcfce7 40%, #f0fdfa 70%, #f8fff9 100%)',
       position: 'relative',
     }}>
       <style>{`
