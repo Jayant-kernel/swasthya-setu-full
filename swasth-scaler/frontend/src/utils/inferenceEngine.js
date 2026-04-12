@@ -12,16 +12,19 @@ import * as tf from '@tensorflow/tfjs'
 import '@tensorflow/tfjs-backend-webgl'
 
 // Order must exactly match sklearn LabelEncoder output from training.
-// Python sorts class names alphabetically by default → alphabetical here too.
+// Matches isl_sign_data.json class_id order (0–9 + UNKNOWN).
 export const LABELS = [
-    'BREATHLESS',
-    'COUGH',
-    'DIZZINESS',
-    'FEVER',
-    'PAIN',
-    'VOMIT',
-    'WEAKNESS',
-    'UNKNOWN',
+    'DARD',         // Pain          — HIGH urgency
+    'BUKHAR',       // Fever         — HIGH urgency
+    'SAR-DARD',     // Headache      — MEDIUM urgency
+    'PET-DARD',     // Stomach Pain  — HIGH urgency
+    'ULTI',         // Vomiting      — MEDIUM urgency
+    'KHANSI',       // Cough         — MEDIUM urgency
+    'SANS-TAKLEEF', // Breathless    — CRITICAL urgency
+    'SEENE-DARD',   // Chest Pain    — CRITICAL urgency
+    'CHAKKAR',      // Dizziness     — MEDIUM urgency
+    'KAMZORI',      // Weakness      — MEDIUM urgency
+    'UNKNOWN',      // Reserved: low-confidence open-set rejection
 ]
 
 let _ready = false

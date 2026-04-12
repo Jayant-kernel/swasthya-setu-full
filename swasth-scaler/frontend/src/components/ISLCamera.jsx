@@ -25,7 +25,8 @@ import { loadMediaPipeHands } from '../utils/loadMediaPipeHands'
 
 const TEAL = '#0F6E56'
 const CONFIDENCE_MIN = 0.97
-const LOCK_FRAMES = 18   // frames a prediction must hold before firing
+const LOCK_FRAMES = 24   // ~0.8s at 30fps — must hold this many frames before firing
+const FIRE_DELAY_MS = 800  // extra ms after lock before sign can trigger (prevents accidental instant fire)
 
 // MediaPipe 21-landmark connection topology
 const CONNECTIONS = [
@@ -42,8 +43,8 @@ export default function ISLCamera({ onSymptomDetected }) {
   const canvasRef = useRef(null)
   const modelRef = useRef(null)
   const smoothRef = useRef(new PredictionSmoother({ windowSize: 8 }))
-  const lockRef = useRef({ label: null, count: 0 })
-  const lastFireRef = useRef(null)
+  const lockRef = useRef({ label: null, count: 0, readyAt: null })
+  const firedSetRef = useRef(new Set())   // signs already detected — never show or fire again
 
   const [status, setStatus] = useState('loading')   // loading | ready | no-model
   const [prediction, setPrediction] = useState(null)
@@ -79,19 +80,30 @@ export default function ISLCamera({ onSymptomDetected }) {
     }
 
     setHandVisible(true)
-    const lm = results.multiHandLandmarks[0]
-    drawSkeleton(ctx, lm, canvas.width, canvas.height)
+
+    // Draw skeletons for ALL detected hands
+    for (const lm of results.multiHandLandmarks) {
+      drawSkeleton(ctx, lm, canvas.width, canvas.height)
+    }
 
     if (!modelRef.current) return
 
-    const features = normalizeLandmarks(lm)
-    const raw = predict(modelRef.current, features)
-    const smoothed = smoothRef.current.update(raw)
+    // Run inference on each hand, pick the best (highest confidence) prediction
+    let bestRaw = null
+    for (const lm of results.multiHandLandmarks) {
+      const features = normalizeLandmarks(lm)
+      const raw = predict(modelRef.current, features)
+      if (!bestRaw || raw.confidence > bestRaw.confidence) {
+        bestRaw = raw
+      }
+    }
 
-    // UNKNOWN class = open-set rejection — treat as no detection
-    if (smoothed.label === 'UNKNOWN') {
+    const smoothed = smoothRef.current.update(bestRaw)
+
+    // UNKNOWN or already-detected sign — treat as invisible
+    if (smoothed.label === 'UNKNOWN' || firedSetRef.current.has(smoothed.label)) {
       setPrediction(null)
-      lockRef.current = { label: null, count: 0 }
+      lockRef.current = { label: null, count: 0, readyAt: null }
       smoothRef.current.reset?.()
       return
     }
@@ -100,18 +112,28 @@ export default function ISLCamera({ onSymptomDetected }) {
 
     if (smoothed.confidence >= CONFIDENCE_MIN) {
       const lock = lockRef.current
+      const now = Date.now()
+
       if (lock.label === smoothed.label) {
         lock.count++
-        if (lock.count >= LOCK_FRAMES && lastFireRef.current !== smoothed.label) {
-          lastFireRef.current = smoothed.label
+
+        // Start the fire-delay timer once lock frames are reached
+        if (lock.count === LOCK_FRAMES) {
+          lock.readyAt = now + FIRE_DELAY_MS
+        }
+
+        // Fire only after lock frames AND delay have both elapsed
+        if (lock.count >= LOCK_FRAMES && lock.readyAt && now >= lock.readyAt) {
+          firedSetRef.current.add(smoothed.label)   // permanently block this sign
           onSymptomDetected?.(smoothed.label)
-          setTimeout(() => { lastFireRef.current = null }, 2500)
+          lockRef.current = { label: null, count: 0, readyAt: null }
+          smoothRef.current.reset?.()
         }
       } else {
-        lockRef.current = { label: smoothed.label, count: 1 }
+        lockRef.current = { label: smoothed.label, count: 1, readyAt: null }
       }
     } else {
-      lockRef.current = { label: null, count: 0 }
+      lockRef.current = { label: null, count: 0, readyAt: null }
     }
   }, [onSymptomDetected])
 
@@ -140,7 +162,7 @@ export default function ISLCamera({ onSymptomDetected }) {
           `https://unpkg.com/@mediapipe/hands@0.4.1646424915/${file}`,
       })
       handsInstance.setOptions({
-        maxNumHands: 1,
+        maxNumHands: 2,
         modelComplexity: 1,
         minDetectionConfidence: 0.7,
         minTrackingConfidence: 0.6,
@@ -192,7 +214,12 @@ export default function ISLCamera({ onSymptomDetected }) {
   const confirmed = prediction?.confidence >= CONFIDENCE_MIN ? prediction : null
 
   const addWord = () => { if (confirmed) setSentence(p => [...p, confirmed.label]) }
-  const clear = () => setSentence([])
+  const clear = () => {
+    setSentence([])
+    firedSetRef.current.clear()   // allow all signs to be detected again after clear
+    lockRef.current = { label: null, count: 0, readyAt: null }
+    smoothRef.current.reset?.()
+  }
   const speak = () => {
     if (!sentence.length) return
     const u = new SpeechSynthesisUtterance(sentence.join(' '))
