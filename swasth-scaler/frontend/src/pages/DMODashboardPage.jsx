@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { useTheme } from '../hooks/useTheme'
+import { useTheme } from '../context/ThemeContext.jsx'
 
 const API = 'https://swasthya-setu-full.onrender.com/api/v1'
 

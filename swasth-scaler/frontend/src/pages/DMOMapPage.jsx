@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { useTheme } from '../hooks/useTheme'
+import { useTheme } from '../context/ThemeContext.jsx'
 import { DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints, DMOSidebar } from './DMODashboardPage'
 
 const API = 'https://swasthya-setu-full.onrender.com/api/v1'
