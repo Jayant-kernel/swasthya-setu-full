@@ -103,6 +103,7 @@ const SEV = {
 
 const SeverityPill = ({ severity }) => {
   const s = SEV[severity]; if (!s) return null
+  const { isDark } = useTheme()
   const isCritical = severity === 'red' || severity === 'yellow'
   return (
     <span style={{ 
@@ -110,7 +111,7 @@ const SeverityPill = ({ severity }) => {
       padding: '3px 10px', borderRadius: 99, 
       background: s.bg, border: `1px solid ${s.bdr}`, 
       fontSize: '0.71rem', fontWeight: 800, 
-      color: isCritical ? '#000' : s.color, 
+      color: isCritical ? (isDark ? '#fff' : '#000') : s.color, 
       backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)' 
     }}>
       <span style={{ width: 5, height: 5, borderRadius: '50%', background: s.color, boxShadow: `0 0 5px ${s.color}` }} />
@@ -119,6 +120,7 @@ const SeverityPill = ({ severity }) => {
   )
 }
 const PriorityBadge = ({ severity }) => {
+  const { isDark } = useTheme()
   const map = { 
     red: { l: 'High', c: '#ff4d4d', bg: 'rgba(255,77,77,0.18)', b: 'rgba(255,77,77,0.40)' }, 
     yellow: { l: 'Medium', c: '#f59e0b', bg: 'rgba(245,158,11,0.18)', b: 'rgba(245,158,11,0.40)' }, 
@@ -130,7 +132,7 @@ const PriorityBadge = ({ severity }) => {
     <span style={{ 
       display: 'inline-block', padding: '3px 10px', borderRadius: 99, 
       background: m.bg, 
-      color: isCritical ? '#000' : m.c, 
+      color: isCritical ? (isDark ? '#fff' : '#000') : m.c, 
       border: `1px solid ${m.b}`, 
       fontSize: '0.71rem', fontWeight: 800, 
       backdropFilter: 'blur(8px)' 

@@ -23,7 +23,9 @@ function MapController({ center, zoom, bounds }) {
       // Use setView with the district center + zoom — no fitBounds (that's what caused world view)
       map.setView(center, zoom, { animate: true })
       map.setMaxBounds(bounds)
-      map.setMinZoom(9)
+      // Custom minZoom: if India (national), allow zoom out to 4; otherwise (district) keep it 9
+      const isNational = district.toLowerCase() === 'india'
+      map.setMinZoom(isNational ? 4 : 9)
     } else {
       map.setView(center, zoom, { animate: true })
     }
@@ -36,7 +38,7 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
     <MapContainer
       center={center}
       zoom={zoom}
-      minZoom={bounds ? 9 : 5}
+      minZoom={district.toLowerCase() === 'india' ? 4 : (bounds ? 9 : 5)}
       maxZoom={14}
       maxBounds={bounds || undefined}
       maxBoundsViscosity={bounds ? 1.0 : 0}
@@ -46,6 +48,7 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        noWrap={true}
       />
       <MapController center={center} zoom={zoom} bounds={bounds} />
 
