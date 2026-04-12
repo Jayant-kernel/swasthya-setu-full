@@ -1,80 +1,128 @@
 /**
  * ISLCamera.jsx
  * ─────────────────────────────────────────────────────────────────────────────
- * Full detection pipeline — webcam → MediaPipe → TF.js → callback.
+ * Full detection pipeline — webcam → MediaPipe → gates → TF.js → callback.
  *
- * IMPORTANT — package versions that work together:
- *   npm install @mediapipe/hands@0.4.1646424915
- *   npm install @mediapipe/camera_utils@0.3.1640029074
- *   npm install @tensorflow/tfjs@4.20.0
- *   npm install @tensorflow/tfjs-backend-webgl@4.20.0
- *
- * Why these exact versions?
- *   - @mediapipe/hands 0.4.x ships its own WASM/bin files and can self-host
- *     them via locateFile → unpkg (correct JS MIME, unlike jsdelivr for WASM).
- *   - @mediapipe/camera_utils handles getUserMedia + the rAF send loop so we
- *     don't reinvent it or hit race conditions with video.readyState.
+ * Gate execution order:
+ *   0. No hands detected          → suppress all output
+ *   1. Pocket / session mode      → restrict sign pool
+ *   2. Hand count gate            → block wrong-hand-count signs
+ *   3. Zone gate                  → block signs at wrong body location
+ *   4. MLP inference (126 floats) → softmax over 11 classes
+ *   5. Confidence floor < 0.97   → treat as UNKNOWN
+ *   6. UNKNOWN class              → suppress output
+ *   7. Sliding window smoother    → 8 frames
+ *   8. Lock + fire gate           → 24 frames + 800ms + 97% confidence
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { normalizeLandmarks } from '../utils/normalize'
+import { normalizeTwoHands } from '../utils/normalize'
 import { PredictionSmoother } from '../utils/smoothing'
 import { loadModel, predict } from '../utils/inferenceEngine'
 import { loadMediaPipeHands } from '../utils/loadMediaPipeHands'
 
 const TEAL = '#0F6E56'
-const CONFIDENCE_MIN = 0.97
-const LOCK_FRAMES = 24       // ~0.8s at 30fps — must hold this many frames before firing
-const FIRE_DELAY_MS = 800    // extra ms after lock before sign can trigger
-// Motion gate: wrist must travel at least this much (in normalised 0-1 coords)
-// across the MOTION_WINDOW frames for the sign to be eligible to fire.
-// Prevents static hand placements from triggering motion-based signs.
-const MOTION_THRESHOLD = 0.018   // ~1.8% of frame width total displacement
-const MOTION_WINDOW    = 12      // look back this many frames for motion
+const CONFIDENCE_MIN  = 0.97
+const LOCK_FRAMES     = 24     // ~0.8s at 30fps
+const FIRE_DELAY_MS   = 800    // extra ms after lock before firing
 
-// Signs that are static poses and DON'T need motion to fire
-const STATIC_SIGNS = new Set(['BUKHAR', 'KHANSI', 'UNKNOWN'])
-
-// Hand count gate — restricts which signs can fire based on how many hands MediaPipe sees
+// ── Hand count groups ────────────────────────────────────────────────────────
 const ONE_HAND_SIGNS = new Set(['DARD', 'BUKHAR', 'PET-DARD', 'ULTI', 'KHANSI', 'SEENE-DARD', 'CHAKKAR'])
 const TWO_HAND_SIGNS = new Set(['SAR-DARD', 'SANS-TAKLEEF', 'KAMZORI'])
 
+// ── Body zone table (wrist Y, 0=top 1=bottom, ±0.05 tolerance applied inside gate) ──
+const ZONE_TABLE = {
+  'SAR-DARD':     [0.00, 0.38],
+  'BUKHAR':       [0.00, 0.32],
+  'CHAKKAR':      [0.00, 0.38],
+  'SEENE-DARD':   [0.28, 0.58],
+  'SANS-TAKLEEF': [0.28, 0.58],
+  'KHANSI':       [0.28, 0.58],
+  'ULTI':         [0.20, 0.52],
+  'DARD':         [0.00, 1.00],   // pain can be anywhere — never zone-reject
+  'PET-DARD':     [0.48, 0.78],
+  'KAMZORI':      [0.52, 0.88],
+}
+const ZONE_TOLERANCE = 0.05
+
+// ── Pocket detection ─────────────────────────────────────────────────────────
+const POCKET_FRAMES = 60   // 2s at 30fps of consistent hand count before locking mode
+
+// ── MediaPipe skeleton topology ──────────────────────────────────────────────
+const CONNECTIONS = [
+  [0,1],[1,2],[2,3],[3,4],
+  [0,5],[5,6],[6,7],[7,8],
+  [0,9],[9,10],[10,11],[11,12],
+  [0,13],[13,14],[14,15],[15,16],
+  [0,17],[17,18],[18,19],[19,20],
+  [5,9],[9,13],[13,17],
+]
+
+// ── Gate 2: Hand count gate ───────────────────────────────────────────────────
 function handCountGate(label, handsDetected) {
-  if (handsDetected === 1 && TWO_HAND_SIGNS.has(label)) return 'UNKNOWN'
-  if (handsDetected >= 2 && ONE_HAND_SIGNS.has(label))  return 'UNKNOWN'
+  if (handsDetected === 1 && TWO_HAND_SIGNS.has(label)) {
+    console.log('[GATE REJECTED]', label, 'reason: needs 2 hands, only 1 detected')
+    return 'UNKNOWN'
+  }
+  if (handsDetected >= 2 && ONE_HAND_SIGNS.has(label)) {
+    console.log('[GATE REJECTED]', label, 'reason: needs 1 hand, 2 detected')
+    return 'UNKNOWN'
+  }
   return label
 }
 
-// MediaPipe 21-landmark connection topology
-const CONNECTIONS = [
-  [0, 1], [1, 2], [2, 3], [3, 4],
-  [0, 5], [5, 6], [6, 7], [7, 8],
-  [0, 9], [9, 10], [10, 11], [11, 12],
-  [0, 13], [13, 14], [14, 15], [15, 16],
-  [0, 17], [17, 18], [18, 19], [19, 20],
-  [5, 9], [9, 13], [13, 17],
-]
+// ── Gate 3: Body zone gate ────────────────────────────────────────────────────
+function zoneGate(label, wristY) {
+  const zone = ZONE_TABLE[label]
+  if (!zone) return label   // UNKNOWN / unmapped — pass through
+  const [lo, hi] = zone
+  if (wristY < lo - ZONE_TOLERANCE || wristY > hi + ZONE_TOLERANCE) {
+    console.log('[ZONE REJECTED]', label, 'wristY=' + wristY.toFixed(3),
+      'allowed=[' + lo + ',' + hi + ']')
+    return 'UNKNOWN'
+  }
+  return label
+}
+
+// ── Gate 1: Session / pocket mode gate ───────────────────────────────────────
+function sessionModeGate(label, sessionMode) {
+  if (sessionMode === 'SINGLE_HAND' && TWO_HAND_SIGNS.has(label)) {
+    console.log('[GATE REJECTED]', label, 'reason: session locked to single-hand mode')
+    return 'UNKNOWN'
+  }
+  if (sessionMode === 'BOTH_HANDS' && ONE_HAND_SIGNS.has(label)) {
+    console.log('[GATE REJECTED]', label, 'reason: session locked to both-hands mode')
+    return 'UNKNOWN'
+  }
+  return label
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 
 export default function ISLCamera({ onSymptomDetected }) {
-  const videoRef = useRef(null)
-  const canvasRef = useRef(null)
-  const modelRef = useRef(null)
-  const smoothRef = useRef(new PredictionSmoother({ windowSize: 8 }))
-  const lockRef = useRef({ label: null, count: 0, readyAt: null })
-  const firedSetRef = useRef(new Set())       // signs already detected — never show or fire again
-  const wristHistRef = useRef([])             // ring buffer of recent wrist {x,y} positions
+  const videoRef   = useRef(null)
+  const canvasRef  = useRef(null)
+  const modelRef   = useRef(null)
+  const smoothRef  = useRef(new PredictionSmoother({ windowSize: 8 }))
+  const lockRef    = useRef({ label: null, count: 0, readyAt: null })
+  const firedSetRef = useRef(new Set())
 
-  const [status, setStatus] = useState('loading')   // loading | ready | no-model
-  const [prediction, setPrediction] = useState(null)
+  // Pocket detection counters (before first sign fires)
+  const pocketCountRef   = useRef({ count: 0, lastHandCount: -1 })
+  const firstSignFiredRef = useRef(false)
+
+  const [status,      setStatus]      = useState('loading')
+  const [prediction,  setPrediction]  = useState(null)
   const [handVisible, setHandVisible] = useState(false)
-  const [sentence, setSentence] = useState([])
+  const [sentence,    setSentence]    = useState([])
+  const [sessionMode, setSessionMode] = useState('AUTO')  // 'AUTO' | 'SINGLE_HAND' | 'BOTH_HANDS'
 
   // ── Load TF.js model ────────────────────────────────────────────────────────
   useEffect(() => {
     loadModel('/tfjs_model/model.json')
       .then(m => { modelRef.current = m; setStatus('ready') })
-      .catch((err) => { console.error('[ISLCamera] model load failed:', err); setStatus('no-model') })
+      .catch(err => { console.error('[ISLCamera] model load failed:', err); setStatus('no-model') })
   }, [])
 
   // ── MediaPipe results callback ──────────────────────────────────────────────
@@ -82,96 +130,112 @@ export default function ISLCamera({ onSymptomDetected }) {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
-    // Sync canvas internal resolution to its actual rendered size
-    const W = canvas.clientWidth || canvas.width
+    const W = canvas.clientWidth  || canvas.width
     const H = canvas.clientHeight || canvas.height
-    if (canvas.width !== W || canvas.height !== H) {
-      canvas.width = W
-      canvas.height = H
-    }
+    if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H }
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    if (!results.multiHandLandmarks?.length) {
+    const handsDetected = results.multiHandLandmarks?.length ?? 0
+
+    // ── Gate 0: No hands ──────────────────────────────────────────────────────
+    if (handsDetected === 0) {
       setHandVisible(false)
       setPrediction(null)
       lockRef.current = { label: null, count: 0, readyAt: null }
-      wristHistRef.current = []
+      pocketCountRef.current = { count: 0, lastHandCount: 0 }
       return
     }
 
     setHandVisible(true)
 
-    // Draw skeletons for ALL detected hands
+    // Draw skeletons for all detected hands
     for (const lm of results.multiHandLandmarks) {
       drawSkeleton(ctx, lm, canvas.width, canvas.height)
     }
 
-    if (!modelRef.current) return
-
-    // Run inference on each hand, apply hand-count gate, pick best remaining prediction
-    const handsDetected = results.multiHandLandmarks.length
-    let bestRaw = null
-    let bestLm = null
-    for (const lm of results.multiHandLandmarks) {
-      const features = normalizeLandmarks(lm)
-      const raw = predict(modelRef.current, features)
-      // Apply hand count gate — block signs that require a different hand count
-      const gatedLabel = handCountGate(raw.label, handsDetected)
-      const gated = gatedLabel === raw.label ? raw : { ...raw, label: 'UNKNOWN', confidence: 0 }
-      if (!bestRaw || gated.confidence > bestRaw.confidence) {
-        bestRaw = gated
-        bestLm = lm
+    // ── Gate 1: Pocket / session mode detection ───────────────────────────────
+    // Before first sign fires, track consistent hand count to auto-detect mode
+    if (!firstSignFiredRef.current) {
+      const pc = pocketCountRef.current
+      if (pc.lastHandCount === handsDetected) {
+        pc.count++
+        if (pc.count >= POCKET_FRAMES) {
+          const newMode = handsDetected === 1 ? 'SINGLE_HAND' : 'BOTH_HANDS'
+          setSessionMode(prev => prev !== newMode ? newMode : prev)
+        }
+      } else {
+        // Hand count changed — reset counter, exit any locked mode
+        pc.count = 0
+        pc.lastHandCount = handsDetected
+        setSessionMode('AUTO')
       }
     }
 
-    // ── Motion gate ────────────────────────────────────────────────────────────
-    // Track wrist position over time; for motion-based signs require the wrist
-    // to have moved enough — prevents a static hand pose from triggering.
-    const wrist = bestLm[0]
-    const hist = wristHistRef.current
-    hist.push({ x: wrist.x, y: wrist.y })
-    if (hist.length > MOTION_WINDOW) hist.shift()
+    if (!modelRef.current) return
 
-    // Compute total path length over the window
-    let motionDist = 0
-    for (let i = 1; i < hist.length; i++) {
-      const dx = hist[i].x - hist[i - 1].x
-      const dy = hist[i].y - hist[i - 1].y
-      motionDist += Math.sqrt(dx * dx + dy * dy)
+    // ── Normalize: 126 floats (right[63] + left[63]) ─────────────────────────
+    const features = normalizeTwoHands(
+      results.multiHandLandmarks,
+      results.multiHandedness
+    )
+
+    // Get dominant hand wrist Y for zone gate (right preferred, else left)
+    let dominantWristY = 0.5
+    if (results.multiHandedness && results.multiHandLandmarks.length > 0) {
+      let rightIdx = results.multiHandedness.findIndex(h => h.label === 'Right')
+      let idx = rightIdx >= 0 ? rightIdx : 0
+      dominantWristY = results.multiHandLandmarks[idx][0].y
     }
-    const hasMotion = motionDist >= MOTION_THRESHOLD
 
-    const smoothed = smoothRef.current.update(bestRaw)
+    // ── MLP inference ─────────────────────────────────────────────────────────
+    const raw = predict(modelRef.current, features)
 
-    // UNKNOWN or already-detected sign — treat as invisible
-    if (smoothed.label === 'UNKNOWN' || firedSetRef.current.has(smoothed.label)) {
+    // ── Gate 5: Confidence floor ──────────────────────────────────────────────
+    if (raw.confidence < CONFIDENCE_MIN) {
+      raw.label = 'UNKNOWN'
+    }
+
+    // ── Gate 2: Hand count gate ───────────────────────────────────────────────
+    raw.label = handCountGate(raw.label, handsDetected)
+
+    // ── Gate 1 (apply): Session mode gate ────────────────────────────────────
+    raw.label = sessionModeGate(raw.label, sessionMode)
+
+    // ── Gate 3: Zone gate ─────────────────────────────────────────────────────
+    if (raw.label !== 'UNKNOWN') {
+      raw.label = zoneGate(raw.label, dominantWristY)
+    }
+
+    // ── Gate 6: UNKNOWN suppression ──────────────────────────────────────────
+    if (raw.label === 'UNKNOWN' || firedSetRef.current.has(raw.label)) {
       setPrediction(null)
       lockRef.current = { label: null, count: 0, readyAt: null }
       smoothRef.current.reset?.()
       return
     }
 
+    // ── Gate 7: Sliding window smoother ──────────────────────────────────────
+    const smoothed = smoothRef.current.update(raw)
+
+    if (smoothed.label === 'UNKNOWN' || firedSetRef.current.has(smoothed.label)) {
+      setPrediction(null)
+      lockRef.current = { label: null, count: 0, readyAt: null }
+      return
+    }
+
     setPrediction(smoothed)
 
-    // Motion gate: non-static signs require hand movement to accumulate lock count
-    const needsMotion = !STATIC_SIGNS.has(smoothed.label)
-    const motionOk = !needsMotion || hasMotion
-
-    if (smoothed.confidence >= CONFIDENCE_MIN && motionOk) {
+    // ── Gate 8: Lock + fire ───────────────────────────────────────────────────
+    if (smoothed.confidence >= CONFIDENCE_MIN) {
       const lock = lockRef.current
-      const now = Date.now()
+      const now  = Date.now()
 
       if (lock.label === smoothed.label) {
         lock.count++
-
-        // Start the fire-delay timer once lock frames are reached
-        if (lock.count === LOCK_FRAMES) {
-          lock.readyAt = now + FIRE_DELAY_MS
-        }
-
-        // Fire only after lock frames AND delay have both elapsed
+        if (lock.count === LOCK_FRAMES) lock.readyAt = now + FIRE_DELAY_MS
         if (lock.count >= LOCK_FRAMES && lock.readyAt && now >= lock.readyAt) {
-          firedSetRef.current.add(smoothed.label)   // permanently block this sign
+          firedSetRef.current.add(smoothed.label)
+          firstSignFiredRef.current = true
           onSymptomDetected?.(smoothed.label)
           lockRef.current = { label: null, count: 0, readyAt: null }
           smoothRef.current.reset?.()
@@ -180,12 +244,11 @@ export default function ISLCamera({ onSymptomDetected }) {
         lockRef.current = { label: smoothed.label, count: 1, readyAt: null }
       }
     } else {
-      // No confidence or hand is static when motion is required — reset lock
       lockRef.current = { label: null, count: 0, readyAt: null }
     }
-  }, [onSymptomDetected])
+  }, [onSymptomDetected, sessionMode])
 
-  // ── Init webcam + MediaPipe Hands (dynamic import avoids Vite CJS issues) ───
+  // ── Init webcam + MediaPipe ───────────────────────────────────────────────
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
@@ -195,7 +258,6 @@ export default function ISLCamera({ onSymptomDetected }) {
     let stream = null
 
     async function init() {
-      // 1. Start webcam
       stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 640, height: 480, facingMode: 'user' },
         audio: false,
@@ -203,7 +265,6 @@ export default function ISLCamera({ onSymptomDetected }) {
       video.srcObject = stream
       await video.play()
 
-      // 2. Load MediaPipe Hands once (script-injected, cached across components)
       const Hands = await loadMediaPipeHands()
       handsInstance = new Hands({
         locateFile: (file) =>
@@ -217,11 +278,8 @@ export default function ISLCamera({ onSymptomDetected }) {
       })
       handsInstance.onResults(onResults)
 
-      // 3. rAF loop — send each frame to MediaPipe
       async function tick() {
-        if (video.readyState >= 2) {
-          await handsInstance.send({ image: video })
-        }
+        if (video.readyState >= 2) await handsInstance.send({ image: video })
         rafId = requestAnimationFrame(tick)
       }
       rafId = requestAnimationFrame(tick)
@@ -230,15 +288,14 @@ export default function ISLCamera({ onSymptomDetected }) {
     init().catch(console.error)
 
     return () => {
-      if (rafId) cancelAnimationFrame(rafId)
-      if (stream) stream.getTracks().forEach(t => t.stop())
+      if (rafId)         cancelAnimationFrame(rafId)
+      if (stream)        stream.getTracks().forEach(t => t.stop())
       if (handsInstance) handsInstance.close()
     }
   }, [onResults])
 
-  // ── Draw skeleton overlay ───────────────────────────────────────────────────
+  // ── Draw skeleton ─────────────────────────────────────────────────────────
   function drawSkeleton(ctx, lm, w, h) {
-    // Mirror X to match the flipped video display
     const mx = (x) => (1 - x) * w
     ctx.strokeStyle = 'rgba(15,110,86,0.75)'
     ctx.lineWidth = 2
@@ -251,22 +308,24 @@ export default function ISLCamera({ onSymptomDetected }) {
     lm.forEach((p, i) => {
       ctx.beginPath()
       ctx.arc(mx(p.x), p.y * h, i === 0 ? 7 : 4, 0, Math.PI * 2)
-      ctx.fillStyle = i === 0 ? TEAL : 'rgba(15,110,86,0.9)'
+      ctx.fillStyle  = i === 0 ? TEAL : 'rgba(15,110,86,0.9)'
       ctx.strokeStyle = '#fff'
-      ctx.lineWidth = 1.5
+      ctx.lineWidth  = 1.5
       ctx.fill(); ctx.stroke()
     })
   }
 
-  // ── Sentence builder helpers ────────────────────────────────────────────────
+  // ── Sentence helpers ──────────────────────────────────────────────────────
   const confirmed = prediction?.confidence >= CONFIDENCE_MIN ? prediction : null
 
   const addWord = () => { if (confirmed) setSentence(p => [...p, confirmed.label]) }
-  const clear = () => {
+  const clear   = () => {
     setSentence([])
     firedSetRef.current.clear()
     lockRef.current = { label: null, count: 0, readyAt: null }
-    wristHistRef.current = []
+    pocketCountRef.current = { count: 0, lastHandCount: -1 }
+    firstSignFiredRef.current = false
+    setSessionMode('AUTO')
     smoothRef.current.reset?.()
   }
   const speak = () => {
@@ -284,22 +343,19 @@ export default function ISLCamera({ onSymptomDetected }) {
         position: 'relative', borderRadius: 20, overflow: 'hidden',
         background: '#0f172a', aspectRatio: '4/3', maxHeight: 420,
       }}>
-        {/* Video is mirrored so it feels like a mirror to the user */}
         <video
           ref={videoRef}
           style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }}
           muted playsInline
         />
-        {/* Canvas overlay — X coords are flipped in drawSkeleton to match mirrored video */}
         <canvas
           ref={canvasRef} width={640} height={480}
-          style={{
-            position: 'absolute', inset: 0,
-            width: '100%', height: '100%',
-            pointerEvents: 'none',
-          }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
         />
         <StatusBadge status={status} handVisible={handVisible} />
+        {sessionMode !== 'AUTO' && (
+          <SessionModeBadge mode={sessionMode} />
+        )}
         {confirmed && (
           <PredictionOverlay
             label={confirmed.label}
@@ -323,10 +379,10 @@ export default function ISLCamera({ onSymptomDetected }) {
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function StatusBadge({ status, handVisible }) {
-  const cfg = status === 'loading' ? { dot: '#f59e0b', text: 'Loading model…' }
-    : status === 'no-model' ? { dot: '#ef4444', text: 'No model — run training first' }
-      : handVisible ? { dot: TEAL, text: '● Hand detected' }
-        : { dot: '#64748b', text: 'Show your hand' }
+  const cfg = status === 'loading'  ? { dot: '#f59e0b', text: 'Loading model...' }
+    : status === 'no-model'         ? { dot: '#ef4444', text: 'No model — run training first' }
+    : handVisible                   ? { dot: TEAL,      text: '● Hand detected' }
+    :                                 { dot: '#64748b',  text: 'Show your hand' }
   return (
     <div style={{
       position: 'absolute', top: 12, left: 12,
@@ -343,8 +399,22 @@ function StatusBadge({ status, handVisible }) {
   )
 }
 
+function SessionModeBadge({ mode }) {
+  const label = mode === 'SINGLE_HAND' ? 'Single hand mode' : 'Both hands mode'
+  return (
+    <div style={{
+      position: 'absolute', bottom: 12, left: 12,
+      background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(6px)',
+      borderRadius: 20, padding: '4px 10px',
+      color: '#94a3b8', fontSize: '0.65rem', fontWeight: 600,
+    }}>
+      {label}
+    </div>
+  )
+}
+
 function PredictionOverlay({ label, confidence, lockCount, lockMax }) {
-  const pct = Math.min(lockCount / lockMax, 1)
+  const pct    = Math.min(lockCount / lockMax, 1)
   const locked = pct >= 1
   return (
     <div style={{
@@ -381,10 +451,10 @@ function SentenceBar({ sentence, currentLabel, onAdd, onClear, onSpeak }) {
           SENTENCE BUILDER
         </span>
         <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-          <Btn onClick={onAdd} disabled={!currentLabel} bg="#0F6E56">
-            + Add {currentLabel ? `"${currentLabel}"` : '…'}
+          <Btn onClick={onAdd}   disabled={!currentLabel} bg="#0F6E56">
+            + Add {currentLabel ? `"${currentLabel}"` : '...'}
           </Btn>
-          <Btn onClick={onSpeak} disabled={!sentence.length} bg="#3b82f6">🔊 Speak</Btn>
+          <Btn onClick={onSpeak} disabled={!sentence.length} bg="#3b82f6">Speak</Btn>
           <Btn onClick={onClear} disabled={!sentence.length} bg="#ef4444">Clear</Btn>
         </div>
       </div>
@@ -394,8 +464,8 @@ function SentenceBar({ sentence, currentLabel, onAdd, onClear, onSpeak }) {
       }}>
         {sentence.length === 0
           ? <span style={{ color: '#94a3b8', fontSize: '0.82rem' }}>
-            Hold a sign to detect → click "Add" to build a sentence
-          </span>
+              Hold a sign to detect, then click Add
+            </span>
           : sentence.map((w, i) => (
             <span key={i} style={{
               background: 'rgba(15,110,86,0.12)', color: '#0F6E56',

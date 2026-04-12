@@ -2,10 +2,13 @@
 """
 extract_landmarks.py
 Extract MediaPipe hand landmarks from training videos -> training_data.json
+Outputs 126 floats per sample: right_hand[63] + left_hand[63]
+Missing hand slot is filled with 63 zeros.
 
 Usage:
-    python extract_landmarks.py --videos C:/Users/jayan/Desktop/vedios --label ULTI
-    python extract_landmarks.py --videos C:/Users/jayan/Desktop/vedios
+    python extract_landmarks.py --videos C:/path/to/videos --label DARD
+    python extract_landmarks.py --videos C:/path/to/videos
+    python extract_landmarks.py --videos C:/path/to/UNKNOWN_folder --label UNKNOWN
 """
 
 import argparse
@@ -22,7 +25,7 @@ from mediapipe.tasks.python import vision as mp_vision
 from mediapipe.tasks.python.vision import HandLandmarkerOptions, HandLandmarker
 from mediapipe.tasks.python.core.base_options import BaseOptions
 
-# ── Args ──────────────────────────────────────────────────────────────────────
+# ── Args ───────────────────────────────────────────────────────────────────────
 parser = argparse.ArgumentParser()
 parser.add_argument("--videos", required=True)
 parser.add_argument("--label",  default=None)
@@ -37,15 +40,46 @@ VALID_LABELS = [
     "KHANSI", "SANS-TAKLEEF", "SEENE-DARD", "CHAKKAR", "KAMZORI", "UNKNOWN"
 ]
 
-# ── Normalise ─────────────────────────────────────────────────────────────────
-def normalize(landmarks):
+# Signs that REQUIRE both hands -- skip frames with fewer than 2 hands
+TWO_HAND_SIGNS = {"SAR-DARD", "SANS-TAKLEEF", "KAMZORI"}
+
+# ── Per-hand normalization ─────────────────────────────────────────────────────
+def normalize_hand(landmarks):
+    """Normalize one hand's 21 landmarks -> flat list of 63 floats."""
     pts   = np.array([[lm.x, lm.y, lm.z] for lm in landmarks], dtype=np.float32)
     wrist = pts[0]
-    ref   = pts[9]
+    ref   = pts[9]   # middle-finger MCP
     scale = float(np.linalg.norm(ref - wrist)) or 1.0
     return ((pts - wrist) / scale).flatten().tolist()
 
-# ── Load existing data ────────────────────────────────────────────────────────
+def zeros63():
+    return [0.0] * 63
+
+# ── Build 126-float sample from detected hands ─────────────────────────────────
+def build_sample(hand_landmarks, handedness):
+    """
+    Return [right63 + left63] = 126 floats.
+    Slots missing hand with 63 zeros.
+    """
+    right_lm = None
+    left_lm  = None
+
+    for i, h in enumerate(handedness):
+        label = h.category_name  # 'Right' or 'Left' (from model perspective)
+        if label == "Right":
+            right_lm = hand_landmarks[i]
+        else:
+            left_lm = hand_landmarks[i]
+
+    # If only one hand and handedness didn't resolve, assign to right slot
+    if len(hand_landmarks) == 1 and right_lm is None and left_lm is None:
+        right_lm = hand_landmarks[0]
+
+    right63 = normalize_hand(right_lm) if right_lm else zeros63()
+    left63  = normalize_hand(left_lm)  if left_lm  else zeros63()
+    return right63 + left63
+
+# ── Load existing data ─────────────────────────────────────────────────────────
 if os.path.exists(DATA_PATH):
     with open(DATA_PATH) as f:
         training_data = json.load(f)
@@ -54,12 +88,13 @@ else:
     training_data = {}
     print("No existing training_data.json - creating fresh")
 
-# ── Download MediaPipe model if needed ───────────────────────────────────────
+# ── Download MediaPipe model if needed ────────────────────────────────────────
 MODEL_PATH = os.path.join(HERE, "hand_landmarker.task")
 if not os.path.exists(MODEL_PATH):
     print("Downloading MediaPipe hand landmarker model (~9MB)...")
     urllib.request.urlretrieve(
-        "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task",
+        "https://storage.googleapis.com/mediapipe-models/hand_landmarker/"
+        "hand_landmarker/float16/1/hand_landmarker.task",
         MODEL_PATH
     )
     print("Downloaded.")
@@ -67,7 +102,7 @@ if not os.path.exists(MODEL_PATH):
 # ── Init MediaPipe detector ───────────────────────────────────────────────────
 options = HandLandmarkerOptions(
     base_options=BaseOptions(model_asset_path=MODEL_PATH),
-    num_hands=1,
+    num_hands=2,
     min_hand_detection_confidence=0.65,
     min_hand_presence_confidence=0.60,
     min_tracking_confidence=0.60,
@@ -85,10 +120,11 @@ if not video_files:
     print("ERROR: No video files found in " + args.videos)
     sys.exit(1)
 
-print("\nFound " + str(len(video_files)) + " video(s): " + str(video_files) + "\n")
+print("\nFound " + str(len(video_files)) + " video(s)")
 
-total_extracted = 0
-total_skipped   = 0
+total_extracted     = 0
+total_skipped       = 0
+total_skipped_hands = 0
 
 # ── Process each video ────────────────────────────────────────────────────────
 for fname in video_files:
@@ -110,11 +146,15 @@ for fname in video_files:
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps          = cap.get(cv2.CAP_PROP_FPS)
 
-    extracted = 0
-    skipped   = 0
-    frame_idx = 0
+    extracted  = 0
+    skipped    = 0
+    skip_hands = 0
+    frame_idx  = 0
+    needs_two  = label in TWO_HAND_SIGNS
 
-    print("  " + fname + " -> label=" + label + " | " + str(total_frames) + " frames @ " + str(int(fps)) + "fps")
+    print("  " + fname + " -> label=" + label +
+          " | " + str(total_frames) + " frames @ " + str(int(fps)) + "fps" +
+          (" [2-HAND REQUIRED]" if needs_two else ""))
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -133,15 +173,26 @@ for fname in video_files:
             skipped += 1
             continue
 
-        lm     = result.hand_landmarks[0]
-        normed = normalize(lm)
-        training_data[label].append(normed)
+        hands_found = len(result.hand_landmarks)
+
+        # Two-hand signs: skip frames where fewer than 2 hands are visible
+        if needs_two and hands_found < 2:
+            skip_hands += 1
+            continue
+
+        sample = build_sample(result.hand_landmarks, result.handedness)
+        assert len(sample) == 126, "Expected 126 floats, got " + str(len(sample))
+        training_data[label].append(sample)
         extracted += 1
 
     cap.release()
-    print("    OK: extracted=" + str(extracted) + "  skipped(no hand)=" + str(skipped))
-    total_extracted += extracted
-    total_skipped   += skipped
+    msg = "    OK: extracted=" + str(extracted) + "  skipped(no hand)=" + str(skipped)
+    if needs_two:
+        msg += "  skipped(1-hand-only)=" + str(skip_hands)
+    print(msg)
+    total_extracted     += extracted
+    total_skipped       += skipped
+    total_skipped_hands += skip_hands
 
 detector.close()
 
@@ -150,10 +201,14 @@ with open(DATA_PATH, "w") as f:
     json.dump(training_data, f)
 
 print("\n--------------------------------------------------")
-print("Total samples extracted : " + str(total_extracted))
-print("Total frames skipped    : " + str(total_skipped))
+print("Total samples extracted       : " + str(total_extracted))
+print("Total frames skipped (no hand): " + str(total_skipped))
+if total_skipped_hands:
+    print("Skipped (1-hand for 2-hand sign): " + str(total_skipped_hands))
 print("\ntraining_data.json updated:")
 for k, v in training_data.items():
     if v:
         print("  " + k.ljust(16) + ": " + str(len(v)) + " samples")
 print("\nSaved -> " + DATA_PATH)
+print("\nNOTE: Each sample is now 126 floats (right[63] + left[63]).")
+print("      Re-run train_isl.py to retrain after adding new data.")

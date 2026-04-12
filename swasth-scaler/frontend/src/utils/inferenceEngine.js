@@ -51,7 +51,8 @@ export async function loadModel(url = '/tfjs_model/model.json') {
     console.log('[inference] model loaded, inputs:', model.inputs)
 
     // Warm-up eliminates the JIT compilation spike on the first real prediction
-    tf.tidy(() => model.predict(tf.zeros([1, 63])))
+    // Input is 126 floats (two hands: right[63] + left[63])
+    tf.tidy(() => model.predict(tf.zeros([1, 126])))
 
     _ready = true
     console.log('[inference] model ready')
@@ -62,7 +63,7 @@ export async function loadModel(url = '/tfjs_model/model.json') {
  * Run inference on a single normalised sample.
  *
  * @param {tf.LayersModel}  model
- * @param {Float32Array}    features  length 63
+ * @param {Float32Array}    features  length 126 (right[63] + left[63])
  * @returns {{ label: string, confidence: number, scores: number[] }}
  */
 export function predict(model, features) {
@@ -71,7 +72,7 @@ export function predict(model, features) {
     }
 
     return tf.tidy(() => {
-        const input = tf.tensor2d([Array.from(features)], [1, 63])
+        const input = tf.tensor2d([Array.from(features)], [1, 126])
         const output = model.predict(input)              // [1, NUM_CLASSES]
         const scores = Array.from(output.dataSync())     // copy before tidy cleans up
 
