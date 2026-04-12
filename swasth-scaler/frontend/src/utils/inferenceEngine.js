@@ -11,8 +11,11 @@
 import * as tf from '@tensorflow/tfjs'
 import '@tensorflow/tfjs-backend-webgl'
 
-// Order must exactly match sklearn LabelEncoder output from training.
-// Matches isl_sign_data.json class_id order (0–9 + UNKNOWN).
+/**
+ * Class label names in order (0–10).
+ * Must match label_classes.json and training data order exactly.
+ * Exported so ISLCamera.jsx can use it for possibility filtering.
+ */
 export const LABELS = [
     'DARD',         // Pain          — HIGH urgency
     'BUKHAR',       // Fever         — HIGH urgency

@@ -19,7 +19,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { normalizeTwoHands } from '../utils/normalize'
 import { PredictionSmoother } from '../utils/smoothing'
-import { loadModel, predict } from '../utils/inferenceEngine'
+import { loadModel, predict, LABELS } from '../utils/inferenceEngine'
 import { loadMediaPipeHands } from '../utils/loadMediaPipeHands'
 
 const TEAL = '#0F6E56'
@@ -48,6 +48,56 @@ const ZONE_TOLERANCE = 0.05
 
 // ── Pocket detection ─────────────────────────────────────────────────────────
 const POCKET_FRAMES = 60   // 2s at 30fps of consistent hand count before locking mode
+
+// ── Possibility filter — hard gate based on hand count ───────────────────────
+/**
+ * Get which signs are physically possible given the number of hands detected.
+ * Returns a Set of sign names that can possibly be signed right now.
+ *
+ * @param {number} handsDetected - 0, 1, or 2
+ * @returns {Set<string>} possible sign names, or empty set if handsDetected === 0
+ */
+function getPossibleSigns(handsDetected) {
+  if (handsDetected === 1) return ONE_HAND_SIGNS
+  if (handsDetected === 2) return TWO_HAND_SIGNS
+  return new Set()  // 0 hands → nothing possible
+}
+
+/**
+ * Zero out probabilities for impossible signs and re-normalize.
+ *
+ * @param {Object} prediction - { label, confidence, scores: [11 floats] }
+ * @param {Set<string>} possibleSigns - from getPossibleSigns()
+ * @param {Array<string>} LABELS - class names in order
+ * @returns {Object} - prediction with zeroed/renormalized scores
+ */
+function applyPossibilityFilter(prediction, possibleSigns, LABELS) {
+  if (possibleSigns.size === 0) {
+    // No hands → all probabilities zero
+    return { ...prediction, label: 'UNKNOWN', confidence: 0, scores: new Array(LABELS.length).fill(0) }
+  }
+
+  const filtered = prediction.scores.map((score, idx) => {
+    const label = LABELS[idx]
+    return possibleSigns.has(label) ? score : 0
+  })
+
+  // Re-normalize remaining scores to sum to 1
+  const sum = filtered.reduce((a, b) => a + b, 0)
+  const normalized = sum > 0 ? filtered.map(s => s / sum) : filtered
+
+  // Find new best class
+  let bestIdx = 0
+  for (let i = 1; i < normalized.length; i++) {
+    if (normalized[i] > normalized[bestIdx]) bestIdx = i
+  }
+
+  return {
+    label: LABELS[bestIdx] ?? 'UNKNOWN',
+    confidence: normalized[bestIdx],
+    scores: normalized,
+  }
+}
 
 // ── MediaPipe skeleton topology ──────────────────────────────────────────────
 const CONNECTIONS = [
@@ -188,14 +238,18 @@ export default function ISLCamera({ onSymptomDetected }) {
     }
 
     // ── MLP inference ─────────────────────────────────────────────────────────
-    const raw = predict(modelRef.current, features)
+    let raw = predict(modelRef.current, features)
+
+    // ── POSSIBILITY FILTER: Hard gate — only allow physically possible signs ────
+    const possibleSigns = getPossibleSigns(handsDetected)
+    raw = applyPossibilityFilter(raw, possibleSigns, LABELS)
 
     // ── Gate 5: Confidence floor ──────────────────────────────────────────────
     if (raw.confidence < CONFIDENCE_MIN) {
       raw.label = 'UNKNOWN'
     }
 
-    // ── Gate 2: Hand count gate ───────────────────────────────────────────────
+    // ── Gate 2: Hand count gate (now redundant but kept for clarity) ──────────
     raw.label = handCountGate(raw.label, handsDetected)
 
     // ── Gate 1 (apply): Session mode gate ────────────────────────────────────
