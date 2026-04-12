@@ -54,3 +54,22 @@ class TriageRecord(Base):
     longitude = Column(Float, nullable=True)
     user_id = Column(String, ForeignKey("users.id")) # ASHA worker who submitted
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+
+class DiseaseOutbreak(Base):
+    __tablename__ = "disease_outbreaks"
+
+    id = Column(Integer, primary_key=True, index=True)
+    year = Column(Integer)
+    week = Column(Integer)
+    state = Column(String)
+    district = Column(String)
+    disease = Column(String)
+    cases = Column(Integer)
+    deaths = Column(Integer)
+    status = Column(String)
+    district_as_per_source = Column(String(50))
+    disease_illness_name = Column(String(50))
+    # Optional: store centroids for map markers if needed specifically for this table
+    latitude = Column(Float, nullable=True)
+    longitude = Column(Float, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))

@@ -202,20 +202,23 @@ export default function DMODashboardPage() {
 
   const [triageRecords, setTriageRecords] = useState([])
   const [patients, setPatients] = useState([])
+  const [outbreaks, setOutbreaks] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selectedDate, setSelectedDate] = useState(9) // Default select 9th as per original UI
+  const [selectedDate, setSelectedDate] = useState(null) // Show all by default
   const [sortConfig, setSortConfig] = useState({ key: 'patient_name', direction: 'asc' })
 
   const fetchData = useCallback(async () => {
     try {
       const token = localStorage.getItem('access_token')
       const headers = { 'Authorization': `Bearer ${token}` }
-      const [triRes, patRes] = await Promise.all([
+      const [triRes, patRes, outRes] = await Promise.all([
         fetch(`${API}/triage_records/`, { headers }),
         fetch(`${API}/patients/`, { headers }),
+        fetch(`${API}/outbreaks/?district=${dmoDistrict}`, { headers }),
       ])
       setTriageRecords((await triRes.json()) || [])
       setPatients((await patRes.json()) || [])
+      setOutbreaks((await outRes.json()) || [])
     } catch (err) {
       console.error('Fetch error:', err)
     } finally {
@@ -229,7 +232,7 @@ export default function DMODashboardPage() {
 
   const statsCount = useMemo(() => {
     const unreviewed = triageRecords.filter(r => !r.reviewed).length
-    const critical = triageRecords.filter(r => r.severity === 'red').length
+    const critical = triageRecords.filter(r => r.severity === 'red' || Number(r.severity) >= 7).length
     const sickle = triageRecords.filter(r => r.sickle_cell_risk).length
     return { unreviewed, critical, sickle }
   }, [triageRecords])
@@ -469,7 +472,7 @@ export default function DMODashboardPage() {
             <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', position: 'absolute', inset: 0 }}>
                 <div style={{ flex: 1, background: '#fff', overflow: 'hidden' }}>
                     <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center' }}>Loading Region Map...</div>}>
-                        <DistrictHeatmap district={dmoDistrict} points={mapPoints} center={center} bounds={bounds} height="100%" />
+                        <DistrictHeatmap district={dmoDistrict} points={mapPoints} center={center} bounds={bounds} outbreaks={outbreaks} height="100%" />
                     </Suspense>
                 </div>
             </div>
