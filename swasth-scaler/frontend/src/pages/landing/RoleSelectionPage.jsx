@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import LogoIcon from '../../components/LogoIcon.jsx'
-import HeroSlider from '../../components/HeroSlider.jsx'
+import LogoIcon from '../../components/common/LogoIcon.jsx'
+import HeroSlider from '../../components/landing/HeroSlider.jsx'
 
 const marqueeItems = [
   { text: 'Health is not a privilege — it reaches every door', lang: 'en' },
