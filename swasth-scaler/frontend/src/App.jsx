@@ -9,6 +9,7 @@ import PatientFormPage from './pages/PatientFormPage.jsx'
 import ChatPage from './pages/ChatPage.jsx'
 
 import DMODashboardPage from './pages/DMODashboardPage.jsx'
+import DmoMapPage from './pages/DmoMapPage.jsx'
 import AdminDashboardPage from './pages/AdminDashboardPage.jsx'
 
 import { AuthProvider } from './context/AuthContext.jsx'
@@ -37,6 +38,7 @@ export default function App() {
             <Route path="/data-collector" element={<DataCollector />} />
 
             <Route path="/dashboard/dmo" element={<ProtectedRoute role="dmo"><DMODashboardPage /></ProtectedRoute>} />
+            <Route path="/dashboard/dmo/map" element={<ProtectedRoute role="dmo"><DmoMapPage /></ProtectedRoute>} />
             <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
             </Routes>
           </PatientProvider>

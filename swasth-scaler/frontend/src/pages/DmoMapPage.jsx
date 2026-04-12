@@ -79,8 +79,6 @@ export default function DMOMapPage() {
       `}</style>
 
             <DMOSidebar
-                activeView="map"
-                setActiveView={(v) => { if (v === 'home') navigate('/dashboard/dmo') }}
                 isHovered={isHovered}
                 setIsHovered={setIsHovered}
                 savedUser={_savedUser}

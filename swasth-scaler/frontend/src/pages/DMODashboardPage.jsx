@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
 const API = 'https://swasthya-setu-full.onrender.com/api/v1'
@@ -151,7 +151,14 @@ const CalendarWidget = ({ selectedDate, setSelectedDate }) => (
 )
 
 // ── Sidebar (shared) ───────────────────────────────────────────────────────
-export function DMOSidebar({ activeView, setActiveView, isHovered, setIsHovered, savedUser, onLogout, onAdminNav }) {
+export function DMOSidebar({ isHovered, setIsHovered, savedUser, onLogout, onAdminNav }) {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const currentPath = location.pathname
+
+  const isHome = currentPath === '/dashboard/dmo'
+  const isMap = currentPath.includes('/map')
+
   return (
     <aside
       onMouseEnter={() => setIsHovered(true)}
@@ -164,10 +171,10 @@ export function DMOSidebar({ activeView, setActiveView, isHovered, setIsHovered,
         </span>
       </div>
       <nav style={{ flex: 1, padding: '0 0.75rem', width: 240 }}>
-        <div onClick={() => setActiveView('home')} className={`nav-link ${activeView === 'home' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
+        <div onClick={() => navigate('/dashboard/dmo')} className={`nav-link ${isHome ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
           <HomeIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Home</span>
         </div>
-        <div onClick={() => setActiveView('map')} className={`nav-link ${activeView === 'map' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
+        <div onClick={() => navigate('/dashboard/dmo/map')} className={`nav-link ${isMap ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
           <MapIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Districts Map</span>
         </div>
       </nav>
@@ -188,7 +195,6 @@ export function DMOSidebar({ activeView, setActiveView, isHovered, setIsHovered,
 export default function DMODashboardPage() {
   const { logout } = useAuth()
   const navigate = useNavigate()
-  const [activeView, setActiveView] = useState('home')
   const [isHovered, setIsHovered] = useState(false)
 
   const _savedUser = useMemo(() => {
@@ -199,7 +205,6 @@ export default function DMODashboardPage() {
 
   const [triageRecords, setTriageRecords] = useState([])
   const [patients, setPatients] = useState([])
-  const [outbreaks, setOutbreaks] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedDate, setSelectedDate] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: 'patient_name', direction: 'asc' })
@@ -208,19 +213,12 @@ export default function DMODashboardPage() {
     try {
       const token = localStorage.getItem('access_token')
       const headers = { 'Authorization': `Bearer ${token}` }
-      const [triRes, patRes, outRes] = await Promise.allSettled([
+      const [triRes, patRes] = await Promise.allSettled([
         fetch(`${API}/triage_records/`, { headers }),
         fetch(`${API}/patients/`, { headers }),
-        fetch(`${API}/outbreaks/`, { headers }), // fetch all, filter client-side
       ])
       if (triRes.status === 'fulfilled' && triRes.value.ok) setTriageRecords(await triRes.value.json())
       if (patRes.status === 'fulfilled' && patRes.value.ok) setPatients(await patRes.value.json())
-      if (outRes.status === 'fulfilled' && outRes.value.ok) {
-        const data = await outRes.value.json()
-        setOutbreaks(Array.isArray(data) ? data : [])
-      } else {
-        setOutbreaks([])
-      }
     } catch (err) {
       console.error('Fetch error:', err)
     } finally {
@@ -235,14 +233,6 @@ export default function DMODashboardPage() {
     critical: triageRecords.filter(r => r.severity === 'red' || Number(r.severity) >= 7).length,
     sickle: triageRecords.filter(r => r.sickle_cell_risk).length,
   }), [triageRecords])
-
-  const mapPoints = useMemo(() => buildMapPoints(triageRecords, center), [triageRecords, center])
-
-  // Filter outbreaks for this district (client-side, case-insensitive)
-  const districtOutbreaks = useMemo(() =>
-    outbreaks.filter(o => o.district?.toLowerCase() === dmoDistrict.toLowerCase()),
-    [outbreaks, dmoDistrict]
-  )
 
   const handleSort = (key) => {
     setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }))
@@ -266,23 +256,6 @@ export default function DMODashboardPage() {
     return items
   }, [triageRecords, sortConfig, selectedDate])
 
-  // If map view, redirect to DMOMapPage
-  if (activeView === 'map') {
-    return (
-      <DMOMapView
-        dmoDistrict={dmoDistrict}
-        mapPoints={mapPoints}
-        outbreaks={districtOutbreaks}
-        isHovered={isHovered}
-        setIsHovered={setIsHovered}
-        onBack={() => setActiveView('home')}
-        onLogout={() => { logout(); navigate('/') }}
-        onAdminNav={() => navigate('/dashboard/admin')}
-        savedUser={_savedUser}
-      />
-    )
-  }
-
   return (
     <div style={{ minHeight: '100dvh', background: '#f8fafc', display: 'flex', fontFamily: "'Inter', sans-serif" }}>
       <style>{`
@@ -294,8 +267,6 @@ export default function DMODashboardPage() {
       `}</style>
 
       <DMOSidebar
-        activeView={activeView}
-        setActiveView={setActiveView}
         isHovered={isHovered}
         setIsHovered={setIsHovered}
         savedUser={_savedUser}
@@ -390,87 +361,6 @@ export default function DMODashboardPage() {
                 </table>
               </div>
             </div>
-          </div>
-        </div>
-      </main>
-    </div>
-  )
-}
-
-// ── Inline Map View (rendered by DMODashboardPage when activeView === 'map') ──
-const DistrictHeatmap = lazy(() =>
-  import('../components/DistrictHeatmap').catch(err => {
-    console.error('Chunk load error:', err)
-    const hasReloaded = window.sessionStorage.getItem('heatmap_reload_attempted')
-    if (!hasReloaded) {
-      window.sessionStorage.setItem('heatmap_reload_attempted', 'true')
-      window.location.reload()
-    }
-    return { default: () => <div style={{ padding: '2rem', textAlign: 'center', color: '#ef4444' }}><h3>Map failed to load</h3><button onClick={() => window.location.reload()}>Refresh</button></div> }
-  })
-)
-
-function DMOMapView({ dmoDistrict, mapPoints, outbreaks, isHovered, setIsHovered, onBack, onLogout, onAdminNav, savedUser }) {
-  const center = DISTRICT_CENTERS[dmoDistrict] || [18.5204, 73.8567]
-  const bounds = DISTRICT_BOUNDS[dmoDistrict] || null
-
-  return (
-    <div style={{ minHeight: '100dvh', background: '#f8fafc', display: 'flex', fontFamily: "'Inter', sans-serif" }}>
-      <style>{`
-        * { box-sizing: border-box; }
-        .nav-link:hover { background: #f1f5f9; color: #3b82f6; }
-        .nav-link.active { background: #ebf5ff; color: #3b82f6; font-weight: 700; border-left: 3px solid #3b82f6; }
-      `}</style>
-
-      <DMOSidebar
-        activeView="map"
-        setActiveView={(v) => { if (v === 'home') onBack() }}
-        isHovered={isHovered}
-        setIsHovered={setIsHovered}
-        savedUser={savedUser}
-        onLogout={onLogout}
-        onAdminNav={onAdminNav}
-      />
-
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
-        <header style={{ height: 72, background: '#fff', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0 }}>
-          <div>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>District Map — {dmoDistrict}</h2>
-            <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: 2 }}>
-              {mapPoints.length} triage clusters · {outbreaks.length} outbreak records
-            </div>
-          </div>
-          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>
-            {(savedUser?.full_name || 'D')[0]}
-          </div>
-        </header>
-
-        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-          <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center', color: '#64748b' }}>Loading map...</div>}>
-            <DistrictHeatmap
-              district={dmoDistrict}
-              points={mapPoints}
-              center={center}
-              bounds={bounds}
-              outbreaks={outbreaks}
-              height="100%"
-            />
-          </Suspense>
-
-          {/* Legend */}
-          <div style={{ position: 'absolute', bottom: 24, right: 24, background: '#fff', borderRadius: 12, padding: '1rem 1.25rem', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', zIndex: 1000, fontSize: '0.75rem' }}>
-            <div style={{ fontWeight: 800, color: '#1e293b', marginBottom: 8 }}>Legend</div>
-            {[
-              { color: '#ef4444', label: 'Critical triage' },
-              { color: '#f59e0b', label: 'Moderate triage' },
-              { color: '#22c55e', label: 'Mild triage' },
-              { color: '#8b5cf6', label: 'Disease outbreak', dashed: true },
-            ].map(({ color, label, dashed }) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <div style={{ width: 12, height: 12, borderRadius: '50%', background: color, border: dashed ? '2px dashed #fff' : 'none', outline: dashed ? `2px dashed ${color}` : 'none', flexShrink: 0 }} />
-                <span style={{ color: '#475569' }}>{label}</span>
-              </div>
-            ))}
           </div>
         </div>
       </main>
