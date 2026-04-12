@@ -35,11 +35,14 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "https://swasthsethu.in",
+        "https://www.swasthsethu.in",
+    ],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 # Register new routers
 app.include_router(auth_routes.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(user_routes.router, prefix="/api/v1/users", tags=["Users"])
