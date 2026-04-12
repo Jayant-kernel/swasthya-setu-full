@@ -3,8 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { usePatient } from '../../context/PatientContext.jsx'
 import { useTriage } from '../../hooks/useTriage'
 import { translateToEnglish, openai } from '../../lib/openai'
-import DashboardLayout from '../../components/DashboardLayout.jsx'
-import SignLanguageModal from '../../components/SignLanguageModal.jsx'
+import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
+import SignLanguageModal from '../../components/asha/SignLanguageModal.jsx'
 
 // ─── Duplicate-patient modal ──────────────────────────────────────────────────
 const SEV_STYLE = {

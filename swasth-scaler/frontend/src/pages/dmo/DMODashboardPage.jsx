@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
-import DMOSidebar from '../../components/DMOSidebar'
+import DMOSidebar from '../../components/dmo/DMOSidebar'
 import { SunIcon, MoonIcon, SearchIcon, ActivityIcon } from '../admin/AdminIcons'
 import { API, DISTRICT_CENTERS, buildMapPoints } from './DMOShared'
 

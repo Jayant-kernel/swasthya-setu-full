@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
-import DashboardLayout from '../../components/DashboardLayout'
+import DashboardLayout from '../../components/asha/DashboardLayout'
 
 /* ─── Constants ──────────────────────────────────────────── */
 const ALL_DISTRICTS = [

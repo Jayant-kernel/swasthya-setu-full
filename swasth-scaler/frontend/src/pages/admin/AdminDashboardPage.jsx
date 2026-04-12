@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
-import AdminSidebar from '../../components/AdminSidebar'
+import AdminSidebar from '../../components/admin/AdminSidebar'
 import { SunIcon, MoonIcon, ActivityIcon, GlobeIcon } from './AdminIcons'
 import { API } from './constants'
 

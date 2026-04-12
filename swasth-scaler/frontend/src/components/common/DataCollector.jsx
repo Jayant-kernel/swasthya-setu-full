@@ -16,8 +16,9 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { normalizeLandmarks } from '../utils/normalize'
-import { loadMediaPipeHands } from '../utils/loadMediaPipeHands'
+import { normalizeLandmarks } from '../../utils/normalize'
+import { loadMediaPipeHands } from '../../utils/loadMediaPipeHands'
+
 
 const TEAL = '#0F6E56'
 const CLASS_LIST = ['FEVER', 'COUGH', 'PAIN', 'VOMIT', 'WEAKNESS', 'DIZZINESS', 'BREATHLESS', 'UNKNOWN']

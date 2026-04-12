@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import ProfileOverlay from './ProfileOverlay.jsx'
-import { useScrollDirection } from '../hooks/useScrollDirection'
+import ProfileOverlay from '../asha/ProfileOverlay.jsx'
+import { useScrollDirection } from '../../hooks/useScrollDirection'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
+import { useAuth } from '../../hooks/useAuth'
 
 export default function GlobalHeader({ children, rightSide }) {
   const navigate = useNavigate()

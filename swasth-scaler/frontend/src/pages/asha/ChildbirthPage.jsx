@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { openai } from '../../lib/openai'
-import ChatBubble from '../../components/ChatBubble.jsx'
-import DashboardLayout from '../../components/DashboardLayout.jsx'
+import ChatBubble from '../../components/asha/ChatBubble.jsx'
+import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
 import { useTheme } from '../../context/ThemeContext.jsx'
 
 const SYSTEM_PROMPT = `You are a maternal health assistant for ASHA (Accredited Social Health Activist) workers in rural Odisha, India.

@@ -6,7 +6,7 @@
 
 import { useState } from 'react'
 import { useNavigate }       from 'react-router-dom'
-import ISLCamera             from '../../components/ISLCamera'
+import ISLCamera             from '../../components/asha/ISLCamera'
 
 const TEAL       = '#0F6E56'
 const TEAL_LIGHT = 'rgba(15,110,86,0.12)'

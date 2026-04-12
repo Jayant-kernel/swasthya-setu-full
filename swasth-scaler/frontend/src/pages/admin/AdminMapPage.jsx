@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
-import AdminSidebar from '../../components/AdminSidebar'
+import AdminSidebar from '../../components/admin/AdminSidebar'
 import { SunIcon, MoonIcon } from './AdminIcons'
 import { API, DISTRICT_CENTERS, INDIA_CENTER, INDIA_BOUNDS } from './constants'
 
-const DistrictHeatmap = lazy(() => import('../../components/DistrictHeatmap'))
+const DistrictHeatmap = lazy(() => import('../../components/common/DistrictHeatmap'))
 
 export default function AdminMapPage() {
   const { isDark, toggleTheme } = useTheme()

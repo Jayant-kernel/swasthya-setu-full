@@ -17,10 +17,10 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { normalizeTwoHands } from '../utils/normalize'
-import { PredictionSmoother } from '../utils/smoothing'
-import { loadModel, predict, LABELS } from '../utils/inferenceEngine'
-import { loadMediaPipeHands } from '../utils/loadMediaPipeHands'
+import { normalizeTwoHands } from '../../utils/normalize'
+import { PredictionSmoother } from '../../utils/smoothing'
+import { loadModel, predict, LABELS } from '../../utils/inferenceEngine'
+import { loadMediaPipeHands } from '../../utils/loadMediaPipeHands'
 
 const TEAL = '#0F6E56'
 const CONFIDENCE_MIN  = 0.97

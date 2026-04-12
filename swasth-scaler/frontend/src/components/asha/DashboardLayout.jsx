@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
-import { useTheme } from '../context/ThemeContext.jsx'
+import { useAuth } from '../../hooks/useAuth'
+import { useTheme } from '../../context/ThemeContext.jsx'
 // logo import removed
 
 /* ─── Icons ──────────────────────────────────────────────────── */

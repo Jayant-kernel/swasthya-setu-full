@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import ashaWorkerImg from '../images/login/asha_worker.avif';
-import dmoWorkerImg from '../images/login/DMO_Worker.png';
+import ashaWorkerImg from '../../images/login/asha_worker.avif';
+import dmoWorkerImg from '../../images/login/DMO_Worker.png';
 
 const slides = [
   {

@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom'
 
 import { openai, getChatSystemPrompt } from '../../lib/openai'
 import { usePatient } from '../../context/PatientContext.jsx'
-import ChatBubble from '../../components/ChatBubble.jsx'
-import DashboardLayout from '../../components/DashboardLayout.jsx'
+import ChatBubble from '../../components/asha/ChatBubble.jsx'
+import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
 import { useTheme } from '../../context/ThemeContext.jsx'
 
 const SEVERITY_BADGE = {

@@ -2,11 +2,11 @@ import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
-import DMOSidebar from '../../components/DMOSidebar'
+import DMOSidebar from '../../components/dmo/DMOSidebar'
 import { SunIcon, MoonIcon } from '../admin/AdminIcons'
 import { API, DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints } from './DMOShared'
 
-const DistrictHeatmap = lazy(() => import('../../components/DistrictHeatmap'))
+const DistrictHeatmap = lazy(() => import('../../components/common/DistrictHeatmap'))
 
 export default function DMOMapPage() {
   const { logout } = useAuth()

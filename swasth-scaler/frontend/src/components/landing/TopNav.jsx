@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 
-import { useScrollDirection } from '../hooks/useScrollDirection'
+import { useScrollDirection } from '../../hooks/useScrollDirection'
 
 const NAV = [
   { path: '/home', label: 'Dashboard', marathi: 'डॅशबोर्ड' },

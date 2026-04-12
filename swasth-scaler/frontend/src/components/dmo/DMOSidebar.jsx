@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useTheme } from '../context/ThemeContext.jsx'
-import { HomeIcon, MapIcon, LogoutIcon } from '../pages/admin/AdminIcons'
+import { useTheme } from '../../context/ThemeContext.jsx'
+import { HomeIcon, MapIcon, LogoutIcon } from '../../pages/admin/AdminIcons'
 
 export default function DMOSidebar({ isHovered, setIsHovered, onLogout, onAdminNav }) {
   const navigate = useNavigate()

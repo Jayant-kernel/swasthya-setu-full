@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import LoginRoleModal from '../../components/LoginRoleModal'
+import LoginRoleModal from '../../components/landing/LoginRoleModal'
 
 import img1 from '../../images/landing/hero1.jpg'
 import img2 from '../../images/landing/hero2.jpg'

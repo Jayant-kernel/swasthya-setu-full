@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { PatientProvider } from './context/PatientContext.jsx'
 import { ThemeProvider } from './context/ThemeContext.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'
-import ProtectedRoute from './components/ProtectedRoute.jsx'
+import ProtectedRoute from './components/common/ProtectedRoute.jsx'
 
 import ASHADashboardPage from './pages/asha/ASHADashboardPage.jsx'
 import PatientFormPage from './pages/asha/PatientFormPage.jsx'
@@ -23,7 +23,7 @@ import LandingPage from './pages/landing/LandingPage.jsx'
 import RoleSelectionPage from './pages/landing/RoleSelectionPage.jsx'
 import UnderConstructionPage from './pages/landing/UnderConstructionPage.jsx'
 
-import DataCollector from './components/DataCollector.jsx'
+import DataCollector from './components/common/DataCollector.jsx'
 
 export default function App() {
   return (
