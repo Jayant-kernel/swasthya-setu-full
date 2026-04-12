@@ -10,7 +10,8 @@ import ChatPage from './pages/ChatPage.jsx'
 
 import DMODashboardPage from './pages/DMODashboardPage.jsx'
 import DmoMapPage from './pages/DMOMapPage.jsx'
-import AdminDashboardPage from './pages/AdminDashboardPage.jsx'
+import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx'
+import AdminMapPage from './pages/admin/AdminMapPage.jsx'
 
 import { AuthProvider } from './context/AuthContext.jsx'
 import LandingPage from './pages/LandingPage.jsx'
@@ -40,6 +41,7 @@ export default function App() {
               <Route path="/dashboard/dmo" element={<ProtectedRoute role="dmo"><DMODashboardPage /></ProtectedRoute>} />
               <Route path="/dashboard/dmo/map" element={<ProtectedRoute role="dmo"><DmoMapPage /></ProtectedRoute>} />
               <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
+              <Route path="/dashboard/admin/map" element={<ProtectedRoute><AdminMapPage /></ProtectedRoute>} />
             </Routes>
           </PatientProvider>
         </ThemeProvider>
