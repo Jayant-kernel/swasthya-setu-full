@@ -25,8 +25,26 @@ import { loadMediaPipeHands } from '../utils/loadMediaPipeHands'
 
 const TEAL = '#0F6E56'
 const CONFIDENCE_MIN = 0.97
-const LOCK_FRAMES = 24   // ~0.8s at 30fps — must hold this many frames before firing
-const FIRE_DELAY_MS = 800  // extra ms after lock before sign can trigger (prevents accidental instant fire)
+const LOCK_FRAMES = 24       // ~0.8s at 30fps — must hold this many frames before firing
+const FIRE_DELAY_MS = 800    // extra ms after lock before sign can trigger
+// Motion gate: wrist must travel at least this much (in normalised 0-1 coords)
+// across the MOTION_WINDOW frames for the sign to be eligible to fire.
+// Prevents static hand placements from triggering motion-based signs.
+const MOTION_THRESHOLD = 0.018   // ~1.8% of frame width total displacement
+const MOTION_WINDOW    = 12      // look back this many frames for motion
+
+// Signs that are static poses and DON'T need motion to fire
+const STATIC_SIGNS = new Set(['BUKHAR', 'KHANSI', 'UNKNOWN'])
+
+// Hand count gate — restricts which signs can fire based on how many hands MediaPipe sees
+const ONE_HAND_SIGNS = new Set(['DARD', 'BUKHAR', 'PET-DARD', 'ULTI', 'KHANSI', 'SEENE-DARD', 'CHAKKAR'])
+const TWO_HAND_SIGNS = new Set(['SAR-DARD', 'SANS-TAKLEEF', 'KAMZORI'])
+
+function handCountGate(label, handsDetected) {
+  if (handsDetected === 1 && TWO_HAND_SIGNS.has(label)) return 'UNKNOWN'
+  if (handsDetected >= 2 && ONE_HAND_SIGNS.has(label))  return 'UNKNOWN'
+  return label
+}
 
 // MediaPipe 21-landmark connection topology
 const CONNECTIONS = [
@@ -44,7 +62,8 @@ export default function ISLCamera({ onSymptomDetected }) {
   const modelRef = useRef(null)
   const smoothRef = useRef(new PredictionSmoother({ windowSize: 8 }))
   const lockRef = useRef({ label: null, count: 0, readyAt: null })
-  const firedSetRef = useRef(new Set())   // signs already detected — never show or fire again
+  const firedSetRef = useRef(new Set())       // signs already detected — never show or fire again
+  const wristHistRef = useRef([])             // ring buffer of recent wrist {x,y} positions
 
   const [status, setStatus] = useState('loading')   // loading | ready | no-model
   const [prediction, setPrediction] = useState(null)
@@ -75,7 +94,8 @@ export default function ISLCamera({ onSymptomDetected }) {
     if (!results.multiHandLandmarks?.length) {
       setHandVisible(false)
       setPrediction(null)
-      lockRef.current = { label: null, count: 0 }
+      lockRef.current = { label: null, count: 0, readyAt: null }
+      wristHistRef.current = []
       return
     }
 
@@ -88,15 +108,38 @@ export default function ISLCamera({ onSymptomDetected }) {
 
     if (!modelRef.current) return
 
-    // Run inference on each hand, pick the best (highest confidence) prediction
+    // Run inference on each hand, apply hand-count gate, pick best remaining prediction
+    const handsDetected = results.multiHandLandmarks.length
     let bestRaw = null
+    let bestLm = null
     for (const lm of results.multiHandLandmarks) {
       const features = normalizeLandmarks(lm)
       const raw = predict(modelRef.current, features)
-      if (!bestRaw || raw.confidence > bestRaw.confidence) {
-        bestRaw = raw
+      // Apply hand count gate — block signs that require a different hand count
+      const gatedLabel = handCountGate(raw.label, handsDetected)
+      const gated = gatedLabel === raw.label ? raw : { ...raw, label: 'UNKNOWN', confidence: 0 }
+      if (!bestRaw || gated.confidence > bestRaw.confidence) {
+        bestRaw = gated
+        bestLm = lm
       }
     }
+
+    // ── Motion gate ────────────────────────────────────────────────────────────
+    // Track wrist position over time; for motion-based signs require the wrist
+    // to have moved enough — prevents a static hand pose from triggering.
+    const wrist = bestLm[0]
+    const hist = wristHistRef.current
+    hist.push({ x: wrist.x, y: wrist.y })
+    if (hist.length > MOTION_WINDOW) hist.shift()
+
+    // Compute total path length over the window
+    let motionDist = 0
+    for (let i = 1; i < hist.length; i++) {
+      const dx = hist[i].x - hist[i - 1].x
+      const dy = hist[i].y - hist[i - 1].y
+      motionDist += Math.sqrt(dx * dx + dy * dy)
+    }
+    const hasMotion = motionDist >= MOTION_THRESHOLD
 
     const smoothed = smoothRef.current.update(bestRaw)
 
@@ -110,7 +153,11 @@ export default function ISLCamera({ onSymptomDetected }) {
 
     setPrediction(smoothed)
 
-    if (smoothed.confidence >= CONFIDENCE_MIN) {
+    // Motion gate: non-static signs require hand movement to accumulate lock count
+    const needsMotion = !STATIC_SIGNS.has(smoothed.label)
+    const motionOk = !needsMotion || hasMotion
+
+    if (smoothed.confidence >= CONFIDENCE_MIN && motionOk) {
       const lock = lockRef.current
       const now = Date.now()
 
@@ -133,6 +180,7 @@ export default function ISLCamera({ onSymptomDetected }) {
         lockRef.current = { label: smoothed.label, count: 1, readyAt: null }
       }
     } else {
+      // No confidence or hand is static when motion is required — reset lock
       lockRef.current = { label: null, count: 0, readyAt: null }
     }
   }, [onSymptomDetected])
@@ -216,8 +264,9 @@ export default function ISLCamera({ onSymptomDetected }) {
   const addWord = () => { if (confirmed) setSentence(p => [...p, confirmed.label]) }
   const clear = () => {
     setSentence([])
-    firedSetRef.current.clear()   // allow all signs to be detected again after clear
+    firedSetRef.current.clear()
     lockRef.current = { label: null, count: 0, readyAt: null }
+    wristHistRef.current = []
     smoothRef.current.reset?.()
   }
   const speak = () => {
