@@ -37,13 +37,18 @@ const DistrictDetailModal = ({ isOpen, onClose, stats, mode, g, triageRecords, o
       const weekly = {}
       outbreaks.filter(o => o.district === stats.name).forEach(o => {
         const l = `W${o.week}`
-        weekly[l] = (weekly[l] || 0) + (o.cases || 0)
+        if (!weekly[l]) weekly[l] = { cases: 0, deaths: 0 }
+        weekly[l].cases += (o.cases || 0)
+        weekly[l].deaths += (o.deaths || 0)
       })
-      return Object.entries(weekly).map(([label, value]) => ({ label, value })).slice(-7)
+      return Object.entries(weekly).map(([label, data]) => ({ label, cases: data.cases, deaths: data.deaths })).slice(-7)
     }
   }, [stats, mode, triageRecords, outbreaks])
 
-  const maxVal = Math.max(...trendData.map(d => d.value), 1)
+  const maxVal = useMemo(() => {
+    if (mode === 'cases') return Math.max(...trendData.map(d => d.value), 1)
+    return Math.max(...trendData.flatMap(d => [d.cases, d.deaths]), 1)
+  }, [trendData, mode])
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
@@ -59,16 +64,41 @@ const DistrictDetailModal = ({ isOpen, onClose, stats, mode, g, triageRecords, o
         <div style={{ padding: '2rem' }}>
           <div style={{ marginBottom: '2rem' }}>
             <h4 style={{ margin: '0 0 1rem', fontSize: '0.75rem', fontWeight: 800, color: g.label, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Trend Over Performance</h4>
-            <div style={{ height: 200, display: 'flex', alignItems: 'flex-end', gap: 12, padding: '0 10px' }}>
+            <div style={{ height: 200, display: 'flex', alignItems: 'flex-end', gap: 12, padding: '0 10px', marginTop: mode === 'analytics' ? '1.5rem' : 0 }}>
               {trendData.map((d, i) => (
                 <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
-                  <div style={{ position: 'relative', width: '100%', height: `${(d.value / maxVal) * 160}px`, background: 'linear-gradient(to top, #4f46e5, #818cf8)', borderRadius: '6px 6px 4px 4px', transition: 'height 0.3s ease', boxShadow: '0 4px 12px rgba(79,70,229,0.2)' }}>
-                    <div style={{ position: 'absolute', top: -20, left: 0, right: 0, textAlign: 'center', fontSize: '0.65rem', fontWeight: 800, color: g.text }}>{d.value}</div>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, width: '100%', height: 160, position: 'relative' }}>
+                    {mode === 'cases' ? (
+                      <div style={{ position: 'relative', width: '100%', height: `${(d.value / maxVal) * 160}px`, background: 'linear-gradient(to top, #4f46e5, #818cf8)', borderRadius: '6px 6px 4px 4px', transition: 'height 0.3s ease', boxShadow: '0 4px 12px rgba(79,70,229,0.2)' }}>
+                        <div style={{ position: 'absolute', top: -20, left: 0, right: 0, textAlign: 'center', fontSize: '0.65rem', fontWeight: 800, color: g.text }}>{d.value}</div>
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ position: 'relative', width: '45%', height: `${(d.cases / maxVal) * 160}px`, background: 'linear-gradient(to top, #4f46e5, #818cf8)', borderRadius: '4px 4px 2px 2px', transition: 'height 0.3s ease' }}>
+                          <div style={{ position: 'absolute', top: -16, left: 0, right: 0, textAlign: 'center', fontSize: '0.6rem', fontWeight: 800, color: g.text }}>{d.cases}</div>
+                        </div>
+                        <div style={{ position: 'relative', width: '45%', height: `${(d.deaths / maxVal) * 160}px`, background: 'linear-gradient(to top, #ef4444, #f87171)', borderRadius: '4px 4px 2px 2px', transition: 'height 0.3s ease' }}>
+                          <div style={{ position: 'absolute', top: -16, left: 0, right: 0, textAlign: 'center', fontSize: '0.6rem', fontWeight: 800, color: '#ef4444' }}>{d.deaths}</div>
+                        </div>
+                      </>
+                    )}
                   </div>
                   <span style={{ fontSize: '0.65rem', fontWeight: 700, color: g.muted }}>{d.label}</span>
                 </div>
               ))}
             </div>
+            {mode === 'analytics' && (
+               <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', marginTop: '1.5rem' }}>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                   <div style={{ width: 10, height: 10, borderRadius: 3, background: '#4f46e5' }} />
+                   <span style={{ fontSize: '0.7rem', fontWeight: 700, color: g.muted }}>Patients (Cases)</span>
+                 </div>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                   <div style={{ width: 10, height: 10, borderRadius: 3, background: '#ef4444' }} />
+                   <span style={{ fontSize: '0.7rem', fontWeight: 700, color: g.muted }}>Deaths</span>
+                 </div>
+               </div>
+            )}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
             {mode === 'cases' ? (

@@ -13,7 +13,9 @@ export default function AdminMapPage() {
   const [triageRecords, setTriageRecords] = useState([])
   const [outbreaks, setOutbreaks] = useState([])
   const [loading, setLoading] = useState(true)
-  const [timeRange, setTimeRange] = useState('7d') // '24h' | '3d' | '7d' | '30d' | 'all'
+  const [timeRange, setTimeRange] = useState('7d') // '24h' | '3d' | '7d' | '30d' | 'all' | 'custom'
+  const [customStart, setCustomStart] = useState('')
+  const [customEnd, setCustomEnd] = useState('')
 
   const fetchData = useCallback(async () => {
     try {
@@ -36,23 +38,54 @@ export default function AdminMapPage() {
     fetchData()
   }, [fetchData])
 
+  const getOutbreakDate = (o) => {
+    if (o.created_at) return new Date(o.created_at)
+    if (o.year && o.week) {
+      const d = new Date(o.year, 0, 1 + (o.week - 1) * 7)
+      return d
+    }
+    return new Date(0) // Default to beginning of time if no data
+  }
+
   const filteredRecords = useMemo(() => {
-    if (timeRange === 'all') return triageRecords
     const now = new Date()
-    const diffs = { '24h': 1, '3d': 3, '7d': 7, '30d': 30 }
-    const cutoff = new Date(now.setDate(now.getDate() - diffs[timeRange]))
-    return triageRecords.filter(r => new Date(r.created_at) >= cutoff)
-  }, [triageRecords, timeRange])
+    let start, end = new Date()
+    
+    if (timeRange === 'all') return triageRecords
+    if (timeRange === 'custom') {
+      if (!customStart) return triageRecords
+      start = new Date(customStart)
+      if (customEnd) end = new Date(customEnd)
+    } else {
+      const diffs = { '24h': 1, '3d': 3, '7d': 7, '30d': 30 }
+      start = new Date(now.setDate(now.getDate() - diffs[timeRange]))
+    }
+
+    return triageRecords.filter(r => {
+      const d = new Date(r.created_at)
+      return d >= start && d <= end
+    })
+  }, [triageRecords, timeRange, customStart, customEnd])
 
   const filteredOutbreaks = useMemo(() => {
-    if (timeRange === 'all') return outbreaks
     const now = new Date()
-    const diffs = { '24h': 1, '3d': 3, '7d': 7, '30d': 30 }
-    const cutoff = new Date(now.setDate(now.getDate() - diffs[timeRange]))
-    // For outbreaks, we check year/week if specific dates aren't available, 
-    // but many have created_at now. If not, we'll try to estimate or just show all.
-    return outbreaks.filter(o => o.created_at ? new Date(o.created_at) >= cutoff : true)
-  }, [outbreaks, timeRange])
+    let start, end = new Date()
+
+    if (timeRange === 'all') return outbreaks
+    if (timeRange === 'custom') {
+      if (!customStart) return outbreaks
+      start = new Date(customStart)
+      if (customEnd) end = new Date(customEnd)
+    } else {
+      const diffs = { '24h': 1, '3d': 3, '7d': 7, '30d': 30 }
+      start = new Date(now.setDate(now.getDate() - diffs[timeRange]))
+    }
+
+    return outbreaks.filter(o => {
+      const d = getOutbreakDate(o)
+      return d >= start && d <= end
+    })
+  }, [outbreaks, timeRange, customStart, customEnd])
 
   const mapPoints = useMemo(() => {
     const withGps = filteredRecords.filter(r => r.latitude && r.longitude)
@@ -119,29 +152,54 @@ export default function AdminMapPage() {
               </div>
             </div>
             
-            <div style={{ display: 'flex', background: g.cardBg, padding: 4, borderRadius: 12, border: `1px solid ${g.cardBdr}`, gap: 4, boxShadow: g.cardShd }}>
-              {[
-                { id: '24h', label: '24H' },
-                { id: '3d', label: '3D' },
-                { id: '7d', label: '7D' },
-                { id: '30d', label: '1M' },
-                { id: 'all', label: 'All' }
-              ].map(opt => (
-                <button 
-                  key={opt.id}
-                  onClick={() => setTimeRange(opt.id)}
-                  style={{
-                    padding: '0.5rem 1rem', borderRadius: 8, border: 'none', cursor: 'pointer',
-                    fontSize: '0.75rem', fontWeight: 800, transition: 'all 0.2s',
-                    background: timeRange === opt.id ? '#4f46e5' : 'transparent',
-                    color: timeRange === opt.id ? '#fff' : g.label,
-                  }}
-                >
-                  {opt.label}
-                </button>
-              ))}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', background: g.cardBg, padding: 4, borderRadius: 12, border: `1px solid ${g.cardBdr}`, gap: 4, boxShadow: g.cardShd }}>
+                {[
+                  { id: '24h', label: '24H' },
+                  { id: '3d', label: '3D' },
+                  { id: '7d', label: '7D' },
+                  { id: '30d', label: '1M' },
+                  { id: 'all', label: 'All' },
+                  { id: 'custom', label: 'Custom' }
+                ].map(opt => (
+                  <button 
+                    key={opt.id}
+                    onClick={() => setTimeRange(opt.id)}
+                    style={{
+                      padding: '0.5rem 1rem', borderRadius: 8, border: 'none', cursor: 'pointer',
+                      fontSize: '0.75rem', fontWeight: 800, transition: 'all 0.2s',
+                      background: timeRange === opt.id ? '#4f46e5' : 'transparent',
+                      color: timeRange === opt.id ? '#fff' : g.label,
+                    }}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {timeRange === 'custom' && (
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', background: g.cardBg, padding: '0.75rem 1rem', borderRadius: 12, border: `1px solid ${g.cardBdr}`, boxShadow: g.cardShd, backdropFilter: g.blur, animation: 'fadeIn 0.2s ease' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <label style={{ fontSize: '0.6rem', fontWeight: 800, color: g.label, textTransform: 'uppercase' }}>Start Date</label>
+                    <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} style={{ background: 'transparent', border: 'none', color: g.text, fontSize: '0.8125rem', fontWeight: 700, outline: 'none' }} />
+                  </div>
+                  <div style={{ width: 1, height: 24, background: g.divider }} />
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <label style={{ fontSize: '0.6rem', fontWeight: 800, color: g.label, textTransform: 'uppercase' }}>End Date</label>
+                    <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} style={{ background: 'transparent', border: 'none', color: g.text, fontSize: '0.8125rem', fontWeight: 700, outline: 'none' }} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
+
+          <style>{`
+            @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+            input[type="date"]::-webkit-calendar-picker-indicator {
+               filter: ${isDark ? 'invert(1)' : 'none'};
+               cursor: pointer;
+            }
+          `}</style>
           <div style={{ flex: 1, background: g.cardBg, borderRadius: 24, border: `1px solid ${g.cardBdr}`, overflow: 'hidden', minHeight: 500, backdropFilter: g.blur }}>
             <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center', color: g.muted }}>Initializing Map...</div>}>
               <DistrictHeatmap district="India" points={mapPoints} center={INDIA_CENTER} zoom={5} bounds={INDIA_BOUNDS} outbreaks={filteredOutbreaks} height="100%" />
