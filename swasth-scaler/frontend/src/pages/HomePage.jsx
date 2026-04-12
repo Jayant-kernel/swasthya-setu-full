@@ -237,6 +237,19 @@ export default function HomePage() {
     return 0
   })
 
+  const groups = useMemo(() => {
+    const sevMap = {
+      red: { label: 'Emergency', dot: '#ff4d4d', items: [] },
+      yellow: { label: 'Moderate', dot: '#f59e0b', items: [] },
+      green: { label: 'Stable', dot: '#10b981', items: [] }
+    }
+    patientResults.forEach(p => {
+      const s = p.latestSeverity?.toLowerCase()
+      if (sevMap[s]) sevMap[s].items.push(p)
+    })
+    return Object.entries(sevMap).map(([key, val]) => ({ key, ...val }))
+  }, [patientResults])
+
   const handleSort = (field) => {
     if (sortField === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
@@ -267,6 +280,9 @@ export default function HomePage() {
     divider: 'var(--g-divider)',
     btn: 'var(--g-btn)',
     btnBdr: 'var(--g-btn-bdr)',
+    accentL: 'rgba(16,185,129,0.12)',
+    accentB: 'rgba(16,185,129,0.25)',
+    accentT: '#059669',
   };
 
   const card = {

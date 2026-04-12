@@ -81,6 +81,7 @@ export default function AdminDashboardPage() {
   const [outbreaks, setOutbreaks] = useState([])
   const [loading, setLoading] = useState(true)
   const [lastRefresh, setLastRefresh] = useState(new Date())
+  const [analyticsMode, setAnalyticsMode] = useState('cases') // 'cases' | 'outbreaks'
 
   const _savedUser = useMemo(() => {
     try { return JSON.parse(localStorage.getItem('user') || '{}') } catch { return {} }
@@ -144,6 +145,35 @@ export default function AdminDashboardPage() {
     })
     return Object.values(groups).sort((a, b) => b.total - a.total)
   }, [triageRecords])
+
+  const outbreakRegionStats = useMemo(() => {
+    const groups = {}
+    outbreaks.forEach(o => {
+      const d = o.district || 'General'
+      if (!groups[d]) {
+        groups[d] = {
+          name: d, totalCases: 0, totalDeaths: 0,
+          diseases: new Set(), lastUpdate: o.year ? `${o.year} W${o.week}` : 'N/A'
+        }
+      }
+      groups[d].totalCases += (o.cases || 0)
+      groups[d].totalDeaths += (o.deaths || 0)
+      if (o.disease) groups[d].diseases.add(o.disease)
+      // Basic heuristic for "last update" since we don't have ISO timestamps for outbreaks
+      if (o.year && o.week) {
+        const key = `${o.year}-${String(o.week).padStart(2, '0')}`
+        if (!groups[d]._sortKey || key > groups[d]._sortKey) {
+          groups[d]._sortKey = key
+          groups[d].lastUpdate = `${o.year} Week ${o.week}`
+        }
+      }
+    })
+    return Object.values(groups).map(g => ({
+      ...g,
+      diseaseCount: g.diseases.size,
+      topDiseases: Array.from(g.diseases).slice(0, 3).join(', ') + (g.diseases.size > 3 ? '...' : '')
+    })).sort((a, b) => b.totalCases - a.totalCases)
+  }, [outbreaks])
 
   const mapPoints = useMemo(() => {
     const withGps = triageRecords.filter(r => r.latitude && r.longitude)
@@ -240,8 +270,7 @@ export default function AdminDashboardPage() {
           <div />
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div style={{ textAlign: 'right', marginRight: '0.5rem' }}>
-              <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e293b' }}>Administrator</div>
-              <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 600 }}>System Control Center</div>
+              <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e293b' }}>Administrator Mode</div>
             </div>
             <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg, #4f46e5, #6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>A</div>
           </div>
@@ -344,10 +373,31 @@ export default function AdminDashboardPage() {
                   <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1e293b', margin: '0 0 0.25rem' }}>Regional Data Insights</h1>
                   <p style={{ margin: 0, color: '#64748b', fontSize: '0.9375rem' }}>Performance and severity breakdown aggregated by active districts.</p>
                 </div>
+
+                <div style={{ display: 'flex', background: '#fff', padding: 4, borderRadius: 12, border: '1px solid #e2e8f0', gap: 4 }}>
+                  <button
+                    onClick={() => setAnalyticsMode('cases')}
+                    style={{
+                      padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700,
+                      background: analyticsMode === 'cases' ? '#4f46e5' : 'transparent',
+                      color: analyticsMode === 'cases' ? '#fff' : '#64748b',
+                      transition: 'all 0.2s'
+                    }}
+                  >Triage Cases</button>
+                  <button
+                    onClick={() => setAnalyticsMode('outbreaks')}
+                    style={{
+                      padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700,
+                      background: analyticsMode === 'outbreaks' ? '#4f46e5' : 'transparent',
+                      color: analyticsMode === 'outbreaks' ? '#fff' : '#64748b',
+                      transition: 'all 0.2s'
+                    }}
+                  >Disease Outbreaks</button>
+                </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
-                {regionStats.map(region => (
+                {analyticsMode === 'cases' ? regionStats.map(region => (
                   <div key={region.name} style={{ background: '#fff', borderRadius: 20, padding: '1.5rem', border: '1px solid #f1f5f9', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
                       <div>
@@ -368,10 +418,10 @@ export default function AdminDashboardPage() {
                         <div key={label}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 700, marginBottom: 6 }}>
                             <span style={{ color }}>{label}</span>
-                            <span>{value} ({Math.round((value / total) * 100)}%)</span>
+                            <span>{value} ({Math.round((value / (total || 1)) * 100)}%)</span>
                           </div>
                           <div style={{ height: 6, background: bg, borderRadius: 10 }}>
-                            <div style={{ width: `${(value / total) * 100}%`, height: '100%', background: color, borderRadius: 10 }} />
+                            <div style={{ width: `${(value / (total || 1)) * 100}%`, height: '100%', background: color, borderRadius: 10 }} />
                           </div>
                         </div>
                       ))}
@@ -386,42 +436,107 @@ export default function AdminDashboardPage() {
                       ))}
                     </div>
                   </div>
+                )) : outbreakRegionStats.map(region => (
+                  <div key={region.name} style={{ background: '#fff', borderRadius: 20, padding: '1.5rem', border: '1px solid #f1f5f9', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>{region.name}</h3>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: 4 }}>Status: Reported {region.lastUpdate}</div>
+                      </div>
+                      <div style={{ background: '#f5f3ff', color: '#7c3aed', padding: '4px 10px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 800 }}>
+                        {region.totalCases} REPORTS
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      {[
+                        { label: 'TOTAL DEATHS', value: region.totalDeaths, color: '#ef4444', bg: '#fef2f2' },
+                        { label: 'DISEASE DIVERSITY', value: region.diseaseCount, color: '#8b5cf6', bg: '#f5f3ff' },
+                      ].map(({ label, value, color, bg }) => (
+                        <div key={label}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 700, marginBottom: 6 }}>
+                            <span style={{ color }}>{label}</span>
+                            <span>{value}</span>
+                          </div>
+                          <div style={{ height: 6, background: bg, borderRadius: 10 }}>
+                            <div style={{ width: '100%', height: '100%', background: color, borderRadius: 10, opacity: 0.2 }} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid #f8fafc' }}>
+                      <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: 8 }}>Top Conditions</div>
+                      <div style={{ fontSize: '0.875rem', color: '#1e293b', fontWeight: 600, fontStyle: 'italic' }}>
+                        {region.topDiseases || 'N/A'}
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
 
               <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #f1f5f9', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
                 <div style={{ padding: '1.5rem', borderBottom: '1px solid #f1f5f9' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>Comparative Region Performance</h3>
+                  <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>
+                    {analyticsMode === 'cases' ? 'Comparative Region Performance' : 'District Outbreak Comparison'}
+                  </h3>
                 </div>
                 <div style={{ width: '100%', overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead style={{ background: '#f8fafc' }}>
-                      <tr>
-                        {['District', 'Total Traffic', 'Alert Rate', 'Sickle indexed', 'Primary Source'].map(h => (
-                          <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {regionStats.map(region => (
-                        <tr key={region.name} style={{ borderBottom: '1px solid #f8fafc' }}>
-                          <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, color: '#1e293b' }}>{region.name}</td>
-                          <td style={{ padding: '1.25rem 1.5rem', color: '#475569' }}>{region.total}</td>
-                          <td style={{ padding: '1.25rem 1.5rem' }}>
-                            <span style={{ color: region.critical > 0 ? '#ef4444' : '#64748b', fontWeight: 700 }}>
-                              {Math.round((region.critical / region.total) * 100)}%
-                            </span>
-                          </td>
-                          <td style={{ padding: '1.25rem 1.5rem', color: '#475569' }}>{region.sickle} cases</td>
-                          <td style={{ padding: '1.25rem 1.5rem' }}>
-                            <span style={{ fontSize: '0.8125rem', padding: '4px 10px', borderRadius: 20, background: region.app >= region.ivr ? '#f0fdfa' : '#f5f3ff', color: region.app >= region.ivr ? '#0d9488' : '#7c3aed', fontWeight: 700 }}>
-                              {region.app >= region.ivr ? 'MOBILE APP' : 'IVR HELPLINE'}
-                            </span>
-                          </td>
+                  {analyticsMode === 'cases' ? (
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead style={{ background: '#f8fafc' }}>
+                        <tr>
+                          {['District', 'Total Traffic', 'Alert Rate', 'Sickle indexed', 'Primary Source'].map(h => (
+                            <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>{h}</th>
+                          ))}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {regionStats.map(region => (
+                          <tr key={region.name} style={{ borderBottom: '1px solid #f8fafc' }}>
+                            <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, color: '#1e293b' }}>{region.name}</td>
+                            <td style={{ padding: '1.25rem 1.5rem', color: '#475569' }}>{region.total}</td>
+                            <td style={{ padding: '1.25rem 1.5rem' }}>
+                              <span style={{ color: region.critical > 0 ? '#ef4444' : '#64748b', fontWeight: 700 }}>
+                                {Math.round((region.critical / (region.total || 1)) * 100)}%
+                              </span>
+                            </td>
+                            <td style={{ padding: '1.25rem 1.5rem', color: '#475569' }}>{region.sickle} cases</td>
+                            <td style={{ padding: '1.25rem 1.5rem' }}>
+                              <span style={{ fontSize: '0.8125rem', padding: '4px 10px', borderRadius: 20, background: region.app >= region.ivr ? '#f0fdfa' : '#f5f3ff', color: region.app >= region.ivr ? '#0d9488' : '#7c3aed', fontWeight: 700 }}>
+                                {region.app >= region.ivr ? 'MOBILE APP' : 'IVR HELPLINE'}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead style={{ background: '#f8fafc' }}>
+                        <tr>
+                          {['District', 'Total Cases', 'Reported Deaths', 'Fatality Rate', 'Diseases Count'].map(h => (
+                            <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {outbreakRegionStats.map(region => (
+                          <tr key={region.name} style={{ borderBottom: '1px solid #f8fafc' }}>
+                            <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, color: '#1e293b' }}>{region.name}</td>
+                            <td style={{ padding: '1.25rem 1.5rem', color: '#475569' }}>{region.totalCases.toLocaleString()}</td>
+                            <td style={{ padding: '1.25rem 1.5rem', color: '#ef4444', fontWeight: 700 }}>{region.totalDeaths.toLocaleString()}</td>
+                            <td style={{ padding: '1.25rem 1.5rem' }}>
+                              <span style={{ color: '#475569', fontWeight: 700 }}>
+                                {((region.totalDeaths / (region.totalCases || 1)) * 100).toFixed(2)}%
+                              </span>
+                            </td>
+                            <td style={{ padding: '1.25rem 1.5rem', color: '#475569' }}>{region.diseaseCount} types</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
               </div>
             </div>
