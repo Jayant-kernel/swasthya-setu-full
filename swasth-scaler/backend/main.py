@@ -35,10 +35,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://swasthsethu.in",
-        "https://www.swasthsethu.in",
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -56,10 +53,9 @@ from auth import get_password_hash
 
 @app.on_event("startup")
 async def startup():
-    logger.info("Backend startup - skipping database init for now")
-    # TODO: Re-enable when database connection is stable
-    # async with engine.begin() as conn:
-    #     await conn.run_sync(Base.metadata.create_all)
+    logger.info("Backend startup - initializing database metadata")
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     #
     # async with AsyncSessionLocal() as session:
     #     result = await session.execute(select(User).limit(1))
