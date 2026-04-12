@@ -1,6 +1,7 @@
 import React from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { PatientProvider } from './context/PatientContext.jsx'
+import { ThemeProvider } from './context/ThemeContext.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 import HomePage from './pages/HomePage.jsx'
@@ -21,8 +22,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <PatientProvider>
-          <Routes>
+        <ThemeProvider>
+          <PatientProvider>
+            <Routes>
             <Route path="/" element={<LandingPage />} />
             <Route path="/under-construction" element={<UnderConstructionPage />} />
 
@@ -36,8 +38,9 @@ export default function App() {
 
             <Route path="/dashboard/dmo" element={<ProtectedRoute role="dmo"><DMODashboardPage /></ProtectedRoute>} />
             <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
-          </Routes>
-        </PatientProvider>
+            </Routes>
+          </PatientProvider>
+        </ThemeProvider>
       </AuthProvider>
     </BrowserRouter>
   )

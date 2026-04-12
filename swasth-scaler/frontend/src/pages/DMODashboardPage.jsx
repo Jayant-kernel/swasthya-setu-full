@@ -4,7 +4,16 @@ import { useAuth } from '../hooks/useAuth'
 import logo from '../images/logo/logo.png'
 
 const API = 'https://swasthya-setu-full.onrender.com/api/v1'
-const DistrictHeatmap = lazy(() => import('../components/DistrictHeatmap'))
+const DistrictHeatmap = lazy(() => 
+  import('../components/DistrictHeatmap').catch(err => {
+    console.error("Chunk load error:", err);
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        import('../components/DistrictHeatmap').then(resolve).catch(reject);
+      }, 1000);
+    });
+  })
+)
 
 // ── District Config ────────────────────────────────────────────────────────
 const DISTRICT_CENTERS = {
@@ -70,8 +79,6 @@ function buildMapPoints(records, center) {
 const HomeIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
 const UsersIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
 const FileTextIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /></svg>
-const BarChartIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="20" x2="12" y2="10" /><line x1="18" y1="20" x2="18" y2="4" /><line x1="6" y1="20" x2="6" y2="16" /></svg>
-const SettingsIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
 const LogoutIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
 const SearchIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
 const BellIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
@@ -119,27 +126,42 @@ const PatientOverviewChart = () => (
   </div>
 )
 
-const CalendarWidget = () => (
-  <div style={{ padding: '1.5rem', background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', flex: 1 }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>Calendar</h3>
-      <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700 }}>June 2026</span>
+const CalendarWidget = ({ selectedDate, setSelectedDate }) => {
+  const currentMonth = "June 2026";
+  return (
+    <div style={{ padding: '1.5rem', background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', flex: 1 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>Calendar</h3>
+        <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700 }}>{currentMonth}</span>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8, fontSize: '0.7rem', color: '#94a3b8', textAlign: 'center' }}>
+        {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d} style={{ fontWeight: 800 }}>{d}</div>)}
+        {Array.from({ length: 30 }).map((_, i) => {
+          const day = i + 1;
+          const isSelected = selectedDate === day;
+          return (
+            <div 
+              key={i} 
+              onClick={() => setSelectedDate(day)}
+              style={{ 
+                padding: '6px 0', borderRadius: 8, 
+                background: isSelected ? '#3b82f6' : 'transparent',
+                color: isSelected ? '#fff' : '#475569',
+                fontWeight: isSelected ? 800 : 500,
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => { if(!isSelected) e.currentTarget.style.background = '#f1f5f9' }}
+              onMouseLeave={e => { if(!isSelected) e.currentTarget.style.background = 'transparent' }}
+            >
+              {day}
+            </div>
+          );
+        })}
+      </div>
     </div>
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8, fontSize: '0.7rem', color: '#94a3b8', textAlign: 'center' }}>
-      {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => <div key={d} style={{ fontWeight: 800 }}>{d}</div>)}
-      {Array.from({ length: 30 }).map((_, i) => (
-        <div key={i} style={{ 
-          padding: '6px 0', borderRadius: 8, 
-          background: i + 1 === 9 ? '#3b82f6' : 'transparent',
-          color: i + 1 === 9 ? '#fff' : '#475569',
-          fontWeight: i + 1 === 9 ? 800 : 500
-        }}>
-          {i + 1}
-        </div>
-      ))}
-    </div>
-  </div>
-)
+  );
+}
 
 // ── Main Page ──────────────────────────────────────────────────────────────
 
@@ -158,6 +180,8 @@ export default function DMODashboardPage() {
   const [triageRecords, setTriageRecords] = useState([])
   const [patients, setPatients] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedDate, setSelectedDate] = useState(9) // Default select 9th as per original UI
+  const [sortConfig, setSortConfig] = useState({ key: 'patient_name', direction: 'asc' })
 
   const fetchData = useCallback(async () => {
     try {
@@ -189,6 +213,39 @@ export default function DMODashboardPage() {
 
   const mapPoints = useMemo(() => buildMapPoints(triageRecords, center), [triageRecords, center])
 
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  }
+
+  const sortedAndFilteredRecords = useMemo(() => {
+    let items = [...triageRecords];
+    
+    // Calendar filtering: Only show records for the selected date in June 2026
+    if (selectedDate) {
+      items = items.filter(r => {
+        const d = new Date(r.created_at);
+        // Assuming the mockup data or real data falls in June 2026 for this demonstration
+        return d.getDate() === selectedDate && d.getMonth() === 5 && d.getFullYear() === 2026;
+      });
+    }
+    
+    // Sorting logic
+    items.sort((a, b) => {
+      const aVal = a[sortConfig.key] || '';
+      const bVal = b[sortConfig.key] || '';
+      
+      if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return items;
+  }, [triageRecords, sortConfig, selectedDate])
+
   return (
     <div style={{ minHeight: '100dvh', background: '#f8fafc', display: 'flex', fontFamily: "'Inter', sans-serif" }}>
       <style>{`
@@ -215,15 +272,6 @@ export default function DMODashboardPage() {
           </div>
           <div onClick={() => setActiveView('map')} className={`nav-link ${activeView === 'map' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
             <MapIcon /> <span>Districts Map</span>
-          </div>
-          <div className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
-            <FileTextIcon /> <span>Documents</span>
-          </div>
-          <div className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
-            <BarChartIcon /> <span>Reports</span>
-          </div>
-          <div className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
-            <SettingsIcon /> <span>Settings</span>
           </div>
         </nav>
 
@@ -272,8 +320,7 @@ export default function DMODashboardPage() {
                   <p style={{ margin: 0, color: '#64748b', fontSize: '0.9375rem' }}>Monitor real-time triage updates and patient distributions.</p>
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <button onClick={fetchData} className="btn-primary" style={{ background: '#fff', border: '1px solid #e2e8f0', color: '#475569' }}>Refresh Data</button>
-                    <button className="btn-primary">District Actions</button>
+                    {/* Buttons removed as per request */}
                 </div>
               </div>
 
@@ -282,13 +329,13 @@ export default function DMODashboardPage() {
                 <StatCard label="Total Patients" value={patients.length} subtext="Registered in district" icon={UsersIcon} color="#3b82f6" />
                 <StatCard label="Unreviewed" value={statsCount.unreviewed} subtext="Pending validation" icon={FileTextIcon} color="#f59e0b" />
                 <StatCard label="Critical Alerts" value={statsCount.critical} subtext="Red severity cases" icon={ActivityIcon} color="#ef4444" />
-                <StatCard label="Sickle Cell Risk" value={statsCount.sickle} subtext="High-risk screening" icon={HomeIcon} color="#8b5cf6" />
+                {/* Sickle Cell card removed as per request */}
               </div>
 
               {/* Charts Row */}
               <div style={{ display: 'flex', gap: '1.5rem' }}>
                 <PatientOverviewChart />
-                <CalendarWidget />
+                <CalendarWidget selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
               </div>
 
               {/* Patient Table section */}
@@ -296,8 +343,7 @@ export default function DMODashboardPage() {
                 <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9' }}>
                   <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>Recent Patient Triage</h3>
                   <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <button style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '0.5rem 1rem', borderRadius: 8, fontSize: '0.8125rem', fontWeight: 700, color: '#64748b' }}>Filters</button>
-                    <button style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '0.5rem 1rem', borderRadius: 8, fontSize: '0.8125rem', fontWeight: 700 }}>+ Add Record</button>
+                    {/* Filter and Add Record buttons removed as per request */}
                   </div>
                 </div>
 
@@ -305,13 +351,31 @@ export default function DMODashboardPage() {
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead style={{ background: '#f8fafc' }}>
                       <tr>
-                        {['Patient Name', 'Identification No.', 'Location', 'Status', 'Severity', 'Actions'].map(h => (
-                          <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
+                        {[
+                          { label: 'Patient Name', key: 'patient_name' },
+                          { label: 'Identification No.', key: 'patient_id' },
+                          { label: 'Location', key: 'district' },
+                          { label: 'Status', key: 'reviewed' },
+                          { label: 'Severity', key: 'severity' },
+                          { label: 'Actions', key: null }
+                        ].map(col => (
+                          <th 
+                            key={col.label} 
+                            onClick={() => col.key && handleSort(col.key)}
+                            style={{ 
+                              textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, 
+                              color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em',
+                              cursor: col.key ? 'pointer' : 'default',
+                              userSelect: 'none'
+                            }}
+                          >
+                            {col.label} {sortConfig.key === col.key ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
+                          </th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
-                      {triageRecords.slice(0, 8).map((record, i) => (
+                      {sortedAndFilteredRecords.slice(0, 8).map((record, i) => (
                         <tr key={record.id} className="table-row" style={{ borderBottom: '1px solid #f8fafc' }}>
                           <td style={{ padding: '1rem 1.5rem' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

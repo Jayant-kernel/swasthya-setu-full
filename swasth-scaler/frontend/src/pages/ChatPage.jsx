@@ -5,6 +5,7 @@ import { openai, getChatSystemPrompt } from '../lib/openai'
 import { usePatient } from '../context/PatientContext.jsx'
 import ChatBubble from '../components/ChatBubble.jsx'
 import DashboardLayout from '../components/DashboardLayout.jsx'
+import { useTheme } from '../context/ThemeContext.jsx'
 
 const SEVERITY_BADGE = {
   green:  { label: 'Stable / स्थिर',       cls: 'badge-green' },
@@ -39,6 +40,7 @@ ${triage.brief}
 export default function ChatPage() {
   const navigate = useNavigate()
   const { patientData, setPatientData, triageResult, setTriageResult } = usePatient()
+  const { isDark } = useTheme()
 
   const clr = {
     bg:          'var(--g-chat-bg)',

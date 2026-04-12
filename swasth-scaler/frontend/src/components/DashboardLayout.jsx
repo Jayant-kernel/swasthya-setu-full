@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useTheme } from '../context/ThemeContext.jsx'
 import logo from '../images/logo/logo.png'
 
 /* ─── Icons ──────────────────────────────────────────────────── */
@@ -66,11 +67,11 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
   const navigate = useNavigate()
   const location = useLocation()
   const { user } = useAuth()
+  const { theme, isDark, toggleTheme, setTheme } = useTheme()
 
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024)
-  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light')
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 1024)
@@ -80,13 +81,6 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
 
   const isExpanded = isMobile ? sidebarOpen : isHovered
   const sidebarWidth = isMobile ? (sidebarOpen ? 220 : 0) : (isHovered ? 220 : 72)
-
-  useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme)
-    localStorage.setItem('theme', theme)
-  }, [theme])
-
-  const isDark = theme === 'dark'
 
   const g = {
     panelBg: 'var(--g-panel-bg)',
@@ -262,7 +256,7 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', flexShrink: 0 }}>
-            <button className="dl-btn" onClick={() => setTheme(t => t === 'light' ? 'dark' : 'light')} style={{
+            <button className="dl-btn" onClick={toggleTheme} style={{
               width: 36, height: 36, borderRadius: '50%',
               background: g.btn, border: `1px solid ${g.btnBdr}`,
               backdropFilter: 'blur(12px)', cursor: 'pointer',

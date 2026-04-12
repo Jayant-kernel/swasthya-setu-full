@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useTheme } from '../context/ThemeContext.jsx'
 import logo from '../images/logo/logo.png'
 import DashboardLayout from '../components/DashboardLayout'
 
@@ -151,6 +152,7 @@ export default function HomePage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logout } = useAuth()
+  const { isDark } = useTheme()
 
   const [activeTab, setActiveTab] = useState('ALL')
   const [viewTab, setViewTab] = useState('Table')

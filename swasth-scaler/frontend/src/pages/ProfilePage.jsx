@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useTheme } from '../context/ThemeContext.jsx'
 import logo from '../images/logo/logo.png'
 import DashboardLayout from '../components/DashboardLayout.jsx'
 
@@ -95,6 +96,7 @@ export default function ProfilePage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user: authUser, logout } = useAuth()
+  const { isDark } = useTheme()
 
   // Profile state
   const [user, setUser] = useState(null)

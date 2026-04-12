@@ -4,7 +4,16 @@ import { useAuth } from '../hooks/useAuth'
 import logo from '../images/logo/logo.png'
 
 const API = 'https://swasthya-setu-full.onrender.com/api/v1'
-const DistrictHeatmap = lazy(() => import('../components/DistrictHeatmap'))
+const DistrictHeatmap = lazy(() => 
+  import('../components/DistrictHeatmap').catch(err => {
+    console.error("Chunk load error:", err);
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        import('../components/DistrictHeatmap').then(resolve).catch(reject);
+      }, 1000);
+    });
+  })
+)
 
 // ── Geography ──────────────────────────────────────────────────────────────
 
