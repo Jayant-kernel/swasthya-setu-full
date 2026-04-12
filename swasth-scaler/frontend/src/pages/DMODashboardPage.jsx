@@ -352,7 +352,7 @@ export default function DMODashboardPage() {
         </header>
 
         {/* Scrollable View */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: activeView === 'map' ? 0 : '2.5rem' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: activeView === 'map' ? 0 : '2.5rem', position: 'relative' }}>
           
           {activeView === 'home' && (
             <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
