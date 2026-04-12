@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useTheme } from '../context/ThemeContext.jsx'
-import logo from '../images/logo/logo.png'
+// logo import removed
 import DashboardLayout from '../components/DashboardLayout.jsx'
 
 /* ─── Icons (same as HomePage) ─────────────────────────────── */

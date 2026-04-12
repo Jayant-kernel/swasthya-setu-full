@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import logo from '../images/logo/logo.png'
+// logo import removed
 
 const API = 'https://swasthya-setu-full.onrender.com/api/v1'
 const DistrictHeatmap = lazy(() => 
@@ -177,7 +177,7 @@ export default function AdminDashboardPage() {
       {/* ── SIDEBAR ── */}
       <aside style={{ width: 260, background: '#fff', borderRight: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-          <img src={logo} alt="Logo" style={{ width: 42, height: 42 }} />
+          {/* Logo removed */}
           <div>
              <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e293b', letterSpacing: '-0.02em', lineHeight: 1 }}>Swasthya Setu</div>
              <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#6366f1', marginTop: 4, letterSpacing: '0.05em' }}>ADMIN PORTAL</div>

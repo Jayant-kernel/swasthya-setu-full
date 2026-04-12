@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import logo from '../images/logo/logo.png'
+// logo import removed
 
 const API = 'https://swasthya-setu-full.onrender.com/api/v1'
 const DistrictHeatmap = lazy(() => 
@@ -159,6 +159,21 @@ const CalendarWidget = ({ selectedDate, setSelectedDate }) => {
           );
         })}
       </div>
+      <button 
+        onClick={() => setSelectedDate(null)}
+        style={{
+          marginTop: '1.25rem', width: '100%', padding: '0.625rem', 
+          borderRadius: 10, border: '1px solid #e2e8f0', background: '#f8fafc',
+          color: '#64748b', fontSize: '0.75rem', fontWeight: 700,
+          cursor: 'pointer', transition: 'all 0.2s',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6
+        }}
+        onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#3b82f6' }}
+        onMouseLeave={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#64748b' }}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
+        Reset Calendar
+      </button>
     </div>
   );
 }
@@ -169,6 +184,7 @@ export default function DMODashboardPage() {
   const { logout } = useAuth()
   const navigate = useNavigate()
   const [activeView, setActiveView] = useState('home') // home | map
+  const [isHovered, setIsHovered] = useState(false)
 
   const _savedUser = useMemo(() => {
     try { return JSON.parse(localStorage.getItem('user') || '{}') } catch { return {} }
@@ -260,27 +276,46 @@ export default function DMODashboardPage() {
       `}</style>
 
       {/* ── SIDEBAR ── */}
-      <aside style={{ width: 240, background: '#fff', borderRight: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-        <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-          <img src={logo} alt="Logo" style={{ width: 42, height: 42 }} />
-          <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e293b', letterSpacing: '-0.03em' }}>Swasthya Setu</span>
+      <aside 
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        style={{ 
+          width: isHovered ? 240 : 80, 
+          background: '#fff', 
+          borderRight: '1px solid #f1f5f9', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          flexShrink: 0,
+          transition: 'width .28s cubic-bezier(.4,1,0.2,1)',
+          overflow: 'hidden'
+        }}
+      >
+        <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', width: 240 }}>
+          {/* Logo removed */}
+          <span style={{ 
+            fontWeight: 800, fontSize: '1.25rem', color: '#1e293b', 
+            letterSpacing: '-0.03em', whiteSpace: 'nowrap',
+            opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s'
+          }}>
+            Swasthya Setu
+          </span>
         </div>
 
-        <nav style={{ flex: 1, padding: '0 0.75rem' }}>
+        <nav style={{ flex: 1, padding: '0 0.75rem', width: 240 }}>
           <div onClick={() => setActiveView('home')} className={`nav-link ${activeView === 'home' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
-            <HomeIcon /> <span>Home</span>
+            <HomeIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Home</span>
           </div>
           <div onClick={() => setActiveView('map')} className={`nav-link ${activeView === 'map' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
-            <MapIcon /> <span>Districts Map</span>
+            <MapIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Districts Map</span>
           </div>
         </nav>
 
-        <div style={{ padding: '1rem', borderTop: '1px solid #f1f5f9' }}>
+        <div style={{ padding: '1rem', borderTop: '1px solid #f1f5f9', width: 240 }}>
           <div onClick={() => navigate('/dashboard/admin')} className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#6366f1', cursor: 'pointer', marginBottom: 8, border: '1px dashed #e0e7ff', background: '#f5f7ff' }}>
-            <span style={{ fontSize: '1.1rem' }}>🌐</span> <span>Admin Mode</span>
+            <span style={{ fontSize: '1.1rem' }}>🌐</span> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Admin Mode</span>
           </div>
           <div onClick={() => { logout(); navigate('/') }} className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer' }}>
-            <LogoutIcon /> <span>Logout</span>
+            <LogoutIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Logout</span>
           </div>
         </div>
       </aside>
@@ -295,14 +330,12 @@ export default function DMODashboardPage() {
              <input type="text" placeholder="Search for patients or reports..." style={{ width: '100%', height: 44, padding: '0 1rem 0 3rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, outline: 'none', fontSize: '0.875rem' }} />
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <button style={{ background: 'transparent', border: 'none', color: '#64748b', cursor: 'pointer' }}><BellIcon /></button>
-            <div style={{ height: 28, width: 1, background: '#e2e8f0' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', cursor: 'pointer' }}>
               <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>
                 {(_savedUser.full_name || 'D')[0]}
               </div>
-              <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1e293b' }}>{_savedUser.full_name || 'DMO'}</div>
+              {/* Name removed as per request */}
             </div>
           </div>
         </header>

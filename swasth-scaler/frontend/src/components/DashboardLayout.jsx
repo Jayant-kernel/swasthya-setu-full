@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useTheme } from '../context/ThemeContext.jsx'
-import logo from '../images/logo/logo.png'
+// logo import removed
 
 /* ─── Icons ──────────────────────────────────────────────────── */
 const GridIcon = ({ active }) => (
@@ -151,7 +151,7 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 filter: 'drop-shadow(0 0 10px rgba(16,185,129,0.4))',
               }}>
-                <img src={logo} alt="logo" style={{ width: '82%', height: '82%', objectFit: 'contain' }} />
+                  {/* Logo removed */}
               </div>
               <div style={{ opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
                 <div style={{ fontWeight: 800, fontSize: '0.9rem', color: g.text, letterSpacing: '-0.022em', lineHeight: 1.15 }}>Swasthya Setu</div>
