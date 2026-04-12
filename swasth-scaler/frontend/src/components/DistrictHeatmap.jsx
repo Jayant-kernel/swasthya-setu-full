@@ -31,7 +31,7 @@ function MapController({ center, zoom, bounds }) {
   return null
 }
 
-export default function DistrictHeatmap({ district, points, center, zoom = 10, bounds, height = '420px' }) {
+export default function DistrictHeatmap({ district, points, center, zoom = 10, bounds, height = '100%' }) {
   return (
     <MapContainer
       center={center}
@@ -40,7 +40,7 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
       maxZoom={14}
       maxBounds={bounds || undefined}
       maxBoundsViscosity={bounds ? 1.0 : 0}
-      style={{ height, width: '100%', borderRadius: '10px', zIndex: 0 }}
+      style={{ height, width: '100%', zIndex: 0 }}
       scrollWheelZoom={true}
     >
       <TileLayer

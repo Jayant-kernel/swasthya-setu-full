@@ -6,12 +6,19 @@ import { useAuth } from '../hooks/useAuth'
 const API = 'https://swasthya-setu-full.onrender.com/api/v1'
 const DistrictHeatmap = lazy(() => 
   import('../components/DistrictHeatmap').catch(err => {
-    console.error("Chunk load error:", err);
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        import('../components/DistrictHeatmap').then(resolve).catch(reject);
-      }, 1000);
-    });
+    console.error("Chunk load error detected, attempting auto-reload...", err);
+    // Standard self-healing for Vite/Webpack chunk mismatches
+    const hasReloaded = window.sessionStorage.getItem('heatmap_reload_attempted');
+    if (!hasReloaded) {
+      window.sessionStorage.setItem('heatmap_reload_attempted', 'true');
+      window.location.reload();
+    }
+    return { default: () => (
+      <div style={{ padding: '2rem', textAlign: 'center', color: '#ef4444' }}>
+        <h3>Map component failed to load</h3>
+        <p>Please check your connection and <button onClick={() => window.location.reload()}>Refresh Page</button></p>
+      </div>
+    )};
   })
 )
 
@@ -459,10 +466,10 @@ export default function DMODashboardPage() {
           )}
 
           {activeView === 'map' && (
-            <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column', position: 'absolute', inset: 0 }}>
                 <div style={{ flex: 1, background: '#fff', overflow: 'hidden' }}>
                     <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center' }}>Loading Region Map...</div>}>
-                        <DistrictHeatmap district={dmoDistrict} points={mapPoints} center={center} bounds={bounds} />
+                        <DistrictHeatmap district={dmoDistrict} points={mapPoints} center={center} bounds={bounds} height="100%" />
                     </Suspense>
                 </div>
             </div>
