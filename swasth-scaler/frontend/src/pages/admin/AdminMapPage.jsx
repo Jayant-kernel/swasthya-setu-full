@@ -78,7 +78,7 @@ export default function AdminMapPage() {
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', fontFamily: "'Inter', sans-serif" }}>
-      <AdminSidebar activeView="map" />
+      <AdminSidebar isHovered={isHovered} setIsHovered={setIsHovered} />
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
         <header style={{ height: 72, background: g.cardBg, borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0, backdropFilter: g.blur }}>
           <div style={{ fontSize: '1rem', fontWeight: 800, color: g.text }}>Geospatial Command</div>

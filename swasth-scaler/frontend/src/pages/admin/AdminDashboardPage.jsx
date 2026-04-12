@@ -112,6 +112,7 @@ const DistrictDetailModal = ({ isOpen, onClose, stats, mode, g, triageRecords, o
 export default function AdminDashboardPage() {
   const navigate = useNavigate()
   const { isDark, toggleTheme } = useTheme()
+  const [isHovered, setIsHovered] = useState(false)
   const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'analytics'
   const [triageRecords, setTriageRecords] = useState([])
   const [outbreaks, setOutbreaks] = useState([])
@@ -231,7 +232,7 @@ export default function AdminDashboardPage() {
         .table-row:hover { background: ${g.insetBg}; cursor: pointer; }
       `}</style>
 
-      <AdminSidebar activeView={activeTab === 'overview' ? 'home' : 'analytics'} />
+      <AdminSidebar isHovered={isHovered} setIsHovered={setIsHovered} />
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
         <header style={{ height: 72, background: g.cardBg, borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0, backdropFilter: g.blur }}>

@@ -8,8 +8,8 @@ import HomePage from './pages/HomePage.jsx'
 import PatientFormPage from './pages/PatientFormPage.jsx'
 import ChatPage from './pages/ChatPage.jsx'
 
-import DMODashboardPage from './pages/DMODashboardPage.jsx'
-import DmoMapPage from './pages/DMOMapPage.jsx'
+import DMODashboardPage from './pages/dmo/DMODashboardPage.jsx'
+import DmoMapPage from './pages/dmo/DMOMapPage.jsx'
 import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx'
 import AdminMapPage from './pages/admin/AdminMapPage.jsx'
 
