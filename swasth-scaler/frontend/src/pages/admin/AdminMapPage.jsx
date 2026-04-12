@@ -13,6 +13,7 @@ export default function AdminMapPage() {
   const [triageRecords, setTriageRecords] = useState([])
   const [outbreaks, setOutbreaks] = useState([])
   const [loading, setLoading] = useState(true)
+  const [timeRange, setTimeRange] = useState('7d') // '24h' | '3d' | '7d' | '30d' | 'all'
 
   const fetchData = useCallback(async () => {
     try {
@@ -35,9 +36,27 @@ export default function AdminMapPage() {
     fetchData()
   }, [fetchData])
 
+  const filteredRecords = useMemo(() => {
+    if (timeRange === 'all') return triageRecords
+    const now = new Date()
+    const diffs = { '24h': 1, '3d': 3, '7d': 7, '30d': 30 }
+    const cutoff = new Date(now.setDate(now.getDate() - diffs[timeRange]))
+    return triageRecords.filter(r => new Date(r.created_at) >= cutoff)
+  }, [triageRecords, timeRange])
+
+  const filteredOutbreaks = useMemo(() => {
+    if (timeRange === 'all') return outbreaks
+    const now = new Date()
+    const diffs = { '24h': 1, '3d': 3, '7d': 7, '30d': 30 }
+    const cutoff = new Date(now.setDate(now.getDate() - diffs[timeRange]))
+    // For outbreaks, we check year/week if specific dates aren't available, 
+    // but many have created_at now. If not, we'll try to estimate or just show all.
+    return outbreaks.filter(o => o.created_at ? new Date(o.created_at) >= cutoff : true)
+  }, [outbreaks, timeRange])
+
   const mapPoints = useMemo(() => {
-    const withGps = triageRecords.filter(r => r.latitude && r.longitude)
-    const withoutGps = triageRecords.filter(r => !r.latitude || !r.longitude)
+    const withGps = filteredRecords.filter(r => r.latitude && r.longitude)
+    const withoutGps = filteredRecords.filter(r => !r.latitude || !r.longitude)
 
     const gpsPoints = withGps.map(r => ({
       village: r.patient_name || 'Patient',
@@ -65,7 +84,7 @@ export default function AdminMapPage() {
     }).filter(Boolean)
 
     return [...gpsPoints, ...legacyPoints]
-  }, [triageRecords])
+  }, [filteredRecords])
 
   const g = useMemo(() => ({
     blur: 'var(--g-blur)',
@@ -93,12 +112,39 @@ export default function AdminMapPage() {
 
         <div style={{ flex: 1, padding: '2.5rem', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: g.text, margin: 0 }}>National Health Heatmap</h1>
-            <div style={{ fontSize: '0.8125rem', color: g.label, fontWeight: 600 }}>{outbreaks.length} outbreak records · {mapPoints.length} clusters</div>
+            <div>
+              <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: g.text, margin: 0 }}>National Health Heatmap</h1>
+              <div style={{ fontSize: '0.8125rem', color: g.label, fontWeight: 600, marginTop: 4 }}>
+                {filteredOutbreaks.length} outbreaks · {mapPoints.length} active clusters · Showing: {timeRange === 'all' ? 'All Time' : `Last ${timeRange.replace('h', ' Hours').replace('d', ' Days')}`}
+              </div>
+            </div>
+            
+            <div style={{ display: 'flex', background: g.cardBg, padding: 4, borderRadius: 12, border: `1px solid ${g.cardBdr}`, gap: 4, boxShadow: g.cardShd }}>
+              {[
+                { id: '24h', label: '24H' },
+                { id: '3d', label: '3D' },
+                { id: '7d', label: '7D' },
+                { id: '30d', label: '1M' },
+                { id: 'all', label: 'All' }
+              ].map(opt => (
+                <button 
+                  key={opt.id}
+                  onClick={() => setTimeRange(opt.id)}
+                  style={{
+                    padding: '0.5rem 1rem', borderRadius: 8, border: 'none', cursor: 'pointer',
+                    fontSize: '0.75rem', fontWeight: 800, transition: 'all 0.2s',
+                    background: timeRange === opt.id ? '#4f46e5' : 'transparent',
+                    color: timeRange === opt.id ? '#fff' : g.label,
+                  }}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
           <div style={{ flex: 1, background: g.cardBg, borderRadius: 24, border: `1px solid ${g.cardBdr}`, overflow: 'hidden', minHeight: 500, backdropFilter: g.blur }}>
             <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center', color: g.muted }}>Initializing Map...</div>}>
-              <DistrictHeatmap district="India" points={mapPoints} center={INDIA_CENTER} zoom={5} bounds={INDIA_BOUNDS} outbreaks={outbreaks} height="100%" />
+              <DistrictHeatmap district="India" points={mapPoints} center={INDIA_CENTER} zoom={5} bounds={INDIA_BOUNDS} outbreaks={filteredOutbreaks} height="100%" />
             </Suspense>
           </div>
         </div>
