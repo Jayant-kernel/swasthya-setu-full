@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useTheme } from '../hooks/useTheme'
 
 const API = 'https://swasthya-setu-full.onrender.com/api/v1'
 
@@ -82,27 +83,27 @@ const SearchIcon = () => <svg width="18" height="18" viewBox="0 0 24 24" fill="n
 const MapIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" /><line x1="8" y1="2" x2="8" y2="18" /><line x1="16" y1="6" x2="16" y2="22" /></svg>
 const ActivityIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
 
-const StatCard = ({ label, value, subtext, icon: Icon, color = '#3b82f6' }) => (
-  <div style={{ background: '#fff', borderRadius: 16, padding: '1.5rem', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', flex: 1 }}>
+const StatCard = ({ label, value, subtext, icon: Icon, color = '#3b82f6', g }) => (
+  <div style={{ background: g.cardBg, borderRadius: 16, padding: '1.5rem', boxShadow: g.cardShd, border: `1px solid ${g.cardBdr}`, flex: 1, backdropFilter: g.blur }}>
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
       <div style={{ width: 44, height: 44, borderRadius: 12, background: `${color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
         <Icon />
       </div>
-      <div style={{ color: '#10b981', background: '#dcfce7', padding: '2px 8px', borderRadius: 6, fontSize: '0.75rem', fontWeight: 700 }}>Active</div>
+      <div style={{ color: '#10b981', background: 'rgba(16, 185, 129, 0.14)', padding: '2px 8px', borderRadius: 6, fontSize: '0.75rem', fontWeight: 700 }}>Active</div>
     </div>
-    <div style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: 600, marginBottom: '0.25rem' }}>{label}</div>
-    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1e293b' }}>{value}</div>
-    <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: 4 }}>{subtext}</div>
+    <div style={{ fontSize: '0.8125rem', color: g.muted, fontWeight: 600, marginBottom: '0.25rem' }}>{label}</div>
+    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: g.text }}>{value}</div>
+    <div style={{ fontSize: '0.75rem', color: g.label, marginTop: 4 }}>{subtext}</div>
   </div>
 )
 
-const PatientOverviewChart = () => (
-  <div style={{ padding: '1.5rem', background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', flex: 2 }}>
+const PatientOverviewChart = ({ g }) => (
+  <div style={{ padding: '1.5rem', background: g.cardBg, borderRadius: 16, border: `1px solid ${g.cardBdr}`, boxShadow: g.cardShd, flex: 2, backdropFilter: g.blur }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>Patients Overview</h3>
-      <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', fontWeight: 600 }}>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#3b82f6' }} /> Medical patients</span>
-        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#93c5fd' }} /> Appointed patients</span>
+      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: g.text }}>Patients Overview</h3>
+      <div style={{ display: 'flex', gap: '1rem', fontSize: '0.75rem', fontWeight: 600, color: g.muted }}>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#3b82f6' }} /> Medical</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#93c5fd' }} /> Appointed</span>
       </div>
     </div>
     <div style={{ height: 200, display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', padding: '0 1rem' }}>
@@ -113,36 +114,34 @@ const PatientOverviewChart = () => (
         </div>
       ))}
     </div>
-    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 0 0', color: '#94a3b8', fontSize: '0.75rem' }}>
+    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 0 0', color: g.label, fontSize: '0.75rem' }}>
       {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'].map(m => <span key={m}>{m}</span>)}
     </div>
   </div>
 )
 
-const CalendarWidget = ({ selectedDate, setSelectedDate }) => (
-  <div style={{ padding: '1.5rem', background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', flex: 1 }}>
+const CalendarWidget = ({ selectedDate, setSelectedDate, g }) => (
+  <div style={{ padding: '1.5rem', background: g.cardBg, borderRadius: 16, border: `1px solid ${g.cardBdr}`, boxShadow: g.cardShd, flex: 1, backdropFilter: g.blur }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>Calendar</h3>
-      <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 700 }}>April 2026</span>
+      <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: g.text }}>Calendar</h3>
+      <span style={{ fontSize: '0.75rem', color: g.muted, fontWeight: 700 }}>April 2026</span>
     </div>
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8, fontSize: '0.7rem', color: '#94a3b8', textAlign: 'center' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8, fontSize: '0.7rem', color: g.label, textAlign: 'center' }}>
       {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => <div key={i} style={{ fontWeight: 800 }}>{d}</div>)}
       {Array.from({ length: 30 }).map((_, i) => {
         const day = i + 1
         const isSelected = selectedDate === day
         return (
           <div key={i} onClick={() => setSelectedDate(day)}
-            style={{ padding: '6px 0', borderRadius: 8, background: isSelected ? '#3b82f6' : 'transparent', color: isSelected ? '#fff' : '#475569', fontWeight: isSelected ? 800 : 500, cursor: 'pointer', transition: 'all 0.2s' }}
-            onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = '#f1f5f9' }}
+            style={{ padding: '6px 0', borderRadius: 8, background: isSelected ? '#3b82f6' : 'transparent', color: isSelected ? '#fff' : g.text, fontWeight: isSelected ? 800 : 500, cursor: 'pointer', transition: 'all 0.2s' }}
+            onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(0,0,0,0.05)' }}
             onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent' }}
           >{day}</div>
         )
       })}
     </div>
     <button onClick={() => setSelectedDate(null)}
-      style={{ marginTop: '1.25rem', width: '100%', padding: '0.625rem', borderRadius: 10, border: '1px solid #e2e8f0', background: '#f8fafc', color: '#64748b', fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
-      onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9'; e.currentTarget.style.color = '#3b82f6' }}
-      onMouseLeave={e => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.color = '#64748b' }}
+      style={{ marginTop: '1.25rem', width: '100%', padding: '0.625rem', borderRadius: 10, border: `1px solid ${g.divider}`, background: g.insetBg, color: g.muted, fontSize: '0.75rem', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
     >
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>
       Reset Calendar
@@ -155,35 +154,45 @@ export function DMOSidebar({ isHovered, setIsHovered, savedUser, onLogout, onAdm
   const navigate = useNavigate()
   const location = useLocation()
   const currentPath = location.pathname
+  const { isDark } = useTheme()
 
   const isHome = currentPath === '/dashboard/dmo'
   const isMap = currentPath.includes('/map')
+
+  const g = useMemo(() => ({
+    cardBg: 'var(--g-card-bg)',
+    divider: 'var(--g-divider)',
+    text: 'var(--g-text)',
+    muted: 'var(--g-muted)',
+    accent: 'var(--g-accent)',
+    blur: 'var(--g-blur)',
+  }), [isDark])
 
   return (
     <aside
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{ width: isHovered ? 240 : 80, background: '#fff', borderRight: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', flexShrink: 0, transition: 'width .28s cubic-bezier(.4,1,0.2,1)', overflow: 'hidden' }}
+      style={{ width: isHovered ? 240 : 80, background: g.cardBg, borderRight: `1px solid ${g.divider}`, display: 'flex', flexDirection: 'column', flexShrink: 0, transition: 'width .28s cubic-bezier(.4,1,0.2,1)', overflow: 'hidden', backdropFilter: g.blur }}
     >
       <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', width: 240 }}>
-        <span style={{ fontWeight: 800, fontSize: '1.25rem', color: '#1e293b', letterSpacing: '-0.03em', whiteSpace: 'nowrap', opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s' }}>
+        <span style={{ fontWeight: 800, fontSize: '1.25rem', color: g.text, letterSpacing: '-0.03em', whiteSpace: 'nowrap', opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s' }}>
           Swasthya Setu
         </span>
       </div>
       <nav style={{ flex: 1, padding: '0 0.75rem', width: 240 }}>
-        <div onClick={() => navigate('/dashboard/dmo')} className={`nav-link ${isHome ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
+        <div onClick={() => navigate('/dashboard/dmo')} className={`nav-link ${isHome ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 4 }}>
           <HomeIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Home</span>
         </div>
-        <div onClick={() => navigate('/dashboard/dmo/map')} className={`nav-link ${isMap ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
+        <div onClick={() => navigate('/dashboard/dmo/map')} className={`nav-link ${isMap ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 4 }}>
           <MapIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Districts Map</span>
         </div>
       </nav>
-      <div style={{ padding: '1rem', borderTop: '1px solid #f1f5f9', width: 240 }}>
-        <div onClick={onAdminNav} className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#6366f1', cursor: 'pointer', marginBottom: 8, border: '1px dashed #e0e7ff', background: '#f5f7ff' }}>
+      <div style={{ padding: '1rem', borderTop: `1px solid ${g.divider}`, width: 240 }}>
+        <div onClick={onAdminNav} className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#6366f1', cursor: 'pointer', marginBottom: 8, border: '1px dashed #6366f1', background: 'rgba(99, 102, 241, 0.1)' }}>
           <span style={{ fontSize: '1.1rem' }}>🌐</span>
           <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Admin Mode</span>
         </div>
-        <div onClick={onLogout} className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer' }}>
+        <div onClick={onLogout} className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer' }}>
           <LogoutIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Logout</span>
         </div>
       </div>
@@ -191,11 +200,24 @@ export function DMOSidebar({ isHovered, setIsHovered, savedUser, onLogout, onAdm
   )
 }
 
-// ── Main Page ──────────────────────────────────────────────────────────────
 export default function DMODashboardPage() {
   const { logout } = useAuth()
   const navigate = useNavigate()
+  const { isDark } = useTheme()
   const [isHovered, setIsHovered] = useState(false)
+
+  const g = useMemo(() => ({
+    text: 'var(--g-text)',
+    muted: 'var(--g-muted)',
+    label: 'var(--g-label)',
+    accent: 'var(--g-accent)',
+    cardBg: 'var(--g-card-bg)',
+    cardBdr: 'var(--g-card-bdr)',
+    cardShd: 'var(--g-card-shd)',
+    divider: 'var(--g-divider)',
+    insetBg: 'var(--g-inset-bg)',
+    blur: 'var(--g-blur)',
+  }), [isDark])
 
   const _savedUser = useMemo(() => {
     try { return JSON.parse(localStorage.getItem('user') || '{}') } catch { return {} }
@@ -257,13 +279,13 @@ export default function DMODashboardPage() {
   }, [triageRecords, sortConfig, selectedDate])
 
   return (
-    <div style={{ minHeight: '100dvh', background: '#f8fafc', display: 'flex', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', fontFamily: "'Inter', sans-serif" }}>
       <style>{`
         * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .nav-link:hover { background: #f1f5f9; color: #3b82f6; }
-        .nav-link.active { background: #ebf5ff; color: #3b82f6; font-weight: 700; border-left: 3px solid #3b82f6; }
-        .table-row:hover { background: #f9fafb; cursor: pointer; }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: ${g.divider}; border-radius: 10px; }
+        .nav-link:hover { background: ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}; color: ${g.accent}; }
+        .nav-link.active { background: ${isDark ? 'rgba(59,130,246,0.15)' : '#ebf5ff'}; color: #3b82f6; font-weight: 700; border-left: 3px solid #3b82f6; }
+        .table-row:hover { background: ${g.insetBg}; cursor: pointer; }
       `}</style>
 
       <DMOSidebar
@@ -275,10 +297,10 @@ export default function DMODashboardPage() {
       />
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
-        <header style={{ height: 72, background: '#fff', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0 }}>
+        <header style={{ height: 72, background: g.cardBg, borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0, backdropFilter: g.blur }}>
           <div style={{ position: 'relative', width: 360 }}>
-            <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><SearchIcon /></span>
-            <input type="text" placeholder="Search for patients or reports..." style={{ width: '100%', height: 44, padding: '0 1rem 0 3rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, outline: 'none', fontSize: '0.875rem' }} />
+            <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: g.label }}><SearchIcon /></span>
+            <input type="text" placeholder="Search for patients or reports..." style={{ width: '100%', height: 44, padding: '0 1rem 0 3rem', background: g.insetBg, border: `1px solid ${g.divider}`, borderRadius: 12, outline: 'none', fontSize: '0.875rem', color: g.text }} />
           </div>
           <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>
             {(_savedUser.full_name || 'D')[0]}
@@ -288,28 +310,28 @@ export default function DMODashboardPage() {
         <div style={{ flex: 1, overflowY: 'auto', padding: '2.5rem' }}>
           <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
             <div>
-              <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1e293b', margin: '0 0 0.25rem' }}>DMO Overview — {dmoDistrict}</h1>
-              <p style={{ margin: 0, color: '#64748b', fontSize: '0.9375rem' }}>Monitor real-time triage updates and patient distributions.</p>
+              <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: g.text, margin: '0 0 0.25rem' }}>DMO Overview — {dmoDistrict}</h1>
+              <p style={{ margin: 0, color: g.muted, fontSize: '0.9375rem' }}>Monitor real-time triage updates and patient distributions.</p>
             </div>
 
             <div style={{ display: 'flex', gap: '1.5rem' }}>
-              <StatCard label="Total Patients" value={patients.length} subtext="Registered in district" icon={UsersIcon} color="#3b82f6" />
-              <StatCard label="Unreviewed" value={statsCount.unreviewed} subtext="Pending validation" icon={FileTextIcon} color="#f59e0b" />
-              <StatCard label="Critical Alerts" value={statsCount.critical} subtext="Red severity cases" icon={ActivityIcon} color="#ef4444" />
+              <StatCard label="Total Patients" value={patients.length} subtext="Registered in district" icon={UsersIcon} color="#3b82f6" g={g} />
+              <StatCard label="Unreviewed" value={statsCount.unreviewed} subtext="Pending validation" icon={FileTextIcon} color="#f59e0b" g={g} />
+              <StatCard label="Critical Alerts" value={statsCount.critical} subtext="Red severity cases" icon={ActivityIcon} color="#ef4444" g={g} />
             </div>
 
             <div style={{ display: 'flex', gap: '1.5rem' }}>
-              <PatientOverviewChart />
-              <CalendarWidget selectedDate={selectedDate} setSelectedDate={setSelectedDate} />
+              <PatientOverviewChart g={g} />
+              <CalendarWidget selectedDate={selectedDate} setSelectedDate={setSelectedDate} g={g} />
             </div>
 
-            <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
-              <div style={{ padding: '1.5rem', borderBottom: '1px solid #f1f5f9' }}>
-                <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>Recent Patient Triage</h3>
+            <div style={{ background: g.cardBg, borderRadius: 16, border: `1px solid ${g.cardBdr}`, boxShadow: g.cardShd, overflow: 'hidden', backdropFilter: g.blur }}>
+              <div style={{ padding: '1.5rem', borderBottom: `1px solid ${g.divider}` }}>
+                <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: g.text }}>Recent Patient Triage</h3>
               </div>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead style={{ background: '#f8fafc' }}>
+                  <thead style={{ background: g.insetBg }}>
                     <tr>
                       {[
                         { label: 'Patient Name', key: 'patient_name' },
@@ -319,7 +341,7 @@ export default function DMODashboardPage() {
                         { label: 'Severity', key: 'severity' }
                       ].map(col => (
                         <th key={col.label} onClick={() => handleSort(col.key)}
-                          style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', userSelect: 'none' }}>
+                          style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: g.label, textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', userSelect: 'none' }}>
                           {col.label} {sortConfig.key === col.key ? (sortConfig.direction === 'asc' ? '↑' : '↓') : ''}
                         </th>
                       ))}
@@ -327,17 +349,17 @@ export default function DMODashboardPage() {
                   </thead>
                   <tbody>
                     {sortedAndFilteredRecords.slice(0, 8).map((record, i) => (
-                      <tr key={record.id} className="table-row" style={{ borderBottom: '1px solid #f8fafc' }}>
+                      <tr key={record.id} className="table-row" style={{ borderBottom: `1px solid ${g.divider}` }}>
                         <td style={{ padding: '1rem 1.5rem' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: i % 2 === 0 ? '#3b82f615' : '#10b98115', display: 'flex', alignItems: 'center', justifyContent: 'center', color: i % 2 === 0 ? '#3b82f6' : '#10b981', fontWeight: 800, fontSize: '0.8125rem' }}>
+                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: i % 2 === 0 ? 'rgba(59, 130, 246, 0.15)' : 'rgba(16, 185, 129, 0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: i % 2 === 0 ? '#3b82f6' : '#10b981', fontWeight: 800, fontSize: '0.8125rem' }}>
                               {(record.patient_name || 'P')[0]}
                             </div>
-                            <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '0.9375rem' }}>{record.patient_name || 'Unknown'}</div>
+                            <div style={{ fontWeight: 700, color: g.text, fontSize: '0.9375rem' }}>{record.patient_name || 'Unknown'}</div>
                           </div>
                         </td>
-                        <td style={{ padding: '1rem 1.5rem', color: '#64748b', fontSize: '0.875rem' }}>ID-{record.patient_id?.substring(0, 6) || record.id?.substring(0, 6)}</td>
-                        <td style={{ padding: '1rem 1.5rem', color: '#64748b', fontSize: '0.875rem' }}>
+                        <td style={{ padding: '1rem 1.5rem', color: g.muted, fontSize: '0.875rem' }}>ID-{record.patient_id?.substring(0, 6) || record.id?.substring(0, 6) || 'N/A'}</td>
+                        <td style={{ padding: '1rem 1.5rem', color: g.muted, fontSize: '0.875rem' }}>
                           <div>{record.district || dmoDistrict}</div>
                           {record.latitude && record.longitude && (
                             <div style={{ fontSize: '0.7rem', color: '#3b82f6', marginTop: 4, fontWeight: 600 }}>
@@ -346,7 +368,7 @@ export default function DMODashboardPage() {
                           )}
                         </td>
                         <td style={{ padding: '1rem 1.5rem' }}>
-                          <span style={{ padding: '4px 10px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 800, background: record.reviewed ? '#dcfce7' : '#fef3c7', color: record.reviewed ? '#10b981' : '#f59e0b' }}>
+                          <span style={{ padding: '4px 10px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 800, background: record.reviewed ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)', color: record.reviewed ? '#10b981' : '#f59e0b' }}>
                             {record.reviewed ? 'Checked' : 'Awaiting'}
                           </span>
                         </td>

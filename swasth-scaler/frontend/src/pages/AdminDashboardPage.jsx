@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useTheme } from '../context/ThemeContext.jsx'
 
 const API = 'https://swasthya-setu-full.onrender.com/api/v1'
 const DistrictHeatmap = lazy(() =>
@@ -55,19 +56,19 @@ const ActivityIcon = () => <svg width="20" height="20" viewBox="0 0 24 24" fill=
 
 // ── Components ─────────────────────────────────────────────────────────────
 
-const StatCard = ({ label, value, subtext, icon: Icon, color = '#3b82f6' }) => (
-  <div style={{ background: '#fff', borderRadius: 16, padding: '1.5rem', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', border: '1px solid #f1f5f9', flex: 1 }}>
+const StatCard = ({ label, value, subtext, icon: Icon, color = '#3b82f6', g }) => (
+  <div style={{ background: g.cardBg, borderRadius: 16, padding: '1.5rem', boxShadow: g.cardShd, border: `1px solid ${g.cardBdr}`, flex: 1, backdropFilter: g.blur }}>
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-      <div style={{ width: 44, height: 44, borderRadius: 12, background: `${color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
+      <div style={{ width: 44, height: 44, borderRadius: 12, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
         <Icon />
       </div>
-      <div style={{ color: '#6366f1', background: '#eef2ff', padding: '2px 8px', borderRadius: 6, fontSize: '0.7rem', fontWeight: 800 }}>
+      <div style={{ color: '#6366f1', background: 'rgba(99,102,241,0.12)', padding: '2px 8px', borderRadius: 6, fontSize: '0.7rem', fontWeight: 800 }}>
         NATIONAL
       </div>
     </div>
-    <div style={{ fontSize: '0.8125rem', color: '#64748b', fontWeight: 600, marginBottom: '0.25rem' }}>{label}</div>
-    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#1e293b' }}>{value}</div>
-    <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: 4 }}>{subtext}</div>
+    <div style={{ fontSize: '0.8125rem', color: g.muted, fontWeight: 600, marginBottom: '0.25rem' }}>{label}</div>
+    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: g.text }}>{value}</div>
+    <div style={{ fontSize: '0.75rem', color: g.label, marginTop: 4 }}>{subtext}</div>
   </div>
 )
 
@@ -75,6 +76,7 @@ const StatCard = ({ label, value, subtext, icon: Icon, color = '#3b82f6' }) => (
 
 export default function AdminDashboardPage() {
   const { logout } = useAuth()
+  const { isDark } = useTheme()
   const navigate = useNavigate()
   const [activeView, setActiveView] = useState('home')
   const [triageRecords, setTriageRecords] = useState([])
@@ -199,7 +201,7 @@ export default function AdminDashboardPage() {
       if (r.severity === 'red') groups[d].critical++
       else if (r.severity === 'yellow') groups[d].moderate++
       else groups[d].mild++
-      if (r.created_at > groups[d].lastReported) groups[d].lastReported = r.created_at
+      if (r.created_at > groups[d].lastUpdate) groups[d].lastReported = r.created_at
     })
 
     const legacyPoints = Object.entries(groups).map(([district, g]) => {
@@ -216,47 +218,64 @@ export default function AdminDashboardPage() {
     return [...gpsPoints, ...legacyPoints]
   }, [triageRecords])
 
+  const g = useMemo(() => ({
+    panelBg: 'var(--g-panel-bg)',
+    panelBdr: 'var(--g-panel-bdr)',
+    blur: 'var(--g-blur)',
+    text: 'var(--g-text)',
+    muted: 'var(--g-muted)',
+    label: 'var(--g-label)',
+    accent: 'var(--g-accent)',
+    cardBg: 'var(--g-card-bg)',
+    cardBdr: 'var(--g-card-bdr)',
+    cardShd: 'var(--g-card-shd)',
+    divider: 'var(--g-divider)',
+    btn: 'var(--g-btn)',
+    btnBdr: 'var(--g-btn-bdr)',
+    insetBg: isDark ? 'rgba(0,0,0,0.2)' : '#f8fafc',
+  }), [isDark])
+
   return (
-    <div style={{ minHeight: '100dvh', background: '#f8fafc', display: 'flex', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', fontFamily: "'Inter', sans-serif" }}>
       <style>{`
         * { box-sizing: border-box; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .nav-link:hover { background: #f1f5f9; color: #4f46e5; }
-        .nav-link.active { background: #eef2ff; color: #4f46e5; font-weight: 700; border-left: 3px solid #4f46e5; }
+        ::-webkit-scrollbar-thumb { background: ${g.divider}; border-radius: 10px; }
+        .nav-link:hover { background: ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}; color: ${g.accent}; }
+        .nav-link.active { background: ${isDark ? 'rgba(79,70,229,0.15)' : '#eef2ff'}; color: #4f46e5; font-weight: 700; border-left: 3px solid #4f46e5; }
         .btn-primary { background: #4f46e5; color: #fff; border: none; padding: 0.5rem 1.25rem; borderRadius: 8px; fontWeight: 700; cursor: pointer; transition: all 0.2s; }
         .btn-primary:hover { background: #4338ca; transform: translateY(-1px); }
-        .table-row:hover { background: #f9fafb; cursor: pointer; }
+        .table-row:hover { background: ${g.insetBg}; cursor: pointer; }
         .live-pulse { width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block; margin-right: 8px; box-shadow: 0 0 0 rgba(16, 185, 129, 0.4); animation: pulse 2s infinite; }
         @keyframes pulse { 0% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0); } }
       `}</style>
 
       {/* ── SIDEBAR ── */}
-      <aside style={{ width: 260, background: '#fff', borderRight: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+      <aside style={{ width: 260, background: g.cardBg, borderRight: `1px solid ${g.divider}`, display: 'flex', flexDirection: 'column', flexShrink: 0, backdropFilter: g.blur }}>
         <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
           <div>
-            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: '#1e293b', letterSpacing: '-0.02em', lineHeight: 1 }}>Swasthya Setu</div>
+            <div style={{ fontWeight: 800, fontSize: '1.1rem', color: g.text, letterSpacing: '-0.02em', lineHeight: 1 }}>Swasthya Setu</div>
             <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#6366f1', marginTop: 4, letterSpacing: '0.05em' }}>ADMIN PORTAL</div>
           </div>
         </div>
 
         <nav style={{ flex: 1, padding: '0 0.75rem' }}>
-          <div onClick={() => setActiveView('home')} className={`nav-link ${activeView === 'home' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
+          <div onClick={() => setActiveView('home')} className={`nav-link ${activeView === 'home' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 4 }}>
             <HomeIcon /> <span>Overview</span>
           </div>
-          <div onClick={() => setActiveView('map')} className={`nav-link ${activeView === 'map' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
+          <div onClick={() => setActiveView('map')} className={`nav-link ${activeView === 'map' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 4 }}>
             <MapIcon /> <span>National Map</span>
           </div>
-          <div onClick={() => setActiveView('analytics')} className={`nav-link ${activeView === 'analytics' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
+          <div onClick={() => setActiveView('analytics')} className={`nav-link ${activeView === 'analytics' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 4 }}>
             <GlobeIcon /> <span>Region Analytics</span>
           </div>
         </nav>
 
-        <div style={{ padding: '1rem', borderTop: '1px solid #f1f5f9' }}>
-          <div onClick={() => navigate('/dashboard/dmo')} className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 8, border: '1px dashed #e2e8f0' }}>
-            <span>← District View</span>
+        <div style={{ padding: '1rem', borderTop: `1px solid ${g.divider}` }}>
+          <div onClick={() => navigate('/dashboard/dmo')} className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 8, border: `1px dashed ${g.divider}` }}>
+            <span>💼</span> <span>DMO Dashboard</span>
           </div>
-          <div onClick={() => { logout(); navigate('/') }} className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer' }}>
+          <div onClick={() => { logout(); navigate('/') }} className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer' }}>
             <LogoutIcon /> <span>Logout</span>
           </div>
         </div>
@@ -264,13 +283,13 @@ export default function AdminDashboardPage() {
 
       {/* ── MAIN CONTENT ── */}
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
-
         {/* Top Navbar */}
-        <header style={{ height: 72, background: '#fff', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0 }}>
+        <header style={{ height: 72, background: g.cardBg, borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0, backdropFilter: g.blur }}>
           <div />
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div style={{ textAlign: 'right', marginRight: '0.5rem' }}>
-              <div style={{ fontSize: '0.875rem', fontWeight: 700, color: '#1e293b' }}>Administrator Mode</div>
+              <div style={{ fontSize: '0.875rem', fontWeight: 700, color: g.text }}>Administrator Mode</div>
+              <div style={{ fontSize: '0.65rem', color: g.label, fontWeight: 600 }}>System Control Center</div>
             </div>
             <div style={{ width: 40, height: 40, borderRadius: 10, background: 'linear-gradient(135deg, #4f46e5, #6366f1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>A</div>
           </div>
@@ -284,43 +303,43 @@ export default function AdminDashboardPage() {
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
-                  <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1e293b', margin: '0 0 0.25rem' }}>National Health Command</h1>
-                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.9375rem' }}>Aggregated data from all active districts and PHCs.</p>
+                  <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: g.text, margin: '0 0 0.25rem' }}>National Health Command</h1>
+                  <p style={{ margin: 0, color: g.muted, fontSize: '0.9375rem' }}>Aggregated data from all active districts and PHCs.</p>
                 </div>
-                <div style={{ color: '#94a3b8', fontSize: '0.8125rem', fontWeight: 600 }}>
+                <div style={{ color: g.label, fontSize: '0.8125rem', fontWeight: 600 }}>
                   Last Sync: {lastRefresh.toLocaleTimeString()}
                 </div>
               </div>
 
               {/* Stats Grid */}
               <div style={{ display: 'flex', gap: '1.5rem' }}>
-                <StatCard label="Total Triage Instances" value={stats.total} subtext="Records across all states" icon={ActivityIcon} color="#4f46e5" />
-                <StatCard label="Active Districts" value={stats.districts} subtext="Reporting real-time data" icon={GlobeIcon} color="#34d399" />
-                <StatCard label="National Alerts (RED)" value={stats.critical} subtext="High-severity escalations" icon={ActivityIcon} color="#ef4444" />
+                <StatCard label="Total Triage Instances" value={stats.total} subtext="Records across all states" icon={ActivityIcon} color="#4f46e5" g={g} />
+                <StatCard label="Active Districts" value={stats.districts} subtext="Reporting real-time data" icon={GlobeIcon} color="#34d399" g={g} />
+                <StatCard label="National Alerts (RED)" value={stats.critical} subtext="High-severity escalations" icon={ActivityIcon} color="#ef4444" g={g} />
               </div>
 
               {/* Patient Table */}
-              <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
-                <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>Recent Global Triage Events</h3>
+              <div style={{ background: g.cardBg, borderRadius: 16, border: `1px solid ${g.cardBdr}`, boxShadow: g.cardShd, overflow: 'hidden', backdropFilter: g.blur }}>
+                <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${g.divider}` }}>
+                  <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: g.text }}>Recent Global Triage Events</h3>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead style={{ background: '#f8fafc' }}>
+                    <thead style={{ background: g.insetBg }}>
                       <tr>
                         {['Patient', 'District', 'Severity', 'Date'].map(h => (
-                          <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
+                          <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: g.label, textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {triageRecords.slice(0, 15).map((record) => (
-                        <tr key={record.id} className="table-row" style={{ borderBottom: '1px solid #f8fafc' }}>
+                        <tr key={record.id} className="table-row" style={{ borderBottom: `1px solid ${g.divider}` }}>
                           <td style={{ padding: '1.25rem 1.5rem' }}>
-                            <div style={{ fontWeight: 700, color: '#1e293b', fontSize: '0.9375rem' }}>{record.patient_name || 'Anonymous'}</div>
-                            <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>ID: {record.id?.substring(0, 8)}</div>
+                            <div style={{ fontWeight: 700, color: g.text, fontSize: '0.9375rem' }}>{record.patient_name || 'Anonymous'}</div>
+                            <div style={{ fontSize: '0.75rem', color: g.muted }}>ID: {record.id?.substring(0, 8)}</div>
                           </td>
-                          <td style={{ padding: '1.25rem 1.5rem', color: '#475569', fontSize: '0.875rem', fontWeight: 600 }}>{record.district || 'General'}</td>
+                          <td style={{ padding: '1.25rem 1.5rem', color: g.text, fontSize: '0.875rem', fontWeight: 600 }}>{record.district || 'General'}</td>
                           <td style={{ padding: '1.25rem 1.5rem' }}>
                             <span style={{
                               fontSize: '0.875rem', fontWeight: 700,
@@ -331,7 +350,7 @@ export default function AdminDashboardPage() {
                                 (record.severity === 'yellow' || (Number(record.severity) >= 4 && Number(record.severity) <= 6)) ? 'MODERATE' : 'STABLE'}
                             </span>
                           </td>
-                          <td style={{ padding: '1.25rem 1.5rem', color: '#94a3b8', fontSize: '0.8125rem' }}>
+                          <td style={{ padding: '1.25rem 1.5rem', color: g.muted, fontSize: '0.8125rem' }}>
                             {new Date(record.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
                           </td>
                         </tr>
@@ -346,13 +365,13 @@ export default function AdminDashboardPage() {
           {activeView === 'map' && (
             <div style={{ height: 'calc(100vh - 72px - 5rem)', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1e293b', margin: 0 }}>National Health Heatmap</h1>
-                <div style={{ fontSize: '0.8125rem', color: '#94a3b8', fontWeight: 600 }}>
+                <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: g.text, margin: 0 }}>National Health Heatmap</h1>
+                <div style={{ fontSize: '0.8125rem', color: g.label, fontWeight: 600 }}>
                   {outbreaks.length} outbreak records · {mapPoints.length} triage clusters
                 </div>
               </div>
-              <div style={{ flex: 1, background: '#fff', borderRadius: 20, border: '1px solid #f1f5f9', overflow: 'hidden', minHeight: 500 }}>
-                <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center' }}>Loading National Map...</div>}>
+              <div style={{ flex: 1, background: g.cardBg, borderRadius: 20, border: `1px solid ${g.cardBdr}`, overflow: 'hidden', minHeight: 500, backdropFilter: g.blur }}>
+                <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center', color: g.muted }}>Loading National Map...</div>}>
                   <DistrictHeatmap
                     district="India"
                     points={mapPoints}
@@ -370,17 +389,17 @@ export default function AdminDashboardPage() {
             <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
-                  <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1e293b', margin: '0 0 0.25rem' }}>Regional Data Insights</h1>
-                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.9375rem' }}>Performance and severity breakdown aggregated by active districts.</p>
+                  <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: g.text, margin: '0 0 0.25rem' }}>Regional Data Insights</h1>
+                  <p style={{ margin: 0, color: g.muted, fontSize: '0.9375rem' }}>Performance and severity breakdown aggregated by active districts.</p>
                 </div>
 
-                <div style={{ display: 'flex', background: '#fff', padding: 4, borderRadius: 12, border: '1px solid #e2e8f0', gap: 4 }}>
+                <div style={{ display: 'flex', background: g.cardBg, padding: 4, borderRadius: 12, border: `1px solid ${g.cardBdr}`, gap: 4, backdropFilter: g.blur }}>
                   <button
                     onClick={() => setAnalyticsMode('cases')}
                     style={{
                       padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700,
                       background: analyticsMode === 'cases' ? '#4f46e5' : 'transparent',
-                      color: analyticsMode === 'cases' ? '#fff' : '#64748b',
+                      color: analyticsMode === 'cases' ? '#fff' : g.muted,
                       transition: 'all 0.2s'
                     }}
                   >Triage Cases</button>
@@ -389,7 +408,7 @@ export default function AdminDashboardPage() {
                     style={{
                       padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700,
                       background: analyticsMode === 'outbreaks' ? '#4f46e5' : 'transparent',
-                      color: analyticsMode === 'outbreaks' ? '#fff' : '#64748b',
+                      color: analyticsMode === 'outbreaks' ? '#fff' : g.muted,
                       transition: 'all 0.2s'
                     }}
                   >Disease Outbreaks</button>
@@ -398,27 +417,27 @@ export default function AdminDashboardPage() {
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
                 {analyticsMode === 'cases' ? regionStats.map(region => (
-                  <div key={region.name} style={{ background: '#fff', borderRadius: 20, padding: '1.5rem', border: '1px solid #f1f5f9', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                  <div key={region.name} style={{ background: g.cardBg, borderRadius: 20, padding: '1.5rem', border: `1px solid ${g.cardBdr}`, boxShadow: g.cardShd, backdropFilter: g.blur }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
                       <div>
-                        <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>{region.name}</h3>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: 4 }}>Last updated: {new Date(region.lastUpdate).toLocaleTimeString()}</div>
+                        <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: g.text }}>{region.name}</h3>
+                        <div style={{ fontSize: '0.75rem', color: g.label, marginTop: 4 }}>Last updated: {new Date(region.lastUpdate).toLocaleTimeString()}</div>
                       </div>
-                      <div style={{ background: '#eef2ff', color: '#4f46e5', padding: '4px 10px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 800 }}>
+                      <div style={{ background: 'rgba(79,70,229,0.12)', color: '#4f46e5', padding: '4px 10px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 800 }}>
                         {region.total} CASES
                       </div>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       {[
-                        { label: 'CRITICAL', value: region.critical, total: region.total, color: '#ef4444', bg: '#fef2f2' },
-                        { label: 'MODERATE', value: region.moderate, total: region.total, color: '#f59e0b', bg: '#fffbeb' },
-                        { label: 'STABLE', value: region.stable, total: region.total, color: '#10b981', bg: '#f0fdf4' },
+                        { label: 'CRITICAL', value: region.critical, total: region.total, color: '#ef4444', bg: 'rgba(239,68,68,0.14)' },
+                        { label: 'MODERATE', value: region.moderate, total: region.total, color: '#f59e0b', bg: 'rgba(245,158,11,0.14)' },
+                        { label: 'STABLE', value: region.stable, total: region.total, color: '#10b981', bg: 'rgba(16,185,129,0.14)' },
                       ].map(({ label, value, total, color, bg }) => (
                         <div key={label}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 700, marginBottom: 6 }}>
                             <span style={{ color }}>{label}</span>
-                            <span>{value} ({Math.round((value / (total || 1)) * 100)}%)</span>
+                            <span style={{ color: g.text }}>{value} ({Math.round((value / (total || 1)) * 100)}%)</span>
                           </div>
                           <div style={{ height: 6, background: bg, borderRadius: 10 }}>
                             <div style={{ width: `${(value / (total || 1)) * 100}%`, height: '100%', background: color, borderRadius: 10 }} />
@@ -427,36 +446,36 @@ export default function AdminDashboardPage() {
                       ))}
                     </div>
 
-                    <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid #f8fafc', display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: `1px solid ${g.divider}`, display: 'flex', justifyContent: 'space-between' }}>
                       {[['Sickle Risk', region.sickle], ['App (Users)', region.app], ['IVR (Calls)', region.ivr]].map(([label, val]) => (
                         <div key={label} style={{ textAlign: 'center' }}>
-                          <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b' }}>{val}</div>
-                          <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>{label}</div>
+                          <div style={{ fontSize: '1rem', fontWeight: 800, color: g.text }}>{val}</div>
+                          <div style={{ fontSize: '0.65rem', color: g.label, fontWeight: 700, textTransform: 'uppercase' }}>{label}</div>
                         </div>
                       ))}
                     </div>
                   </div>
                 )) : outbreakRegionStats.map(region => (
-                  <div key={region.name} style={{ background: '#fff', borderRadius: 20, padding: '1.5rem', border: '1px solid #f1f5f9', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                  <div key={region.name} style={{ background: g.cardBg, borderRadius: 20, padding: '1.5rem', border: `1px solid ${g.cardBdr}`, boxShadow: g.cardShd, backdropFilter: g.blur }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
                       <div>
-                        <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>{region.name}</h3>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: 4 }}>Status: Reported {region.lastUpdate}</div>
+                        <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: g.text }}>{region.name}</h3>
+                        <div style={{ fontSize: '0.75rem', color: g.label, marginTop: 4 }}>Status: Reported {region.lastUpdate}</div>
                       </div>
-                      <div style={{ background: '#f5f3ff', color: '#7c3aed', padding: '4px 10px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 800 }}>
-                        {region.totalCases} REPORTS
+                      <div style={{ background: 'rgba(124,58,237,0.12)', color: '#7c3aed', padding: '4px 10px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 800 }}>
+                        {region.totalCases.toLocaleString()} REPORTS
                       </div>
                     </div>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                       {[
-                        { label: 'TOTAL DEATHS', value: region.totalDeaths, color: '#ef4444', bg: '#fef2f2' },
-                        { label: 'DISEASE DIVERSITY', value: region.diseaseCount, color: '#8b5cf6', bg: '#f5f3ff' },
+                        { label: 'TOTAL DEATHS', value: region.totalDeaths, color: '#ef4444', bg: 'rgba(239,68,68,0.14)' },
+                        { label: 'DISEASE DIVERSITY', value: region.diseaseCount, color: '#8b5cf6', bg: 'rgba(139,92,246,0.14)' },
                       ].map(({ label, value, color, bg }) => (
                         <div key={label}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 700, marginBottom: 6 }}>
                             <span style={{ color }}>{label}</span>
-                            <span>{value}</span>
+                            <span style={{ color: g.text }}>{value}</span>
                           </div>
                           <div style={{ height: 6, background: bg, borderRadius: 10 }}>
                             <div style={{ width: '100%', height: '100%', background: color, borderRadius: 10, opacity: 0.2 }} />
@@ -465,9 +484,9 @@ export default function AdminDashboardPage() {
                       ))}
                     </div>
 
-                    <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid #f8fafc' }}>
-                      <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase', marginBottom: 8 }}>Top Conditions</div>
-                      <div style={{ fontSize: '0.875rem', color: '#1e293b', fontWeight: 600, fontStyle: 'italic' }}>
+                    <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: `1px solid ${g.divider}` }}>
+                      <div style={{ fontSize: '0.65rem', color: g.label, fontWeight: 700, textTransform: 'uppercase', marginBottom: 8 }}>Top Conditions</div>
+                      <div style={{ fontSize: '0.875rem', color: g.text, fontWeight: 600, fontStyle: 'italic' }}>
                         {region.topDiseases || 'N/A'}
                       </div>
                     </div>
@@ -475,35 +494,35 @@ export default function AdminDashboardPage() {
                 ))}
               </div>
 
-              <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #f1f5f9', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
-                <div style={{ padding: '1.5rem', borderBottom: '1px solid #f1f5f9' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>
+              <div style={{ background: g.cardBg, borderRadius: 20, border: `1px solid ${g.cardBdr}`, overflow: 'hidden', boxShadow: g.cardShd, backdropFilter: g.blur }}>
+                <div style={{ padding: '1.5rem', borderBottom: `1px solid ${g.divider}` }}>
+                  <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: g.text }}>
                     {analyticsMode === 'cases' ? 'Comparative Region Performance' : 'District Outbreak Comparison'}
                   </h3>
                 </div>
                 <div style={{ width: '100%', overflowX: 'auto' }}>
                   {analyticsMode === 'cases' ? (
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                      <thead style={{ background: '#f8fafc' }}>
+                      <thead style={{ background: g.insetBg }}>
                         <tr>
                           {['District', 'Total Traffic', 'Alert Rate', 'Sickle indexed', 'Primary Source'].map(h => (
-                            <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>{h}</th>
+                            <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: g.label, textTransform: 'uppercase' }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
                         {regionStats.map(region => (
-                          <tr key={region.name} style={{ borderBottom: '1px solid #f8fafc' }}>
-                            <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, color: '#1e293b' }}>{region.name}</td>
-                            <td style={{ padding: '1.25rem 1.5rem', color: '#475569' }}>{region.total}</td>
+                          <tr key={region.name} className="table-row" style={{ borderBottom: `1px solid ${g.divider}` }}>
+                            <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, color: g.text }}>{region.name}</td>
+                            <td style={{ padding: '1.25rem 1.5rem', color: g.text }}>{region.total}</td>
                             <td style={{ padding: '1.25rem 1.5rem' }}>
-                              <span style={{ color: region.critical > 0 ? '#ef4444' : '#64748b', fontWeight: 700 }}>
+                              <span style={{ color: region.critical > 0 ? '#ef4444' : g.muted, fontWeight: 700 }}>
                                 {Math.round((region.critical / (region.total || 1)) * 100)}%
                               </span>
                             </td>
-                            <td style={{ padding: '1.25rem 1.5rem', color: '#475569' }}>{region.sickle} cases</td>
+                            <td style={{ padding: '1.25rem 1.5rem', color: g.text }}>{region.sickle} cases</td>
                             <td style={{ padding: '1.25rem 1.5rem' }}>
-                              <span style={{ fontSize: '0.8125rem', padding: '4px 10px', borderRadius: 20, background: region.app >= region.ivr ? '#f0fdfa' : '#f5f3ff', color: region.app >= region.ivr ? '#0d9488' : '#7c3aed', fontWeight: 700 }}>
+                              <span style={{ fontSize: '0.8125rem', padding: '4px 10px', borderRadius: 20, background: region.app >= region.ivr ? 'rgba(16,185,129,0.12)' : 'rgba(124,58,237,0.12)', color: region.app >= region.ivr ? '#10b981' : '#7c3aed', fontWeight: 700 }}>
                                 {region.app >= region.ivr ? 'MOBILE APP' : 'IVR HELPLINE'}
                               </span>
                             </td>
@@ -513,25 +532,25 @@ export default function AdminDashboardPage() {
                     </table>
                   ) : (
                     <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                      <thead style={{ background: '#f8fafc' }}>
+                      <thead style={{ background: g.insetBg }}>
                         <tr>
                           {['District', 'Total Cases', 'Reported Deaths', 'Fatality Rate', 'Diseases Count'].map(h => (
-                            <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>{h}</th>
+                            <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: g.label, textTransform: 'uppercase' }}>{h}</th>
                           ))}
                         </tr>
                       </thead>
                       <tbody>
                         {outbreakRegionStats.map(region => (
-                          <tr key={region.name} style={{ borderBottom: '1px solid #f8fafc' }}>
-                            <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, color: '#1e293b' }}>{region.name}</td>
-                            <td style={{ padding: '1.25rem 1.5rem', color: '#475569' }}>{region.totalCases.toLocaleString()}</td>
+                          <tr key={region.name} className="table-row" style={{ borderBottom: `1px solid ${g.divider}` }}>
+                            <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, color: g.text }}>{region.name}</td>
+                            <td style={{ padding: '1.25rem 1.5rem', color: g.text }}>{region.totalCases.toLocaleString()}</td>
                             <td style={{ padding: '1.25rem 1.5rem', color: '#ef4444', fontWeight: 700 }}>{region.totalDeaths.toLocaleString()}</td>
                             <td style={{ padding: '1.25rem 1.5rem' }}>
-                              <span style={{ color: '#475569', fontWeight: 700 }}>
+                              <span style={{ color: g.text, fontWeight: 700 }}>
                                 {((region.totalDeaths / (region.totalCases || 1)) * 100).toFixed(2)}%
                               </span>
                             </td>
-                            <td style={{ padding: '1.25rem 1.5rem', color: '#475569' }}>{region.diseaseCount} types</td>
+                            <td style={{ padding: '1.25rem 1.5rem', color: g.text }}>{region.diseaseCount} types</td>
                           </tr>
                         ))}
                       </tbody>
@@ -541,7 +560,6 @@ export default function AdminDashboardPage() {
               </div>
             </div>
           )}
-
         </div>
       </main>
     </div>

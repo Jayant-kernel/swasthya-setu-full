@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useTheme } from '../hooks/useTheme'
 import { DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints, DMOSidebar } from './DMODashboardPage'
 
 const API = 'https://swasthya-setu-full.onrender.com/api/v1'
@@ -27,7 +28,22 @@ const DistrictHeatmap = lazy(() =>
 export default function DMOMapPage() {
     const { logout } = useAuth()
     const navigate = useNavigate()
+    const { isDark } = useTheme()
     const [isHovered, setIsHovered] = useState(false)
+
+    const g = useMemo(() => ({
+        text: 'var(--g-text)',
+        muted: 'var(--g-muted)',
+        label: 'var(--g-label)',
+        accent: 'var(--g-accent)',
+        cardBg: 'var(--g-card-bg)',
+        cardBdr: 'var(--g-card-bdr)',
+        cardShd: 'var(--g-card-shd)',
+        divider: 'var(--g-divider)',
+        insetBg: 'var(--g-inset-bg)',
+        blur: 'var(--g-blur)',
+        bg: 'var(--bg)',
+    }), [isDark])
 
     const _savedUser = useMemo(() => {
         try { return JSON.parse(localStorage.getItem('user') || '{}') } catch { return {} }
@@ -71,11 +87,11 @@ export default function DMOMapPage() {
     )
 
     return (
-        <div style={{ minHeight: '100dvh', background: '#f8fafc', display: 'flex', fontFamily: "'Inter', sans-serif" }}>
+        <div style={{ minHeight: '100dvh', background: g.bg, display: 'flex', fontFamily: "'Inter', sans-serif" }}>
             <style>{`
         * { box-sizing: border-box; }
-        .nav-link:hover { background: #f1f5f9; color: #3b82f6; }
-        .nav-link.active { background: #ebf5ff; color: #3b82f6; font-weight: 700; border-left: 3px solid #3b82f6; }
+        .nav-link:hover { background: ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}; color: ${g.accent}; }
+        .nav-link.active { background: ${isDark ? 'rgba(59,130,246,0.15)' : '#ebf5ff'}; color: #3b82f6; font-weight: 700; border-left: 3px solid #3b82f6; }
       `}</style>
 
             <DMOSidebar
@@ -88,12 +104,12 @@ export default function DMOMapPage() {
 
             <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
                 {/* Header */}
-                <header style={{ height: 72, background: '#fff', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0 }}>
+                <header style={{ height: 72, background: g.cardBg, borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0, backdropFilter: g.blur }}>
                     <div>
-                        <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#1e293b' }}>
+                        <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: g.text }}>
                             District Map — {dmoDistrict}
                         </h2>
-                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: 2 }}>
+                        <div style={{ fontSize: '0.75rem', color: g.muted, marginTop: 2 }}>
                             {loading ? 'Loading...' : `${mapPoints.length} triage clusters · ${districtOutbreaks.length} outbreak records`}
                         </div>
                     </div>
@@ -105,11 +121,11 @@ export default function DMOMapPage() {
                 {/* Map */}
                 <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
                     {loading ? (
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#64748b', fontSize: '0.9375rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: g.muted, fontSize: '0.9375rem' }}>
                             Loading map data...
                         </div>
                     ) : (
-                        <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center', color: '#64748b' }}>Loading map...</div>}>
+                        <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center', color: g.muted }}>Loading map...</div>}>
                             <DistrictHeatmap
                                 district={dmoDistrict}
                                 points={mapPoints}
@@ -122,8 +138,8 @@ export default function DMOMapPage() {
                     )}
 
                     {/* Legend */}
-                    <div style={{ position: 'absolute', bottom: 24, right: 24, background: '#fff', borderRadius: 12, padding: '1rem 1.25rem', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', zIndex: 1000, fontSize: '0.75rem', pointerEvents: 'none' }}>
-                        <div style={{ fontWeight: 800, color: '#1e293b', marginBottom: 8 }}>Legend</div>
+                    <div style={{ position: 'absolute', bottom: 24, right: 24, background: g.cardBg, borderRadius: 12, padding: '1rem 1.25rem', boxShadow: g.cardShd, zIndex: 1000, fontSize: '0.75rem', pointerEvents: 'none', border: `1px solid ${g.cardBdr}`, backdropFilter: g.blur }}>
+                        <div style={{ fontWeight: 800, color: g.text, marginBottom: 8 }}>Legend</div>
                         {[
                             { color: '#ef4444', label: 'Critical triage' },
                             { color: '#f59e0b', label: 'Moderate triage' },
@@ -132,7 +148,7 @@ export default function DMOMapPage() {
                         ].map(({ color, label, dashed }) => (
                             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                                 <div style={{ width: 12, height: 12, borderRadius: '50%', background: color, border: dashed ? `2px dashed ${color}` : 'none', flexShrink: 0 }} />
-                                <span style={{ color: '#475569' }}>{label}</span>
+                                <span style={{ color: g.muted }}>{label}</span>
                             </div>
                         ))}
                     </div>
