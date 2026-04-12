@@ -1,0 +1,123 @@
+<h2>New DMO Dashboard — Layout Direction</h2>
+<p class="subtitle">Pick the layout that feels best for a District Medical Officer viewing live patient data</p>
+
+<div class="cards">
+
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc;padding:12px;font-size:11px;color:#334155">
+      <div style="background:#6366f1;color:#fff;padding:6px 10px;border-radius:6px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between">
+        <span>DMO · Pune District</span><span>🔐 Admin | Logout</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:8px">
+        <div style="background:#fff;border-radius:4px;padding:6px;text-align:center;border:1px solid #e2e8f0">
+          <div style="font-size:16px;font-weight:800;color:#6366f1">24</div>
+          <div style="font-size:9px;color:#64748b">Total Patients</div>
+        </div>
+        <div style="background:#fff;border-radius:4px;padding:6px;text-align:center;border:1px solid #e2e8f0">
+          <div style="font-size:16px;font-weight:800;color:#f59e0b">8</div>
+          <div style="font-size:9px;color:#64748b">This Week</div>
+        </div>
+        <div style="background:#fff;border-radius:4px;padding:6px;text-align:center;border:1px solid #e2e8f0">
+          <div style="font-size:16px;font-weight:800;color:#ef4444">3</div>
+          <div style="font-size:9px;color:#64748b">High Risk</div>
+        </div>
+        <div style="background:#fff;border-radius:4px;padding:6px;text-align:center;border:1px solid #e2e8f0">
+          <div style="font-size:16px;font-weight:800;color:#22c55e">11</div>
+          <div style="font-size:9px;color:#64748b">Female</div>
+        </div>
+      </div>
+      <div style="background:#fff;border-radius:4px;padding:6px;border:1px solid #e2e8f0;height:90px;display:flex;align-items:center;justify-content:center;color:#94a3b8">
+        🗺️ Full-width map below stats
+      </div>
+      <div style="background:#fff;border-radius:4px;padding:6px;border:1px solid #e2e8f0;margin-top:5px;height:40px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:9px">
+        Patient Records Table
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Stacked (current style)</h3>
+      <p>Stats → Map → Table stacked vertically. Simple, familiar. Everything full-width. Easy to scan top to bottom.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc;padding:12px;font-size:11px;color:#334155">
+      <div style="background:#6366f1;color:#fff;padding:6px 10px;border-radius:6px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between">
+        <span>DMO · Pune District</span><span>🔐 Admin | Logout</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
+        <div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:5px">
+            <div style="background:#fff;border-radius:4px;padding:5px;text-align:center;border:1px solid #e2e8f0">
+              <div style="font-size:14px;font-weight:800;color:#6366f1">24</div>
+              <div style="font-size:8px;color:#64748b">Total</div>
+            </div>
+            <div style="background:#fff;border-radius:4px;padding:5px;text-align:center;border:1px solid #e2e8f0">
+              <div style="font-size:14px;font-weight:800;color:#ef4444">3</div>
+              <div style="font-size:8px;color:#64748b">High Risk</div>
+            </div>
+            <div style="background:#fff;border-radius:4px;padding:5px;text-align:center;border:1px solid #e2e8f0">
+              <div style="font-size:14px;font-weight:800;color:#f59e0b">8</div>
+              <div style="font-size:8px;color:#64748b">This Week</div>
+            </div>
+            <div style="background:#fff;border-radius:4px;padding:5px;text-align:center;border:1px solid #e2e8f0">
+              <div style="font-size:14px;font-weight:800;color:#22c55e">11</div>
+              <div style="font-size:8px;color:#64748b">Female</div>
+            </div>
+          </div>
+          <div style="background:#fff;border-radius:4px;padding:6px;border:1px solid #e2e8f0;height:95px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:9px">
+            Patient Records Table
+          </div>
+        </div>
+        <div style="background:#fff;border-radius:4px;padding:6px;border:1px solid #e2e8f0;display:flex;align-items:center;justify-content:center;color:#94a3b8;height:100%">
+          🗺️ Map (right panel, always visible)
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Side-by-side</h3>
+      <p>Stats + table on the left, map locked on the right. Both visible at once. Efficient for DMOs who reference the map constantly.</p>
+    </div>
+  </div>
+
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background:#f8fafc;padding:12px;font-size:11px;color:#334155">
+      <div style="background:#6366f1;color:#fff;padding:6px 10px;border-radius:6px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between">
+        <span>DMO · Pune District</span><span>🔐 Admin | Logout</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:5px">
+        <div style="background:#fff;border-radius:4px;padding:5px;text-align:center;border:1px solid #e2e8f0">
+          <div style="font-size:14px;font-weight:800;color:#6366f1">24</div>
+          <div style="font-size:8px;color:#64748b">Total</div>
+        </div>
+        <div style="background:#fff;border-radius:4px;padding:5px;text-align:center;border:1px solid #e2e8f0">
+          <div style="font-size:14px;font-weight:800;color:#ef4444">3</div>
+          <div style="font-size:8px;color:#64748b">High Risk</div>
+        </div>
+        <div style="background:#fff;border-radius:4px;padding:5px;text-align:center;border:1px solid #e2e8f0">
+          <div style="font-size:14px;font-weight:800;color:#f59e0b">8</div>
+          <div style="font-size:8px;color:#64748b">This Week</div>
+        </div>
+        <div style="background:#fff;border-radius:4px;padding:5px;text-align:center;border:1px solid #e2e8f0">
+          <div style="font-size:14px;font-weight:800;color:#22c55e">11</div>
+          <div style="font-size:8px;color:#64748b">Female</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:2fr 1fr;gap:5px">
+        <div style="background:#fff;border-radius:4px;padding:6px;border:1px solid #e2e8f0;height:100px;display:flex;align-items:center;justify-content:center;color:#94a3b8">
+          🗺️ Large map (left, 2/3 width)
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="background:#fee2e2;border-radius:4px;padding:5px;font-size:8px;color:#dc2626;font-weight:600">🔴 Alert: 3 high risk</div>
+          <div style="background:#fff;border-radius:4px;padding:5px;border:1px solid #e2e8f0;font-size:8px;color:#64748b;flex:1">Recent patients feed</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Map-first + Alert panel</h3>
+      <p>Stats on top, large map takes center stage, alert feed on the right. Best for outbreak monitoring — map is the hero.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:1rem">Click a card to select it, then tell me your choice in the terminal.</p>
