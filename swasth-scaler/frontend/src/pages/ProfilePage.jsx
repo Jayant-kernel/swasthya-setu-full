@@ -259,20 +259,13 @@ export default function ProfilePage() {
                   {/* Avatar */}
                   <div style={{ position: 'relative', flexShrink: 0 }}>
                     <div
-                      onClick={() => fileInputRef.current?.click()}
-                      style={{ width: 88, height: 88, borderRadius: '50%', background: g.insetBg, border: `3px solid ${g.cardBdr}`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: `0 0 0 4px ${g.accentL}` }}
-                      title="Change photo"
+                      style={{ width: 88, height: 88, borderRadius: '50%', background: g.insetBg, border: `3px solid ${g.cardBdr}`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 0 4px ${g.accentL}` }}
                     >
                       {avatar
                         ? <img src={avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         : <span style={{ fontSize: '2.25rem' }}>👩‍⚕️</span>
                       }
                     </div>
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      style={{ position: 'absolute', bottom: 2, right: 2, width: 26, height: 26, borderRadius: '50%', background: g.accent, border: `2px solid ${g.cardBg}`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#fff', boxShadow: '0 2px 8px rgba(16,185,129,0.5)' }}
-                    ><CameraIcon /></button>
-                    <input type="file" accept="image/*" style={{ display: 'none' }} ref={fileInputRef} onChange={handleFileChange} />
                   </div>
 
                   {/* Name / edit form */}
@@ -290,16 +283,6 @@ export default function ProfilePage() {
                           </div>
                         )}
                         {user?.employee_id && <div style={{ fontSize: '0.75rem', color: g.label, marginBottom: '1rem' }}>ID: {user.employee_id}</div>}
-                        {!forceOnboard && (
-                          <button
-                            onClick={() => setIsEditing(true)}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '0.5rem 1.125rem', borderRadius: 99, background: g.accentL, border: `1px solid ${g.accentB}`, color: g.accentT, fontWeight: 600, fontSize: '0.8125rem', cursor: 'pointer', transition: 'all .18s', fontFamily: "'Plus Jakarta Sans','DM Sans',sans-serif" }}
-                            onMouseEnter={e => e.currentTarget.style.background = isDark ? 'rgba(16,185,129,0.32)' : 'rgba(16,185,129,0.24)'}
-                            onMouseLeave={e => e.currentTarget.style.background = g.accentL}
-                          >
-                            <EditIcon /> Edit Profile
-                          </button>
-                        )}
                       </>
                     ) : (
                       <>
