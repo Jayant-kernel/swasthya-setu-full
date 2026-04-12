@@ -80,7 +80,7 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
   }, [])
 
   const isExpanded = isMobile ? sidebarOpen : isHovered
-  const sidebarWidth = isMobile ? (sidebarOpen ? 220 : 0) : (isHovered ? 220 : 72)
+  const sidebarWidth = isMobile ? (sidebarOpen ? 260 : 0) : (isHovered ? 260 : 80)
 
   const g = {
     panelBg: 'var(--g-panel-bg)',
@@ -140,7 +140,7 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
           height: '100%',
           boxShadow: isDark ? '2px 0 24px rgba(0,0,0,0.35)' : '2px 0 20px rgba(16,185,129,0.08)',
         }}>
-        <div style={{ width: 220, display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <div style={{ width: 260, display: 'flex', flexDirection: 'column', height: '100%' }}>
 
           <div style={{ padding: '1.125rem 1rem 0.875rem', borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>

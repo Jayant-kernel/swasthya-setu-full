@@ -1,44 +1,10 @@
-/*
- * ============================================================
- *  SUPABASE TABLE SETUP SQL
- *  Run this in the Supabase SQL Editor before using the app:
- * ============================================================
- *
- * create table if not exists public.triage_records (
- *   id            uuid primary key default gen_random_uuid(),
- *   user_id       uuid references auth.users(id) on delete cascade,
- *   patient_name  text not null,
- *   age           integer not null,
- *   gender        text not null,
- *   district      text not null,
- *   symptom_text  text not null,
- *   severity      text not null,
- *   symptoms      text[] not null,
- *   sickle_cell_risk boolean not null default false,
- *   brief         text not null,
- *   created_at    timestamptz default now()
- * );
- *
- * -- Enable Row Level Security
- * alter table public.triage_records enable row level security;
- *
- * -- Policy: users can only read/write their own records
- * create policy "Users manage own records"
- *   on public.triage_records
- *   for all
- *   using (auth.uid() = user_id)
- *   with check (auth.uid() = user_id);
- *
- * ============================================================
- */
-
 import React, { useState, useRef, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { usePatient } from '../context/PatientContext.jsx'
-import { useTriage } from '../hooks/useTriage'
-import { translateToEnglish, openai } from '../lib/openai'
-import DashboardLayout from '../components/DashboardLayout.jsx'
-import SignLanguageModal from '../components/SignLanguageModal.jsx'
+import { usePatient } from '../../context/PatientContext.jsx'
+import { useTriage } from '../../hooks/useTriage'
+import { translateToEnglish, openai } from '../../lib/openai'
+import DashboardLayout from '../../components/DashboardLayout.jsx'
+import SignLanguageModal from '../../components/SignLanguageModal.jsx'
 
 // ─── Duplicate-patient modal ──────────────────────────────────────────────────
 const SEV_STYLE = {
@@ -107,42 +73,11 @@ function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
 }
 
 const ALL_DISTRICTS = [
-  "Ahilyanagar",
-  "Akola",
-  "Amravati",
-  "Beed",
-  "Bhandara",
-  "Buldhana",
-  "Chandrapur",
-  "Chhatrapati Sambhajinagar",
-  "Dharashiv",
-  "Dhule",
-  "Gadchiroli",
-  "Gondia",
-  "Hingoli",
-  "Jalgaon",
-  "Jalna",
-  "Kolhapur",
-  "Latur",
-  "Mumbai City",
-  "Mumbai Suburban",
-  "Nagpur",
-  "Nanded",
-  "Nandurbar",
-  "Nashik",
-  "Palghar",
-  "Parbhani",
-  "Pune",
-  "Raigad",
-  "Ratnagiri",
-  "Sangli",
-  "Satara",
-  "Sindhudurg",
-  "Solapur",
-  "Thane",
-  "Wardha",
-  "Washim",
-  "Yavatmal"
+  "Ahilyanagar", "Akola", "Amravati", "Beed", "Bhandara", "Buldhana", "Chandrapur",
+  "Chhatrapati Sambhajinagar", "Dharashiv", "Dhule", "Gadchiroli", "Gondia", "Hingoli",
+  "Jalgaon", "Jalna", "Kolhapur", "Latur", "Mumbai City", "Mumbai Suburban", "Nagpur",
+  "Nanded", "Nandurbar", "Nashik", "Palghar", "Parbhani", "Pune", "Raigad", "Ratnagiri",
+  "Sangli", "Satara", "Sindhudurg", "Solapur", "Thane", "Wardha", "Washim", "Yavatmal"
 ]
 
 const HIGH_RISK = new Set(["Gadchiroli","Chandrapur","Nagpur","Wardha","Bhandara","Gondia","Amravati","Yavatmal","Akola","Washim","Buldhana","Nandurbar","Dhule"])
@@ -273,7 +208,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
   }
 
   const LANG_LABELS = {
-    'or-IN': { speak: 'लक्षणे କୁହନ୍ତୁ', recording: 'ଶୁଣୁଛି… କହନ୍ତୁ', translating: 'ଅନୁବାଦ ହେଉଛି…' },
+    'or-IN': { speak: 'ଲକ୍ଷଣ କୁହନ୍ତୁ', recording: 'ଶୁଣୁଛି… କହନ୍ତୁ', translating: 'ଅନୁବାଦ ହେଉଛି…' },
     'hi-IN': { speak: 'लक्षण बताएं', recording: 'सुन रहा हूँ… बोलिए', translating: 'अनुवाद हो रहा है…' },
     'en-IN': { speak: 'Speak symptoms', recording: 'Listening… speak now', translating: null },
   }
@@ -340,8 +275,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
     setForm((prev) => ({ ...prev, [name]: value }))
   }
 
-  // ── helpers ──────────────────────────────────────────────────────────────
-
   async function createNewPatient(patientObj) {
     const token = localStorage.getItem('access_token')
     const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
@@ -392,8 +325,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
     }
   }
 
-  // ── submit ────────────────────────────────────────────────────────────────
-
   async function handleSubmit(e) {
     e.preventDefault()
     setSaveError('')
@@ -414,7 +345,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
       longitude: form.longitude,
     }
 
-    // STEP 1: Check for duplicates before triage (only when patient not already resolved)
     if (!resolvedPatientId) {
       const token = localStorage.getItem('access_token')
       const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
@@ -429,12 +359,10 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
       const matches = existing || []
 
       if (matches.length > 0) {
-        // Sort each patient's triage records newest-first
         matches.forEach(p => {
           p.triage_records?.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
         })
 
-        // Run triage in parallel while user picks from modal
         const triagedPromise = runTriage(form.symptomText, form.district)
         const triaged = await triagedPromise
         if (!triaged) return
@@ -444,14 +372,12 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
         setShowResult(true)
         fetchPrecautions(triaged, form.district)
 
-        // Store pending save; modal callbacks will finish it
         pendingRef.current = { patientObj, triaged }
         setDuplicateMatches(matches)
         return
       }
     }
 
-    // No duplicate found (or patient already resolved) — run triage and save
     const triaged = await runTriage(form.symptomText, form.district)
     if (!triaged) return
 
@@ -474,7 +400,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
     await saveRecord(pid, patientObj, triaged)
   }
 
-  // Modal callbacks
   async function handleSelectExisting(patient) {
     setDuplicateMatches(null)
     const { patientObj, triaged } = pendingRef.current
@@ -521,7 +446,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
         />
       )}
 
-      {/* Form Island */}
       <main style={{ 
         flex: 1, 
         padding: 'clamp(1.25rem, 4vw, 2.5rem) clamp(1rem, 4vw, 2rem)', 
@@ -536,11 +460,10 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
         border: '1px solid var(--island-border)'
       }}>
         <form onSubmit={handleSubmit} noValidate>
-          {/* Patient Name */}
           <div className="form-group">
             <label className="form-label" htmlFor="name">
               Patient Name
-              <span className="odia-label">रुग्णाचे नाव</span>
+              <span className="odia-label">ରୋଗୀଙ୍କ ନାମ</span>
             </label>
             <input
               id="name"
@@ -555,12 +478,11 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             />
           </div>
 
-          {/* Age + Gender row */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(200px, 100%), 1fr))', gap: '0.875rem' }}>
             <div className="form-group">
               <label className="form-label" htmlFor="age">
                 Age
-                <span className="odia-label">वय</span>
+                <span className="odia-label">ବୟସ</span>
               </label>
               <input
                 id="age"
@@ -579,7 +501,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             <div className="form-group">
               <label className="form-label" htmlFor="gender">
                 Gender
-                <span className="odia-label">लिंग</span>
+                <span className="odia-label">ଲିଙ୍ଗ</span>
               </label>
               <select
                 id="gender"
@@ -589,18 +511,17 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                 onChange={handleChange}
               >
                 <option value="">Select</option>
-                <option value="Male">Male / पुरुष</option>
-                <option value="Female">Female / महिला</option>
-                <option value="Other">Other / इतर</option>
+                <option value="Male">Male / ପୁରୁଷ</option>
+                <option value="Female">Female / ମହିଳା</option>
+                <option value="Other">Other / ଅନ୍ୟାନ୍ୟ</option>
               </select>
             </div>
           </div>
 
-          {/* District */}
           <div className="form-group">
             <label className="form-label" htmlFor="district">
               District
-              <span className="odia-label">जिल्हा</span>
+              <span className="odia-label">ଜିଲ୍ଲା</span>
             </label>
             <select
               id="district"
@@ -610,12 +531,12 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
               onChange={handleChange}
             >
               <option value="">Select district</option>
-              <optgroup label="High-Risk Districts / ଉଚ୍ଚ-ଝୁଁକି जिल्हा">
+              <optgroup label="High-Risk Districts / ଉଚ୍ଚ-ଝୁଁକି ଜିଲ୍ଲା">
                 {ALL_DISTRICTS.filter((d) => HIGH_RISK.has(d)).map((d) => (
                   <option key={d} value={d}>{d} ⚠</option>
                 ))}
               </optgroup>
-              <optgroup label="Other Districts / इतर जिल्हा">
+              <optgroup label="Other Districts / ଅନ୍ୟ ଜିଲ୍ଲା">
                 {ALL_DISTRICTS.filter((d) => !HIGH_RISK.has(d)).map((d) => (
                   <option key={d} value={d}>{d}</option>
                 ))}
@@ -628,14 +549,12 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             )}
           </div>
 
-          {/* Visit History — only show when patient is positively identified (name+age+district matched) */}
           {resolvedPatientId && <VisitHistory name={form.name} patientId={resolvedPatientId} />}
 
-          {/* Symptoms */}
           <div className="form-group">
             <label className="form-label" htmlFor="symptomText">
               Describe Symptoms
-              <span className="odia-label">लक्षणे ବର୍ଣ୍ଣନା କରନ୍ତୁ</span>
+              <span className="odia-label">ଲକ୍ଷଣ ବର୍ଣ୍ଣନା କରନ୍ତୁ</span>
             </label>
             <textarea
               id="symptomText"
@@ -648,7 +567,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             />
           </div>
 
-          {/* GPS Location Capture */}
           <div className="form-group" style={{ marginBottom: '1.5rem' }}>
             <label className="form-label">
               GPS Location (Optional)
@@ -697,7 +615,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             </div>
           </div>
 
-          {/* Voice Input — Odia / Hindi / English */}
           <div
             style={{
               background: listening ? 'rgba(231,76,60,0.05)' : 'var(--color-bg)',
@@ -708,7 +625,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
               transition: 'border-color 0.2s, background 0.2s',
             }}
           >
-            {/* Language selector — always visible */}
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
               {[
                 { code: 'or-IN', label: 'ଓଡ଼ିଆ' },
@@ -800,7 +716,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             <div className="alert alert-error" style={{ marginBottom: '1rem' }}>⚠ {voiceError}</div>
           )}
 
-          {/* ISL Mode button */}
           <button
             type="button"
             onClick={() => setIslModalOpen(true)}
@@ -836,7 +751,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             }}
           />
 
-          {/* Errors */}
           {(triageError || saveError) && (
             <div className="alert alert-error" role="alert">
               <span aria-hidden="true">⚠</span>
@@ -844,7 +758,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             </div>
           )}
 
-          {/* Submit */}
           <button
             type="submit"
             disabled={triageLoading || saving}
@@ -872,7 +785,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           </button>
         </form>
 
-        {/* Triage Result */}
         {showResult && result && (
           <div style={{ marginTop: '1.5rem' }}>
             <TriageResultCard
@@ -881,7 +793,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
               precautionLoading={precautionLoading}
             />
 
-            {/* Sickle cell warning */}
             {result.severity === 'red' && result.sickle_cell_risk && (
               <div style={{ marginTop: '1rem', background: '#FFF7ED', border: '2px solid #F97316', borderRadius: 12, padding: '1rem' }}>
                 <div style={{ fontWeight: 700, fontSize: '1rem', color: '#C2410C', marginBottom: '0.375rem', fontFamily: "'Noto Sans Oriya', sans-serif" }}>
@@ -917,7 +828,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
   )
 }
 
-// ─── Precaution bullet emoji helper ──────────────────────────────────────────
 function precautionEmoji(text) {
   const t = text.toLowerCase()
   if (/water|fluid|ors|drink/.test(t))                     return '💧'
@@ -929,7 +839,6 @@ function precautionEmoji(text) {
   return '⚠'
 }
 
-// ─── Precaution Odia translations (approximate) ──────────────────────────────
 const ODIA_MAP = {
   '💧': 'ପ୍ରଚୁର ପାଣି ଓ ORS ଦିଅନ୍ତୁ',
   '🛏': 'ରୋଗୀଙ୍କୁ ବିଶ୍ରାମ ଦିଅନ୍ତୁ',
@@ -940,7 +849,6 @@ const ODIA_MAP = {
   '⚠': 'ସତର୍କ ରୁହନ୍ତୁ ଓ ନଜର ରଖନ୍ତୁ',
 }
 
-// ─── Expanded Triage Result Card with Precautions ────────────────────────────
 function TriageResultCard({ result, precautionData, precautionLoading }) {
   const sev = result.severity?.toLowerCase()
   const cardBg    = sev === 'red' ? 'var(--error-bg)' : sev === 'yellow' ? '#FFFBEB' : '#F0FDF4'
@@ -959,14 +867,12 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
   return (
     <div style={{ background: cardBg, border: `2px solid ${cardBorder}`, borderRadius: 14, overflow: 'hidden' }}>
 
-      {/* Priority badge */}
       {pc && (
         <div style={{ background: pc.bg, borderBottom: `1px solid ${pc.border}`, padding: '0.625rem 1rem', fontWeight: 700, fontSize: '0.875rem', color: pc.color, fontFamily: "'Noto Sans Oriya', sans-serif" }}>
           {pc.label}
         </div>
       )}
 
-      {/* Severity header */}
       <div style={{ padding: '1rem 1rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <div style={{ width: 40, height: 40, borderRadius: '50%', background: sevColor, color: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '1.25rem', flexShrink: 0 }}>
           {sevIcon}
@@ -980,7 +886,6 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
       </div>
 
       <div style={{ padding: '0 1rem 1rem' }}>
-        {/* Clinical summary */}
         {result.brief && (
           <div style={{ background: 'rgba(255,255,255,0.7)', borderLeft: `3px solid ${sevColor}`, borderRadius: 6, padding: '0.625rem 0.75rem', marginBottom: '0.875rem' }}>
             <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: sevColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.25rem' }}>Clinical Summary</div>
@@ -988,11 +893,10 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
           </div>
         )}
 
-        {/* Symptoms */}
         {result.symptoms?.length > 0 && (
           <div style={{ marginBottom: '0.875rem' }}>
             <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: sevColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.375rem', fontFamily: "'Noto Sans Oriya', sans-serif" }}>
-              Identified Symptoms / ଚିହ୍ନଟ लक्षणे
+              Identified Symptoms / ଚିହ୍ନଟ ଲକ୍ଷଣ
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
               {result.symptoms.map((s, i) => (
@@ -1004,7 +908,6 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
           </div>
         )}
 
-        {/* Precautions section */}
         <div style={{ borderTop: `1px solid ${cardBorder}`, paddingTop: '0.875rem' }}>
           <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: sevColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.625rem', fontFamily: "'Noto Sans Oriya', sans-serif" }}>
             ⚠ ସତର୍କତା / Precautions

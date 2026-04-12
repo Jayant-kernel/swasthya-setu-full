@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
+import { useAuth } from '../../hooks/useAuth'
 
 export default function DMOLoginPage() {
   const navigate = useNavigate()
@@ -38,8 +38,8 @@ export default function DMOLoginPage() {
           <h1 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>
             District Medical Officer Login
           </h1>
-          <div style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", opacity: 0.9 }}>
-            जिल्हा वैद्यकीय अधिकारी लॉगिन
+          <div style={{ fontWeight: 600, opacity: 0.9 }}>
+            ଜିଲ୍ଲା ଚିକିତ୍ସା ଅଧିକାରୀ ଲଗଇନ୍
           </div>
         </div>
 
@@ -49,7 +49,7 @@ export default function DMOLoginPage() {
           <div className="form-group">
             <label className="form-label">
               Email Address
-              <span className="marathi-label">ईमेल पत्ता</span>
+              <span className="marathi-label" style={{ marginLeft: '0.5rem', opacity: 0.6 }}>ଇମେଲ୍ ଠିକଣା</span>
             </label>
             <input
               type="email"
@@ -64,7 +64,7 @@ export default function DMOLoginPage() {
           <div className="form-group">
             <label className="form-label">
               Password
-              <span className="marathi-label">पासवर्ड</span>
+              <span className="marathi-label" style={{ marginLeft: '0.5rem', opacity: 0.6 }}>ପାସୱାର୍ଡ</span>
             </label>
             <input
               type="password"
@@ -77,7 +77,7 @@ export default function DMOLoginPage() {
           </div>
 
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In / लॉग इन करा'}
+            {loading ? 'Signing in...' : 'Sign In / ଲଗଇନ୍ କରନ୍ତୁ'}
           </button>
         </form>
 

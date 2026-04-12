@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth'
-import { useTheme } from '../context/ThemeContext.jsx'
-// logo import removed
-import DashboardLayout from '../components/DashboardLayout'
+import { useAuth } from '../../hooks/useAuth'
+import { useTheme } from '../../context/ThemeContext.jsx'
+import DashboardLayout from '../../components/DashboardLayout'
 
 /* ─── Constants ──────────────────────────────────────────── */
 const ALL_DISTRICTS = [
@@ -148,9 +147,9 @@ const NAV_ITEMS = [
 ]
 
 /* ═══════════════════════════════════════════════════════════
-   HomePage
+   ASHADashboardPage
    ═══════════════════════════════════════════════════════════ */
-export default function HomePage() {
+export default function ASHADashboardPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, logout } = useAuth()
@@ -225,14 +224,14 @@ export default function HomePage() {
   }
 
   const visible = patientResults.slice(0, showCount)
-  const SEV_ORDER = { red: 0, yellow: 1, green: 2, none: 3 }
+  const SEV_ORDER_IDX = { red: 0, yellow: 1, green: 2, none: 3 }
 
   const sortedResults = [...visible].sort((a, b) => {
     let valA, valB
     if (sortField === 'name') { valA = a.name?.toLowerCase(); valB = b.name?.toLowerCase() }
     else if (sortField === 'date') { valA = new Date(a.triage_records?.[0]?.created_at || 0); valB = new Date(b.triage_records?.[0]?.created_at || 0) }
     else if (sortField === 'district') { valA = a.district?.toLowerCase(); valB = b.district?.toLowerCase() }
-    else if (sortField === 'severity') { valA = SEV_ORDER[a.latestSeverity] ?? 3; valB = SEV_ORDER[b.latestSeverity] ?? 3 }
+    else if (sortField === 'severity') { valA = SEV_ORDER_IDX[a.latestSeverity] ?? 3; valB = SEV_ORDER_IDX[b.latestSeverity] ?? 3 }
     
     if (valA < valB) return sortOrder === 'asc' ? -1 : 1
     if (valA > valB) return sortOrder === 'asc' ? 1 : -1
@@ -287,7 +286,7 @@ export default function HomePage() {
     accentT: '#059669',
   };
 
-  const card = {
+  const cardStyle = {
     background: g.cardBg, backdropFilter: g.blur, WebkitBackdropFilter: g.blur,
     border: `1px solid ${g.cardBdr}`, borderRadius: 16, boxShadow: g.cardShd,
   }
@@ -323,7 +322,6 @@ export default function HomePage() {
 
   const topbar = (
     <>
-
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
         <div style={{ position: 'relative', width: '100%', maxWidth: 340 }}>
           <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: g.muted, pointerEvents: 'none' }}>
@@ -371,8 +369,6 @@ export default function HomePage() {
 
         <div style={{ padding: 'clamp(1rem, 3.5vw, 2.25rem)', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
-
-          {/* ── Stat chips row ── */}
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
             <button className="hp-chip" onClick={() => setActiveTab('ALL')} style={{
               padding: '0.4rem 1rem', borderRadius: 99, cursor: 'pointer', transition: 'all .18s',
@@ -409,7 +405,6 @@ export default function HomePage() {
             })}
           </div>
 
-          {/* ── View tabs ── */}
           <div style={{ display: 'flex', gap: '0.25rem' }}>
             {['Table', 'Board'].map(t => (
               <button key={t} onClick={() => setViewTab(t)} style={{
@@ -423,16 +418,14 @@ export default function HomePage() {
             ))}
           </div>
 
-          {/* Error */}
           {dashError && (
-            <div style={{ ...card, padding: '1rem', color: '#f87171', marginBottom: '1rem', fontSize: '0.875rem' }}>
+            <div style={{ ...cardStyle, padding: '1rem', color: '#f87171', marginBottom: '1rem', fontSize: '0.875rem' }}>
               {dashError} — <button onClick={() => { setDashError(null); fetchRecords() }} style={{ color: g.accent, background: 'none', border: 'none', cursor: 'pointer', fontWeight: 700 }}>Retry</button>
             </div>
           )}
 
-          {/* Skeleton */}
           {loading && patientResults.length === 0 && (
-            <div style={{ ...card, overflow: 'hidden' }}>
+            <div style={{ ...cardStyle, overflow: 'hidden' }}>
               {[1, 2, 3, 4].map(i => (
                 <div key={i} style={{ display: 'flex', gap: '1rem', padding: '1rem 1.5rem', borderBottom: `1px solid ${g.divider}`, opacity: .4 }}>
                   {[30, 20, 15, 12, 10].map((w, j) => <div key={j} style={{ height: 10, background: g.cardBdr, borderRadius: 4, flex: `0 0 ${w}%` }} />)}
@@ -441,18 +434,16 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* Empty */}
           {!loading && patientResults.length === 0 && !dashError && (
-            <div style={{ ...card, textAlign: 'center', padding: '4rem', color: g.muted }}>
+            <div style={{ ...cardStyle, textAlign: 'center', padding: '4rem', color: g.muted }}>
               <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>🏥</div>
               <div style={{ fontWeight: 700, fontSize: '1rem', color: g.text, marginBottom: '0.25rem' }}>No patients found</div>
               <div style={{ fontSize: '0.875rem' }}>Add a new patient to get started.</div>
             </div>
           )}
 
-          {/* ── TABLE VIEW ── */}
           {viewTab === 'Table' && sortedResults.length > 0 && (
-            <div style={{ ...card, overflow: 'hidden' }}>
+            <div style={{ ...cardStyle, overflow: 'hidden' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1.2fr 1fr 1fr 0.5fr', padding: '0.875rem 1.375rem', borderBottom: `1px solid ${g.divider}`, background: g.insetBg, backdropFilter: 'blur(8px)' }}>
                 {[
                   { label: 'Name', field: 'name' },
@@ -508,11 +499,10 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* ── BOARD VIEW ── */}
           {viewTab === 'Board' && groups.length > 0 && (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(280px,1fr))', gap: '1rem' }}>
               {groups.map(group => (
-                <div key={group.key} style={{ ...card, overflow: 'hidden' }}>
+                <div key={group.key} style={{ ...cardStyle, overflow: 'hidden' }}>
                   <div style={{ padding: '0.75rem 1rem', background: g.insetBg, borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <span style={{ width: 7, height: 7, borderRadius: '50%', background: group.dot, boxShadow: `0 0 6px ${group.dot}` }} />
                     <span style={{ fontWeight: 700, fontSize: '0.875rem', color: g.text }}>{group.label}</span>
@@ -538,7 +528,6 @@ export default function HomePage() {
             </div>
           )}
 
-          {/* Load more */}
           {patientResults.length > showCount && (
             <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
               <button onClick={() => setShowCount(c => c + 50)} style={{ padding: '0.625rem 1.5rem', borderRadius: 9, border: `1px solid ${g.accentB}`, color: g.accentT, background: g.accentL, backdropFilter: g.blur, WebkitBackdropFilter: g.blur, fontWeight: 700, cursor: 'pointer', fontSize: '0.875rem', transition: 'all .15s' }}>

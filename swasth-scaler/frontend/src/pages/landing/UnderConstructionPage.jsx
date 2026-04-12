@@ -23,11 +23,9 @@ export default function UnderConstructionPage() {
       position: 'relative',
       overflow: 'hidden',
     }}>
-      {/* Ambient glow blobs */}
       <div style={{ position: 'absolute', top: '15%', left: '20%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
       <div style={{ position: 'absolute', bottom: '10%', right: '15%', width: 350, height: 350, borderRadius: '50%', background: 'radial-gradient(circle, rgba(59,130,246,0.10) 0%, transparent 70%)', pointerEvents: 'none' }} />
 
-      {/* Glass Card */}
       <div style={{
         background: 'rgba(15, 23, 42, 0.55)',
         backdropFilter: 'blur(24px)',
@@ -42,7 +40,6 @@ export default function UnderConstructionPage() {
         position: 'relative',
         zIndex: 1,
       }}>
-        {/* Animated icon */}
         <div style={{
           width: 80, height: 80, borderRadius: '50%',
           background: 'linear-gradient(135deg, rgba(16,185,129,0.2), rgba(59,130,246,0.2))',
@@ -91,7 +88,6 @@ export default function UnderConstructionPage() {
           This page is currently under development. Our team is working hard to bring this feature to life. Check back soon!
         </p>
 
-        {/* Loading dots */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: '2.5rem' }}>
           {[0, 1, 2].map(i => (
             <div key={i} style={{
@@ -103,7 +99,6 @@ export default function UnderConstructionPage() {
           ))}
         </div>
 
-        {/* Back button */}
         <button
           onClick={() => navigate(-1)}
           style={{
@@ -139,13 +134,11 @@ export default function UnderConstructionPage() {
         </button>
       </div>
 
-      {/* Footer note */}
       <p style={{ marginTop: '2rem', color: 'rgba(255,255,255,0.25)', fontSize: '0.8125rem', position: 'relative', zIndex: 1 }}>
         Swasthya Setu · Bridging healthcare in rural India
       </p>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap');
         @keyframes pulse-glow {
           0%, 100% { box-shadow: 0 0 20px rgba(16,185,129,0.2); }
           50%       { box-shadow: 0 0 40px rgba(16,185,129,0.4), 0 0 60px rgba(16,185,129,0.1); }

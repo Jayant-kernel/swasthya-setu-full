@@ -1,7 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import LogoIcon from '../components/LogoIcon.jsx'
-import HeroSlider from '../components/HeroSlider.jsx'
+import LogoIcon from '../../components/LogoIcon.jsx'
+import HeroSlider from '../../components/HeroSlider.jsx'
 
 const marqueeItems = [
   { text: 'Health is not a privilege — it reaches every door', lang: 'en' },
@@ -50,8 +50,8 @@ export default function RoleSelectionPage() {
         <h1 style={{ color: 'var(--color-primary)', fontSize: '2.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>
           Swasthya Setu
         </h1>
-        <div style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", color: 'var(--color-text-muted)', fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem' }}>
-          आरोग्य सेतू
+        <div style={{ color: 'var(--color-text-muted)', fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem' }}>
+          ଆରୋଗ୍ୟ ସେତୁ
         </div>
       </div>
 
@@ -101,7 +101,8 @@ export default function RoleSelectionPage() {
         gap: '1.5rem',
         width: '100%',
         maxWidth: '1000px',
-        padding: '0 1rem'
+        padding: '0 1rem',
+        margin: '0 auto'
       }}>
         {roles.map(role => (
           <button
@@ -137,7 +138,7 @@ export default function RoleSelectionPage() {
               <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '0.25rem' }}>
                 {role.title}
               </h2>
-              <div style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", fontSize: '1.125rem', color: 'var(--color-primary)', fontWeight: 600 }}>
+              <div style={{ fontSize: '1.125rem', color: 'var(--color-primary)', fontWeight: 600 }}>
                 {role.titleOdia}
               </div>
             </div>

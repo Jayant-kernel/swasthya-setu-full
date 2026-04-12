@@ -2,82 +2,72 @@
  * ISLPage.jsx
  * ─────────────────────────────────────────────────────────────────────────────
  * ISL Symptom Detection page — 10-sign ISL classifier.
- *
- * Signs (from isl_sign_data.json):
- *   DARD, BUKHAR, SAR-DARD, PET-DARD, ULTI, KHANSI,
- *   SANS-TAKLEEF (CRITICAL), SEENE-DARD (CRITICAL), CHAKKAR, KAMZORI
- *
- * Layout:
- *   Left  → ISLCamera (live detection + skeleton overlay + sentence builder)
- *   Right → Urgency triage sidebar + session capture
- * ─────────────────────────────────────────────────────────────────────────────
  */
 
 import { useState } from 'react'
 import { useNavigate }       from 'react-router-dom'
-import ISLCamera             from '../components/ISLCamera'
+import ISLCamera             from '../../components/ISLCamera'
 
 const TEAL       = '#0F6E56'
 const TEAL_LIGHT = 'rgba(15,110,86,0.12)'
 
-// ─── Full sign metadata from isl_sign_data.json ──────────────────────────────
 const SIGNS_MAP = {
   'DARD': {
-    hindi: 'Dard / दर्द',
+    label: 'Dard / ଯନ୍ତ୍ରଣା',
     icd10: 'R52',
     urgency: 'high',
     differentials: ['Acute injury', 'Chronic condition', 'Post-surgical pain', 'Referred pain'],
   },
   'BUKHAR': {
-    hindi: 'Bukhar / बुखार',
+    label: 'Bukhar / ଜ୍ୱର',
     icd10: 'R50.9',
     urgency: 'high',
     differentials: ['Infection', 'Dengue', 'Malaria', 'Typhoid', 'COVID-19', 'Sepsis'],
   },
   'SAR-DARD': {
-    hindi: 'Sar Dard / सर दर्द',
+    label: 'Sar Dard / ମୁଣ୍ଡବିନ୍ଧା',
     icd10: 'R51',
     urgency: 'medium',
     differentials: ['Migraine', 'Hypertension', 'Meningitis', 'Tension headache', 'Sinusitis'],
   },
   'PET-DARD': {
-    hindi: 'Pet Dard / पेट दर्द',
+    label: 'Pet Dard / ପେଟ ଯନ୍ତ୍ରଣା',
     icd10: 'R10.9',
     urgency: 'high',
     differentials: ['Appendicitis', 'Gastritis', 'IBS', 'Renal colic', 'Pancreatitis', 'Ectopic pregnancy'],
   },
   'ULTI': {
-    hindi: 'Ulti / उल्टी',
+    label: 'Ulti / ବାନ୍ତି',
     icd10: 'R11.2',
     urgency: 'medium',
     differentials: ['GI infection', 'Pregnancy', 'Medication side-effect', 'Migraine', 'Meningitis'],
   },
   'KHANSI': {
-    hindi: 'Khansi / खाँसी',
+    label: 'Khansi / କାଶ',
     icd10: 'R05.9',
     urgency: 'medium',
     differentials: ['Upper RTI', 'Pneumonia', 'TB', 'Asthma', 'COVID-19'],
   },
   'SANS-TAKLEEF': {
-    hindi: 'Sans mein Takleef / सांस तकलीफ',
+    label: 'Sans Takleef / ନିଶ୍ୱାସ କଷ୍ଟ',
     icd10: 'R06.00',
     urgency: 'critical',
     differentials: ['Asthma attack', 'Pulmonary embolism', 'Anaphylaxis', 'MI', 'COPD exacerbation'],
   },
   'SEENE-DARD': {
-    hindi: 'Seene mein Dard / सीने में दर्द',
+    label: 'Seene Dard / ଛାତି ଯନ୍ତ୍ରଣା',
     icd10: 'R07.9',
     urgency: 'critical',
     differentials: ['Myocardial infarction', 'Angina', 'Aortic dissection', 'Pulmonary embolism'],
   },
   'CHAKKAR': {
-    hindi: 'Chakkar / चक्कर',
+    label: 'Chakkar / ମୁଣ୍ଡ ବୁଲାଇବା',
     icd10: 'R42',
     urgency: 'medium',
     differentials: ['BPPV', 'Vertigo', 'Hypotension', 'TIA', 'Anaemia'],
   },
   'KAMZORI': {
-    hindi: 'Kamzori / कमज़ोरी',
+    label: 'Kamzori / ଦୁର୍ବଳତା',
     icd10: 'R53.83',
     urgency: 'medium',
     differentials: ['Anaemia', 'Hypothyroidism', 'Diabetes', 'Depression', 'Chronic fatigue'],
@@ -91,7 +81,6 @@ const URGENCY_STYLE = {
   low:      { bg: '#EAF3DE', color: '#3B6D11', label: 'LOW' },
 }
 
-// ─── SVG hand diagrams (one per sign) ────────────────────────────────────────
 function SvgDard() {
   return (
     <svg viewBox="0 0 120 160" width="100%" height="100%">
@@ -226,7 +215,6 @@ const SIGN_DIAGRAMS = {
   'KAMZORI':      SvgKamzori,
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
 export default function ISLPage() {
   const navigate = useNavigate()
   const [detectedSymptoms, setDetectedSymptoms] = useState([])
@@ -242,7 +230,6 @@ export default function ISLPage() {
       return [{ sign: key, info, id: Date.now() }, ...prev]
     })
 
-    // Auto-surface CRITICAL signs
     if (info.urgency === 'critical') {
       setActiveDetail(key)
     }
@@ -256,7 +243,6 @@ export default function ISLPage() {
       fontFamily: 'Inter, system-ui, sans-serif',
     }}>
 
-      {/* ── Header ─────────────────────────────────────────────────────────── */}
       <header style={{
         maxWidth: 1280,
         margin: '0 auto 1.5rem',
@@ -291,7 +277,6 @@ export default function ISLPage() {
         </button>
       </header>
 
-      {/* ── Critical alert banner ───────────────────────────────────────────── */}
       {detectedSymptoms.some(s => s.info.urgency === 'critical') && (
         <div style={{
           maxWidth: 1280, margin: '0 auto 1.25rem',
@@ -314,21 +299,18 @@ export default function ISLPage() {
         </div>
       )}
 
-      {/* ── Main grid ──────────────────────────────────────────────────────── */}
       <main style={{
         maxWidth: 1280,
         margin: '0 auto',
         display: 'grid',
-        gridTemplateColumns: '1fr 360px',
+        gridTemplateColumns: 'minmax(0, 1fr) 360px',
         gap: '1.5rem',
       }}>
 
-        {/* ── Left: camera + sign reference grid ───────────────────────────── */}
         <section style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
           <ISLCamera onSymptomDetected={handleSymptomDetected} />
 
-          {/* Sign reference grid — 10 signs */}
           <div>
             <h3 style={{
               fontSize: '0.75rem', fontWeight: 700,
@@ -379,7 +361,7 @@ export default function ISLPage() {
                       {key}
                     </div>
                     <div style={{ fontSize: '0.58rem', color: '#64748b', marginTop: 1 }}>
-                      {info.hindi.split('/')[0].trim()}
+                      {info.label.split('/')[1]?.trim() || info.label}
                     </div>
                     <div style={{
                       marginTop: 4, display: 'inline-block',
@@ -394,7 +376,6 @@ export default function ISLPage() {
               })}
             </div>
 
-            {/* Expandable detail panel */}
             {activeDetail && SIGNS_MAP[activeDetail] && (
               <div style={{
                 marginTop: '0.75rem',
@@ -407,7 +388,7 @@ export default function ISLPage() {
                   <div>
                     <span style={{ fontWeight: 800, color: '#1e293b', fontSize: '1rem' }}>{activeDetail}</span>
                     <span style={{ marginLeft: 8, color: '#64748b', fontSize: '0.8rem' }}>
-                      {SIGNS_MAP[activeDetail].hindi}
+                      {SIGNS_MAP[activeDetail].label}
                     </span>
                   </div>
                   <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -443,7 +424,6 @@ export default function ISLPage() {
           </div>
         </section>
 
-        {/* ── Right: session capture sidebar ───────────────────────────────── */}
         <aside>
           <div style={{
             background: '#fff',
@@ -476,13 +456,13 @@ export default function ISLPage() {
                           </span>
                           <span style={{
                             fontSize: '0.6rem', padding: '1px 6px', borderRadius: 6,
-                            background: urgCfg.bg, color: urgCfg.color, fontWeight: 700,
+                            background: urgCfg.bg, color: cfg.color, fontWeight: 700,
                           }}>
                             {urgCfg.label}
                           </span>
                         </div>
                         <div style={{ fontSize: '0.7rem', color: '#64748b', marginTop: 2 }}>
-                          {s.info.hindi} · {s.info.icd10}
+                          {s.info.label} · {s.info.icd10}
                         </div>
                         <div style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: 3 }}>
                           {s.info.differentials.slice(0, 2).join(', ')}
@@ -532,7 +512,6 @@ export default function ISLPage() {
               </button>
             )}
 
-            {/* Urgency legend */}
             <div style={{
               marginTop: '1.25rem', padding: '0.85rem',
               background: '#f8fafc', borderRadius: 12,
@@ -556,7 +535,6 @@ export default function ISLPage() {
               ))}
             </div>
 
-            {/* Model status */}
             <div style={{
               marginTop: '0.75rem', padding: '0.75rem',
               background: '#f0fdf4', borderRadius: 10,
@@ -570,7 +548,7 @@ export default function ISLPage() {
                 <code style={{ background: '#dcfce7', padding: '1px 4px', borderRadius: 3, fontSize: '0.6rem' }}>
                   /public/tfjs_model/model.json
                 </code>
-                {' '}retrained on all 10 classes.
+                {' '}active.
               </div>
             </div>
           </div>

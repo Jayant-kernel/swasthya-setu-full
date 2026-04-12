@@ -1,40 +1,40 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-import { openai, getChatSystemPrompt } from '../lib/openai'
-import { usePatient } from '../context/PatientContext.jsx'
-import ChatBubble from '../components/ChatBubble.jsx'
-import DashboardLayout from '../components/DashboardLayout.jsx'
-import { useTheme } from '../context/ThemeContext.jsx'
+import { openai, getChatSystemPrompt } from '../../lib/openai'
+import { usePatient } from '../../context/PatientContext.jsx'
+import ChatBubble from '../../components/ChatBubble.jsx'
+import DashboardLayout from '../../components/DashboardLayout.jsx'
+import { useTheme } from '../../context/ThemeContext.jsx'
 
 const SEVERITY_BADGE = {
-  green:  { label: 'Stable / स्थिर',       cls: 'badge-green' },
-  yellow: { label: 'Moderate / मध्यम',        cls: 'badge-yellow' },
-  red:    { label: 'Emergency / तातडीने',       cls: 'badge-red' },
+  green:  { label: 'Stable / ସ୍ଥିର',       cls: 'badge-green' },
+  yellow: { label: 'Moderate / ମଧ୍ୟମ',        cls: 'badge-yellow' },
+  red:    { label: 'Emergency / ଜରୁରୀ',       cls: 'badge-red' },
 }
 
 const QUICK_REPLIES = [
-  { marathi: 'औषध काय द्यावे?', english: 'What medicine should I give?' },
-  { marathi: 'हे किती गंभीर आहे?',   english: 'How serious is this case?' },
-  { marathi: 'डॉक्टरांकडे पाठवू का?', english: 'Should I refer to a doctor?' },
+  { odia: 'କି ଔଷଧ ଦେବାକୁ ପଡିବ?', english: 'What medicine should I give?' },
+  { odia: 'ଏହା କେତେ ଗୁରୁତର?',   english: 'How serious is this case?' },
+  { odia: 'ଡାକ୍ତରଙ୍କ ପାଖକୁ ପଠାଇବି କି?', english: 'Should I refer to a doctor?' },
 ]
 
 function buildGreeting(patient, triage) {
   const sickleNote = triage.sickle_cell_risk
-    ? '\n\n🔴 सतर्कता: या रुग्णाला त्वरित जिल्हा रुग्णालयात पाठवा.'
+    ? '\n\n🔴 ସତର୍କତା: ଏହି ରୋଗୀଙ୍କୁ ତୁରନ୍ତ ଜିଲ୍ଲା ଡାକ୍ତରଖାନାକୁ ପଠାନ୍ତୁ।'
     : ''
 
   const historyNote = (patient.history && patient.history.length > 1)
-    ? `\n\nया रुग्णाकडे पूर्वीच्या **${patient.history.length}** भेटींचा इतिहास आहे.`
+    ? `\n\nଏହି ରୋଗୀଙ୍କର ପୂର୍ବର **${patient.history.length}** ପରିଦର୍ଶନର ଇତିହାସ ଅଛି।`
     : ''
 
-  return `नमस्कार! मी तुमचा AI आरोग्य सहाय्यक आहे.
-रुग्ण **${patient.name}** बद्दल तुमचे काय प्रश्न आहेत?
+  return `ନମସ୍କାର! ମୁଁ ଆପଣଙ୍କର AI ସ୍ୱାସ୍ଥ୍ୟ ସହାୟକ। 
+ରୋଗୀ **${patient.name}** ବିଷୟରେ ଆପଣଙ୍କର କ’ଣ ପ୍ରଶ୍ନ ଅଛି?
 
-**ट्रायज निकाल: ${triage.severity.toUpperCase()}**
+**ଟ୍ରାୟଜ୍ ଫଳାଫଳ: ${triage.severity.toUpperCase()}**
 ${triage.brief}
 
-लक्षणे: ${triage.symptoms.join(', ')}${sickleNote}${historyNote}`
+ଲକ୍ଷଣ: ${triage.symptoms.join(', ')}${sickleNote}${historyNote}`
 }
 
 export default function ChatPage() {
@@ -196,7 +196,6 @@ export default function ChatPage() {
 
       const apiMessages = [
         { role: 'system', content: systemPrompt },
-        // Include only user/assistant turns (not the greeting which can contain markdown)
         ...updatedMessages.map((m) => ({ role: m.role, content: m.content })),
       ]
 
@@ -291,7 +290,6 @@ export default function ChatPage() {
 
   const severityColor = { green: 'var(--color-green)', yellow: 'var(--color-yellow)', red: 'var(--color-red)' }[triageResult.severity] || 'var(--color-green)'
 
-  /* Chat area Badge */
   const patientBadge = (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingLeft: '0.75rem', borderLeft: `2px solid ${clr.border}`, marginLeft: '0.25rem', minWidth: 0 }}>
       <span style={{ fontWeight: 700, fontSize: '0.875rem', color: clr.text }}>{patientData.name}</span>
@@ -303,7 +301,6 @@ export default function ChatPage() {
     <DashboardLayout topbarContent={patientBadge} contentStyle={{ display: 'flex', flexDirection: 'column', height: '100%', padding: 0 }}>
       <div style={{ flex: 1, display: 'flex', overflow: 'hidden', height: '100%' }}>
 
-        {/* Sidebar — patient summary */}
         <aside className="chat-sidebar" style={{
           width: 280,
           flexShrink: 0,
@@ -383,7 +380,6 @@ export default function ChatPage() {
             </>
           )}
 
-          {/* ── Switch Patient button ── */}
           <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
             <div style={{ height: 1, background: `${clr.border}`, marginBottom: '1rem' }} />
             <button
@@ -419,10 +415,8 @@ export default function ChatPage() {
           </div>
         </aside>
 
-        {/* Chat area */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
 
-          {/* Mobile Patient Info button */}
           <button
             className="chat-info-btn"
             onClick={() => setShowMobileInfo(true)}
@@ -443,7 +437,7 @@ export default function ChatPage() {
             Patient Info
             <span style={{ background: severityColor, color: '#fff', borderRadius: 99, padding: '0.1rem 0.5rem', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase' }}>{triageResult.severity}</span>
           </button>
-          {/* Messages */}
+          
           <div
             className="chat-messages-area"
             style={{ flex: 1, overflowY: 'auto', padding: '1.5rem 2rem', display: 'flex', flexDirection: 'column' }}
@@ -480,23 +474,21 @@ export default function ChatPage() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick reply chips */}
           <div className="chat-quick-replies" style={{ padding: '0.5rem 2rem 0.5rem', background: clr.surface, backdropFilter: clr.blur, WebkitBackdropFilter: clr.blur, display: 'flex', gap: '0.5rem', flexWrap: 'wrap', borderTop: `1px solid ${clr.border}` }}>
             {QUICK_REPLIES.map((chip) => (
               <button
-                key={chip.marathi}
+                key={chip.odia}
                 type="button"
                 onClick={() => sendMessage(chip.english)}
                 disabled={loading}
-                style={{ padding: '0.625rem 1.25rem', borderRadius: '999px', border: '1px solid var(--color-primary)', background: 'var(--color-surface)', color: 'var(--color-primary)', fontSize: '0.875rem', fontWeight: 600, cursor: loading ? 'default' : 'pointer', fontFamily: "'Noto Sans Devanagari', sans-serif", whiteSpace: 'nowrap', transition: 'all 0.2s', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+                style={{ padding: '0.625rem 1.25rem', borderRadius: '999px', border: '1px solid var(--color-primary)', background: 'var(--color-surface)', color: 'var(--color-primary)', fontSize: '0.875rem', fontWeight: 600, cursor: loading ? 'default' : 'pointer', fontFamily: "'Noto Sans Oriya', sans-serif", whiteSpace: 'nowrap', transition: 'all 0.2s', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
               >
-                {chip.marathi}
+                {chip.odia}
               </button>
             ))}
-            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', alignSelf: 'center', fontFamily: "'Noto Sans Devanagari', sans-serif" }} className="hide-mobile">मराठी किंवा इंग्रजीमध्ये लिहा</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', alignSelf: 'center', fontFamily: "'Noto Sans Oriya', sans-serif" }} className="hide-mobile">ଓଡ଼ିଆ କିମ୍ବା ଇଂରାଜୀରେ ଲେଖନ୍ତୁ</span>
           </div>
 
-          {/* Input */}
           <form
             onSubmit={handleSend}
             className="chat-input-area"
@@ -515,7 +507,7 @@ export default function ChatPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask a question… / प्रश्न विचारा…"
+              placeholder="Ask a question… / ପ୍ରଶ୍ନ ପଚାରନ୍ତୁ…"
               disabled={loading}
               rows={1}
               style={{
@@ -576,16 +568,13 @@ export default function ChatPage() {
           </form>
         </div>
       </div>
-      {/* Mobile Drawer */}
       {showMobileInfo && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }} onClick={() => setShowMobileInfo(false)}>
            <div style={{ position: 'absolute', right: 0, top: 0, height: '100%', width: '85%', maxWidth: 320, background: clr.bg, boxShadow: '-4px 0 20px rgba(0,0,0,0.2)', padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }} onClick={e => e.stopPropagation()}>
-              {/* Content here similar to sidebar but mobile optimized */}
               <button 
                 onClick={() => { setShowMobileInfo(false); setPatientData({}); setTriageResult(null); }}
                 style={{ width: '100%', padding: '0.75rem', borderRadius: 10, background: '#ef4444', color: '#fff', border: 'none', fontWeight: 700 }}
               >Switch Patient</button>
-              {/* ... existing mobile info fields ... */}
            </div>
         </div>
       )}

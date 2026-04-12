@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { openai } from '../lib/openai'
-import ChatBubble from '../components/ChatBubble.jsx'
-import Sidebar from '../components/Sidebar.jsx'
+import { openai } from '../../lib/openai'
+import ChatBubble from '../../components/ChatBubble.jsx'
+import DashboardLayout from '../../components/DashboardLayout.jsx'
+import { useTheme } from '../../context/ThemeContext.jsx'
 
 const SYSTEM_PROMPT = `You are a maternal health assistant for ASHA (Accredited Social Health Activist) workers in rural Odisha, India.
 
@@ -36,6 +37,7 @@ Ask me anything about maternal or newborn health.`
 }
 
 export default function ChildbirthPage() {
+  const { isDark } = useTheme()
   const [messages, setMessages] = useState([{ role: 'assistant', content: buildGreeting() }])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -112,40 +114,27 @@ export default function ChildbirthPage() {
     }
   }
 
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--color-bg)' }}>
-      <Sidebar />
-
-      {/* Header */}
-      <header style={{
-        background: 'var(--color-surface)',
-        borderBottom: '1px solid var(--color-border)',
-        padding: '0.875rem 1.5rem 0.875rem 4rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.875rem',
-        flexShrink: 0,
-        boxShadow: 'var(--shadow)',
-      }}>
-        <div style={{
-          width: 40, height: 40, borderRadius: 10,
+  const header = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+       <div style={{
+          width: 32, height: 32, borderRadius: 8,
           background: 'linear-gradient(135deg, #e91e8c 0%, #c2185b 100%)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
         }}>
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke='var(--surface)' strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke='#fff' strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 2C8 2 5 5 5 9c0 5 7 13 7 13s7-8 7-13c0-4-3-7-7-7z" />
             <circle cx="12" cy="9" r="2.5" />
           </svg>
         </div>
         <div>
-          <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--color-text)' }}>Childbirth Assistant</div>
-          <div style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
-            ପ୍ରସବ ସହାୟକ · Maternal & Newborn Care
-          </div>
+          <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--g-text)' }}>Childbirth Assistant</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--g-muted)', fontWeight: 600 }}>ପ୍ରସବ ସହାୟକ</div>
         </div>
+    </div>
+  )
 
-        {/* Quick reference chips */}
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+  const quickChips = (
+    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', padding: '0 1.25rem 0.75rem' }}>
           {['Danger Signs', 'ANC Visits', 'Newborn Care', 'Breastfeeding'].map(topic => (
             <button
               key={topic}
@@ -153,23 +142,25 @@ export default function ChildbirthPage() {
               style={{
                 padding: '0.3rem 0.75rem',
                 borderRadius: 20,
-                border: '1.5px solid var(--color-border)',
-                background: 'var(--color-bg)',
-                fontSize: '0.8125rem',
-                color: 'var(--color-text)',
+                border: '1.5px solid var(--g-divider)',
+                background: 'var(--g-btn)',
+                fontSize: '0.75rem',
+                color: 'var(--g-text)',
                 cursor: 'pointer',
-                fontWeight: 500,
-                transition: 'border-color 0.15s, background 0.15s',
+                fontWeight: 600,
+                transition: 'all 0.15s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.color = 'var(--color-primary)' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.color = 'var(--color-text)' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--g-accent)'; e.currentTarget.style.background = 'var(--g-hover)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--g-divider)'; e.currentTarget.style.background = 'var(--g-btn)' }}
             >
               {topic}
             </button>
           ))}
         </div>
-      </header>
+  )
 
+  return (
+    <DashboardLayout topbarContent={header} sidebarExtra={quickChips} contentStyle={{ display: 'flex', flexDirection: 'column', height: '100dvh', padding: 0 }}>
       {/* Messages */}
       <div
         style={{ flex: 1, overflowY: 'auto', padding: '1.5rem 2rem', display: 'flex', flexDirection: 'column' }}
@@ -183,19 +174,21 @@ export default function ChildbirthPage() {
           <div style={{
             display: 'flex', alignItems: 'center', gap: '0.5rem',
             padding: '0.75rem 1rem',
-            background: 'var(--color-white)',
-            border: '1.5px solid var(--color-border)',
+            background: 'var(--g-card-bg)',
+            border: '1.5px solid var(--g-card-bdr)',
             borderRadius: '6px 12px 12px 12px',
-            maxWidth: 200, boxShadow: 'var(--shadow)',
+            maxWidth: 200, boxShadow: 'var(--g-card-shd)',
             animation: 'fadeIn 0.2s ease',
           }}>
             <TypingDots />
-            <span style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)' }}>Thinking…</span>
+            <span style={{ fontSize: '0.8125rem', color: 'var(--g-muted)' }}>Thinking…</span>
           </div>
         )}
 
         {error && (
-          <div className="alert alert-error" style={{ marginTop: '0.5rem', maxWidth: 500 }} role="alert">
+          <div style={{ 
+            marginTop: '0.5rem', maxWidth: 500, padding: '0.75rem 1rem', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, color: '#ef4444', fontSize: '0.875rem' 
+          }} role="alert">
             ⚠ {error}
           </div>
         )}
@@ -208,27 +201,27 @@ export default function ChildbirthPage() {
         onSubmit={handleSend}
         style={{
           padding: '1rem 2rem',
-          borderTop: '1px solid var(--color-border)',
-          background: 'var(--color-surface)',
+          borderTop: '1px solid var(--g-divider)',
+          background: 'var(--g-panel-bg)',
+          backdropFilter: 'blur(16px)',
           display: 'flex',
           gap: '0.75rem',
           alignItems: 'flex-end',
         }}
       >
-        {/* Voice button */}
         <button
           type="button"
           onClick={listening ? stopVoice : startVoice}
           title={listening ? 'Stop recording' : 'Voice input'}
           style={{
-            width: 46, height: 46, flexShrink: 0, borderRadius: 10, border: 'none',
-            background: listening ? '#e74c3c' : '#f39c12',
-            color: 'var(--surface)', fontSize: '1.25rem',
+            width: 42, height: 42, flexShrink: 0, borderRadius: 10, border: 'none',
+            background: listening ? '#ef4444' : 'var(--g-accent)',
+            color: '#fff', fontSize: '1rem',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer',
-            boxShadow: listening ? '0 0 0 4px rgba(231,76,60,0.25)' : '0 2px 8px rgba(243,156,18,0.4)',
+            boxShadow: listening ? '0 0 0 4px rgba(239,68,68,0.25)' : '0 4px 12px rgba(16,185,129,0.3)',
             animation: listening ? 'pulse 1.2s ease-in-out infinite' : 'none',
-            transition: 'background 0.2s',
+            transition: 'all 0.2s',
           }}
           aria-label={listening ? 'Stop voice input' : 'Start voice input'}
         >
@@ -244,37 +237,38 @@ export default function ChildbirthPage() {
           disabled={loading}
           rows={1}
           style={{
-            flex: 1, padding: '0.875rem 1.125rem',
-            border: '1.5px solid var(--color-border)',
-            borderRadius: 'var(--radius)',
+            flex: 1, padding: '0.75rem 1rem',
+            border: '1.5px solid var(--g-divider)',
+            borderRadius: 12,
             fontSize: '0.9375rem', lineHeight: 1.5,
-            resize: 'none', background: 'var(--color-bg)',
-            color: 'var(--color-text)', maxHeight: 140, overflowY: 'auto',
-            fontFamily: 'inherit', transition: 'border-color var(--transition)',
+            resize: 'none', background: 'var(--g-btn)',
+            color: 'var(--g-text)', maxHeight: 120, overflowY: 'auto',
+            fontFamily: 'inherit', transition: 'all 0.2s',
+            outline: 'none',
           }}
-          onFocus={e => e.target.style.borderColor = 'var(--color-primary)'}
-          onBlur={e => e.target.style.borderColor = 'var(--color-border)'}
-          onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 140) + 'px' }}
+          onFocus={e => e.target.style.borderColor = 'var(--g-accent)'}
+          onBlur={e => e.target.style.borderColor = 'var(--g-divider)'}
+          onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px' }}
         />
 
         <button
           type="submit"
           disabled={loading || !input.trim()}
           style={{
-            padding: '0.875rem 1.5rem', borderRadius: 'var(--radius)',
-            background: loading || !input.trim() ? 'var(--color-border)' : 'var(--color-primary)',
-            color: 'var(--surface)', fontWeight: 600, fontSize: '0.9375rem',
+            height: 42, padding: '0 1.25rem', borderRadius: 10,
+            background: loading || !input.trim() ? 'var(--g-divider)' : 'var(--g-accent)',
+            color: '#fff', fontWeight: 700, fontSize: '0.875rem',
             border: 'none', cursor: loading || !input.trim() ? 'not-allowed' : 'pointer',
             flexShrink: 0, display: 'flex', alignItems: 'center', gap: '0.5rem',
-            transition: 'background var(--transition)',
+            transition: 'all 0.2s',
           }}
         >
-          {loading ? <span className="spinner" style={{ width: 18, height: 18 }} /> : (
-            <>Send <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg></>
+          {loading ? <span className="spinner" style={{ width: 16, height: 16 }} /> : (
+            <>Send <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="22" y1="2" x2="11" y2="13" /><polygon points="22 2 15 22 11 13 2 9 22 2" /></svg></>
           )}
         </button>
       </form>
-    </div>
+    </DashboardLayout>
   )
 }
 
@@ -283,8 +277,8 @@ function TypingDots() {
     <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
       {[0, 1, 2].map(i => (
         <span key={i} style={{
-          width: 7, height: 7, borderRadius: '50%',
-          background: 'var(--color-text-muted)', display: 'inline-block',
+          width: 6, height: 6, borderRadius: '50%',
+          background: 'var(--g-muted)', display: 'inline-block',
           animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
         }} />
       ))}
