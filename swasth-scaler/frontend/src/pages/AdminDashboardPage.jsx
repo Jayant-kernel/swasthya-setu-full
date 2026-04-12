@@ -118,6 +118,30 @@ export default function AdminDashboardPage() {
     return { total, critical, sickle, districts }
   }, [triageRecords])
 
+  const regionStats = useMemo(() => {
+    const groups = {}
+    triageRecords.forEach(r => {
+      const d = r.district || 'General'
+      if (!groups[d]) {
+        groups[d] = { 
+          name: d, total: 0, critical: 0, moderate: 0, stable: 0, 
+          sickle: 0, app: 0, ivr: 0, lastUpdate: r.created_at 
+        }
+      }
+      groups[d].total++
+      if (r.severity === 'red' || Number(r.severity) >= 7) groups[d].critical++
+      else if (r.severity === 'yellow' || (Number(r.severity) >= 4 && Number(r.severity) <= 6)) groups[d].moderate++
+      else groups[d].stable++
+      
+      if (r.sickle_cell_risk) groups[d].sickle++
+      if (r.source === 'helpline_call') groups[d].ivr++
+      else groups[d].app++
+      
+      if (r.created_at > groups[d].lastUpdate) groups[d].lastUpdate = r.created_at
+    })
+    return Object.values(groups).sort((a, b) => b.total - a.total)
+  }, [triageRecords])
+
   const mapPoints = useMemo(() => {
     const withGps = triageRecords.filter(r => r.latitude && r.longitude);
     const withoutGps = triageRecords.filter(r => !r.latitude || !r.longitude);
@@ -191,7 +215,7 @@ export default function AdminDashboardPage() {
           <div onClick={() => setActiveView('map')} className={`nav-link ${activeView === 'map' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
             <MapIcon /> <span>National Map</span>
           </div>
-          <div className="nav-link" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
+          <div onClick={() => setActiveView('analytics')} className={`nav-link ${activeView === 'analytics' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: '#64748b', cursor: 'pointer', marginBottom: 4 }}>
             <GlobeIcon /> <span>Region Analytics</span>
           </div>
         </nav>
@@ -313,6 +337,117 @@ export default function AdminDashboardPage() {
                         <DistrictHeatmap district="India" points={mapPoints} center={INDIA_CENTER} zoom={5} />
                     </Suspense>
                 </div>
+            </div>
+          )}
+
+          {activeView === 'analytics' && (
+            <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <div>
+                  <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1e293b', margin: '0 0 0.25rem' }}>Regional Data Insights</h1>
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.9375rem' }}>Performance and severity breakdown aggregated by active districts.</p>
+                </div>
+              </div>
+
+              {/* District Cards Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+                {regionStats.map(region => (
+                  <div key={region.name} style={{ background: '#fff', borderRadius: 20, padding: '1.5rem', border: '1px solid #f1f5f9', boxShadow: '0 4px 15px rgba(0,0,0,0.02)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>{region.name}</h3>
+                        <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: 4 }}>Last updated: {new Date(region.lastUpdate).toLocaleTimeString()}</div>
+                      </div>
+                      <div style={{ background: '#eef2ff', color: '#4f46e5', padding: '4px 10px', borderRadius: 20, fontSize: '0.75rem', fontWeight: 800 }}>
+                        {region.total} CASES
+                      </div>
+                    </div>
+
+                    {/* Progress Bars for Severity */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 700, marginBottom: 6 }}>
+                          <span style={{ color: '#ef4444' }}>CRITICAL</span>
+                          <span>{region.critical} ({Math.round((region.critical/region.total)*100)}%)</span>
+                        </div>
+                        <div style={{ height: 6, background: '#fef2f2', borderRadius: 10 }}>
+                          <div style={{ width: `${(region.critical/region.total)*100}%`, height: '100%', background: '#ef4444', borderRadius: 10 }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 700, marginBottom: 6 }}>
+                          <span style={{ color: '#f59e0b' }}>MODERATE</span>
+                          <span>{region.moderate} ({Math.round((region.moderate/region.total)*100)}%)</span>
+                        </div>
+                        <div style={{ height: 6, background: '#fffbeb', borderRadius: 10 }}>
+                          <div style={{ width: `${(region.moderate/region.total)*100}%`, height: '100%', background: '#f59e0b', borderRadius: 10 }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', fontWeight: 700, marginBottom: 6 }}>
+                          <span style={{ color: '#10b981' }}>STABLE</span>
+                          <span>{region.stable} ({Math.round((region.stable/region.total)*100)}%)</span>
+                        </div>
+                        <div style={{ height: 6, background: '#f0fdf4', borderRadius: 10 }}>
+                          <div style={{ width: `${(region.stable/region.total)*100}%`, height: '100%', background: '#10b981', borderRadius: 10 }} />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: '1.5rem', paddingTop: '1.25rem', borderTop: '1px solid #f8fafc', display: 'flex', justifyContent: 'space-between' }}>
+                      <div style={{ textAlign: 'center' }}>
+                         <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b' }}>{region.sickle}</div>
+                         <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>Sickle Risk</div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                         <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b' }}>{region.app}</div>
+                         <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>App (Users)</div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                         <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1e293b' }}>{region.ivr}</div>
+                         <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontWeight: 700, textTransform: 'uppercase' }}>IVR (Calls)</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* District Table Breakdown */}
+              <div style={{ background: '#fff', borderRadius: 20, border: '1px solid #f1f5f9', overflow: 'hidden', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                 <div style={{ padding: '1.5rem', borderBottom: '1px solid #f1f5f9' }}>
+                    <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>Comparative Region Performance</h3>
+                 </div>
+                 <div style={{ width: '100%', overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead style={{ background: '#f8fafc' }}>
+                        <tr>
+                          {['District', 'Total Traffic', 'Alert Rate', 'Sickle indexed', 'Primary Source'].map(h => (
+                            <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {regionStats.map(region => (
+                          <tr key={region.name} style={{ borderBottom: '1px solid #f8fafc' }}>
+                            <td style={{ padding: '1.25rem 1.5rem', fontWeight: 700, color: '#1e293b' }}>{region.name}</td>
+                            <td style={{ padding: '1.25rem 1.5rem', color: '#475569' }}>{region.total}</td>
+                            <td style={{ padding: '1.25rem 1.5rem' }}>
+                               <span style={{ color: region.critical > 0 ? '#ef4444' : '#64748b', fontWeight: 700 }}>
+                                  {Math.round((region.critical / region.total)*100)}% 
+                               </span>
+                            </td>
+                            <td style={{ padding: '1.25rem 1.5rem', color: '#475569' }}>{region.sickle} cases</td>
+                            <td style={{ padding: '1.25rem 1.5rem' }}>
+                               <span style={{ fontSize: '0.8125rem', padding: '4px 10px', borderRadius: 20, background: region.app >= region.ivr ? '#f0fdfa' : '#f5f3ff', color: region.app >= region.ivr ? '#0d9488' : '#7c3aed', fontWeight: 700 }}>
+                                 {region.app >= region.ivr ? 'MOBILE APP' : 'IVR HELPLINE'}
+                               </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                 </div>
+              </div>
             </div>
           )}
 
