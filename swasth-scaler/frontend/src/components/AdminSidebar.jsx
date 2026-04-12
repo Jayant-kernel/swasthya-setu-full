@@ -2,7 +2,7 @@ import React from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useTheme } from '../context/ThemeContext.jsx'
-import { HomeIcon, MapIcon, GlobeIcon, LogoutIcon } from '../pages/admin/AdminIcons'
+import { HomeIcon, MapIcon, GlobeIcon, LogoutIcon, ActivityIcon } from '../pages/admin/AdminIcons'
 
 export default function AdminSidebar({ isHovered, setIsHovered }) {
   const navigate = useNavigate()
