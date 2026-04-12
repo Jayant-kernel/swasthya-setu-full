@@ -54,6 +54,7 @@ export default function App() {
               
               {/* Admin Portal */}
               <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
+              <Route path="/dashboard/admin/analytics" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
               <Route path="/dashboard/admin/map" element={<ProtectedRoute><AdminMapPage /></ProtectedRoute>} />
             </Routes>
           </PatientProvider>

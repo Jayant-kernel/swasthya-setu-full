@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import AdminSidebar from '../../components/AdminSidebar'
@@ -113,7 +113,8 @@ export default function AdminDashboardPage() {
   const navigate = useNavigate()
   const { isDark, toggleTheme } = useTheme()
   const [isHovered, setIsHovered] = useState(false)
-  const [activeTab, setActiveTab] = useState('overview') // 'overview' | 'analytics'
+  const location = useLocation()
+  const activeTab = location.pathname.includes('analytics') ? 'analytics' : 'overview'
   const [triageRecords, setTriageRecords] = useState([])
   const [outbreaks, setOutbreaks] = useState([])
   const [loading, setLoading] = useState(true)
@@ -236,9 +237,9 @@ export default function AdminDashboardPage() {
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
         <header style={{ height: 72, background: g.cardBg, borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0, backdropFilter: g.blur }}>
-          <div style={{ display: 'flex', background: g.insetBg, padding: 4, borderRadius: 12, border: `1px solid ${g.cardBdr}`, gap: 4 }}>
-             <button onClick={() => setActiveTab('overview')} style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, background: activeTab === 'overview' ? '#4f46e5' : 'transparent', color: activeTab === 'overview' ? '#fff' : g.muted }}>Overview</button>
-             <button onClick={() => setActiveTab('analytics')} style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, background: activeTab === 'analytics' ? '#4f46e5' : 'transparent', color: activeTab === 'analytics' ? '#fff' : g.muted }}>Analytics</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 12px #10b981' }} />
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, color: g.text, letterSpacing: '0.02em' }}>Live System Status</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <button onClick={toggleTheme} style={{ width: 40, height: 40, borderRadius: 12, border: `1px solid ${g.divider}`, background: g.cardBg, color: g.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

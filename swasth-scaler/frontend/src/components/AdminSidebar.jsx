@@ -48,6 +48,9 @@ export default function AdminSidebar({ isHovered, setIsHovered }) {
         <div onClick={() => navigate('/dashboard/admin')} className={`nav-link ${isActive('/dashboard/admin') ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 4 }}>
           <HomeIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Overview</span>
         </div>
+        <div onClick={() => navigate('/dashboard/admin/analytics')} className={`nav-link ${isActive('/dashboard/admin/analytics') ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 4 }}>
+          <ActivityIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Analytics</span>
+        </div>
         <div onClick={() => navigate('/dashboard/admin/map')} className={`nav-link ${isActive('/dashboard/admin/map') ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 4 }}>
           <MapIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>National Map</span>
         </div>
