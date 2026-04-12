@@ -16,7 +16,7 @@ function getSeverityColor(point) {
   return '#22c55e'
 }
 
-function MapController({ center, zoom, bounds }) {
+function MapController({ center, zoom, bounds, district }) {
   const map = useMap()
   useEffect(() => {
     if (bounds) {
@@ -50,7 +50,7 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         noWrap={true}
       />
-      <MapController center={center} zoom={zoom} bounds={bounds} />
+      <MapController center={center} zoom={zoom} bounds={bounds} district={district} />
 
       {/* Patient Triage Points */}
       {points.map((pt, i) => (
