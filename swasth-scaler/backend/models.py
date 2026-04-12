@@ -43,11 +43,7 @@ class TriageRecord(Base):
     caller_phone = Column(String)
     call_sid = Column(String)
     source = Column(String) # 'app', 'helpline_call'
-    recording_url = Column(String)
     transcript = Column(String)
-    transcript_english = Column(String)
-    transcript_hindi = Column(String)
-    transcript_odia = Column(String)
     symptoms = Column(JSON, default=list)
     severity = Column(String, default="yellow")
     sickle_cell_risk = Column(Boolean, default=False)

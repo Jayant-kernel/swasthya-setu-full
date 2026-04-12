@@ -195,10 +195,7 @@ async def webhook_call(request: Request):
         form_data = await request.form()
         caller_phone = form_data.get("From", "unknown")
         call_sid = form_data.get("CallSid", "")
-        recording_url = form_data.get("RecordingUrl", "")
-
         logger.info(f"Call received from {caller_phone}")
-        logger.info(f"Recording URL: {recording_url}")
 
         # Download audio from Twilio
         audio_bytes = None
@@ -291,11 +288,7 @@ Text: {original_transcript}"""
                     caller_phone=caller_phone,
                     call_sid=call_sid,
                     source="helpline_call",
-                    recording_url=recording_url + ".mp3" if recording_url else "",
                     transcript=original_transcript,
-                    transcript_english=translations.get("english", ""),
-                    transcript_hindi=translations.get("hindi", ""),
-                    transcript_odia=translations.get("odia", ""),
                     symptoms=triage_result.get("symptoms", []),
                     severity=triage_result.get("severity", "yellow"),
                     sickle_cell_risk=triage_result.get("sickle_cell_risk", False),
