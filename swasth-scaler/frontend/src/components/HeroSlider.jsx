@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import loginImg1 from '../images/login/image.png';
-import loginImg2 from '../images/login/image2.png';
-import loginImg3 from '../images/login/image3.png';
+import ashaWorkerImg from '../images/login/asha_worker.avif';
+import dmoWorkerImg from '../images/login/DMO_Worker.png';
 
 const slides = [
   {
@@ -14,7 +13,7 @@ const slides = [
     description: 'Track home visits, log patient data, and coordinate care for your village clusters — all from one place.',
     cta: 'Sign in as ASHA Worker',
     path: '/login/asha',
-    image: loginImg2,
+    image: ashaWorkerImg,
     gradient: 'linear-gradient(135deg, #0d4f8c 0%, #1a7fc4 50%, #29a0e0 100%)',
     overlay: 'linear-gradient(to right, rgba(8,40,90,0.96) 0%, rgba(8,40,90,0.78) 50%, rgba(8,40,90,0.18) 100%)',
     accent: '#7dd3fc',
@@ -28,7 +27,7 @@ const slides = [
     description: 'Monitor district health metrics, approve escalations, and coordinate multi-village response logistics.',
     cta: 'Sign in as District Officer',
     path: '/login/dmo',
-    image: loginImg3,
+    image: dmoWorkerImg,
     gradient: 'linear-gradient(135deg, #075a5a 0%, #0e8f8f 50%, #17b5b5 100%)',
     overlay: 'linear-gradient(to right, rgba(4,50,50,0.96) 0%, rgba(4,50,50,0.78) 50%, rgba(4,50,50,0.18) 100%)',
     accent: '#99f6e4',
