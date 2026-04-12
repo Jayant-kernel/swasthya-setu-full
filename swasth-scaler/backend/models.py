@@ -59,17 +59,17 @@ class DiseaseOutbreak(Base):
     __tablename__ = "disease_outbreaks"
 
     id = Column(Integer, primary_key=True, index=True)
-    year = Column(Integer)
-    week = Column(Integer)
-    state = Column(String)
-    district = Column(String)
-    disease = Column(String)
-    cases = Column(Integer)
-    deaths = Column(Integer)
-    status = Column(String)
-    district_as_per_source = Column(String(50))
-    disease_illness_name = Column(String(50))
-    # Optional: store centroids for map markers if needed specifically for this table
+    year = Column(Integer, nullable=True)
+    week = Column(Integer, nullable=True)
+    state = Column(String, nullable=True)
+    district = Column(String, nullable=True)
+    disease = Column(String, nullable=True)
+    cases = Column(Integer, nullable=True)
+    deaths = Column(Integer, nullable=True)
+    status = Column(String, nullable=True)
+    district_as_per_source = Column(String(50), nullable=True)
+    disease_illness_name = Column(String(50), nullable=True)
+    # Optional map fields
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
