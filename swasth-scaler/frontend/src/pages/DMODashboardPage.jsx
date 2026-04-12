@@ -211,14 +211,20 @@ export default function DMODashboardPage() {
     try {
       const token = localStorage.getItem('access_token')
       const headers = { 'Authorization': `Bearer ${token}` }
-      const [triRes, patRes, outRes] = await Promise.all([
+      const [triRes, patRes, outRes] = await Promise.allSettled([
         fetch(`${API}/triage_records/`, { headers }),
         fetch(`${API}/patients/`, { headers }),
         fetch(`${API}/outbreaks/?district=${dmoDistrict}`, { headers }),
       ])
-      setTriageRecords((await triRes.json()) || [])
-      setPatients((await patRes.json()) || [])
-      setOutbreaks((await outRes.json()) || [])
+      
+      if (triRes.status === 'fulfilled' && triRes.value.ok) setTriageRecords(await triRes.value.json())
+      if (patRes.status === 'fulfilled' && patRes.value.ok) setPatients(await patRes.value.json())
+      if (outRes.status === 'fulfilled' && outRes.value.ok) {
+        const data = await outRes.value.json()
+        setOutbreaks(Array.isArray(data) ? data : [])
+      } else {
+        setOutbreaks([])
+      }
     } catch (err) {
       console.error('Fetch error:', err)
     } finally {

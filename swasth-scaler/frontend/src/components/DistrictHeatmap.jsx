@@ -6,8 +6,8 @@ import L from 'leaflet'
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl:       'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl:     'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 })
 
 function getSeverityColor(point) {
@@ -48,7 +48,7 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       />
       <MapController center={center} zoom={zoom} bounds={bounds} />
-      
+
       {/* Patient Triage Points */}
       {points.map((pt, i) => (
         <CircleMarker
@@ -56,10 +56,10 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
           center={[pt.lat, pt.lng]}
           radius={Math.max(10, Math.min(40, pt.total * 5))}
           pathOptions={{
-            fillColor:    getSeverityColor(pt),
-            fillOpacity:  0.75,
-            color:        getSeverityColor(pt),
-            weight:       2,
+            fillColor: getSeverityColor(pt),
+            fillOpacity: 0.75,
+            color: getSeverityColor(pt),
+            weight: 2,
           }}
         >
           <Popup>
@@ -91,11 +91,11 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
           center={[o.latitude, o.longitude]}
           radius={12}
           pathOptions={{
-            fillColor:    '#8b5cf6', // Purple for outbreaks
-            fillOpacity:  0.9,
-            color:        '#fff',
-            weight:       2,
-            dashArray:    '4, 4'
+            fillColor: '#8b5cf6', // Purple for outbreaks
+            fillOpacity: 0.9,
+            color: '#fff',
+            weight: 2,
+            dashArray: '4, 4'
           }}
         >
           <Popup>
@@ -106,9 +106,9 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
               </div>
               <strong style={{ fontSize: '1.1rem', color: '#1e293b', textTransform: 'capitalize' }}>{o.disease || o.disease_illness_name}</strong>
               <div style={{ color: '#64748b', fontSize: '0.75rem' }}>{o.district}, {o.state}</div>
-              
+
               <hr style={{ margin: '8px 0', borderColor: '#f1f5f9' }} />
-              
+
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <div>
                   <div style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 700 }}>CASES</div>
@@ -119,7 +119,7 @@ export default function DistrictHeatmap({ district, points, center, zoom = 10, b
                   <div style={{ fontSize: '1.125rem', fontWeight: 800, color: '#ef4444' }}>{o.deaths || 0}</div>
                 </div>
               </div>
-              
+
               {o.status && (
                 <div style={{ marginTop: 8, fontSize: '0.75rem', color: '#475569', background: '#f8fafc', padding: '4px 8px', borderRadius: 6 }}>
                   <strong>Status:</strong> {o.status}
