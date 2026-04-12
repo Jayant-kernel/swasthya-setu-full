@@ -6,11 +6,7 @@ import DashboardLayout from '../../components/DashboardLayout'
 
 /* ─── Constants ──────────────────────────────────────────── */
 const ALL_DISTRICTS = [
-  "Ahilyanagar", "Akola", "Amravati", "Beed", "Bhandara", "Buldhana", "Chandrapur",
-  "Chhatrapati Sambhajinagar", "Dharashiv", "Dhule", "Gadchiroli", "Gondia", "Hingoli",
-  "Jalgaon", "Jalna", "Kolhapur", "Latur", "Mumbai City", "Mumbai Suburban", "Nagpur",
-  "Nanded", "Nandurbar", "Nashik", "Palghar", "Parbhani", "Pune", "Raigad", "Ratnagiri",
-  "Sangli", "Satara", "Sindhudurg", "Solapur", "Thane", "Wardha", "Washim", "Yavatmal",
+  "Angul", "Boudh", "Balangir", "Bargarh", "Balasore", "Bhadrak", "Cuttack", "Deogarh", "Dhenkanal", "Ganjam", "Gajapati", "Jharsuguda", "Jajpur", "Jagatsinghpur", "Khordha", "Keonjhar", "Kalahandi", "Kandhamal", "Koraput", "Kendrapara", "Malkangiri", "Mayurbhanj", "Nabarangpur", "Nuapada", "Nayagarh", "Puri", "Rayagada", "Sambalpur", "Subarnapur", "Sundargarh"
 ]
 const SEV_ORDER = { red: 0, yellow: 1, green: 2 }
 
@@ -25,9 +21,9 @@ function timeAgo(iso) {
 }
 
 const DISTRICT_GROUPS = [
-  { label: 'Pune', color: '#818cf8' },
-  { label: 'Nagpur', color: '#fbbf24' },
-  { label: 'Nashik', color: '#34d399' },
+  { label: 'Khordha', color: '#818cf8' },
+  { label: 'Cuttack', color: '#fbbf24' },
+  { label: 'Ganjam', color: '#34d399' },
 ]
 
 /* ─── Icons ──────────────────────────────────────────────── */
@@ -299,7 +295,9 @@ export default function ASHADashboardPage() {
 
   const districtsExtra = (
     <>
-      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', marginTop: '1.125rem' }}>Districts</div>
+      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', marginTop: '1.125rem' }}>
+        Districts <span style={{ opacity: 0.6 }}>/ ଜିଲ୍ଲା</span>
+      </div>
       {DISTRICT_GROUPS.map(d => {
         const on = districtFilter === d.label
         return (
@@ -398,7 +396,9 @@ export default function ASHADashboardPage() {
                   boxShadow: on ? `0 4px 14px ${s.c}35` : g.cardShd,
                 }}>
                   <span style={{ fontSize: '0.75rem' }}>{s.emoji}</span>
-                  <span>{s.label}</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', lineHeight: 1.1 }}>
+                    <span>{s.label}</span>
+                  </div>
                   <span style={{ background: on ? `${s.c}22` : g.btn, color: on ? s.c : g.muted, padding: '0 7px', borderRadius: 99, fontSize: '0.68rem', fontWeight: 700, backdropFilter: 'blur(8px)' }}>{s.count}</span>
                 </button>
               )
@@ -459,10 +459,10 @@ export default function ASHADashboardPage() {
                     style={{ 
                       fontSize: '0.65rem', fontWeight: 700, color: g.label, letterSpacing: '0.07em', 
                       textTransform: 'uppercase', cursor: col.field ? 'pointer' : 'default',
-                      userSelect: 'none', display: 'flex', alignItems: 'center'
+                      userSelect: 'none', display: 'flex', alignItems: 'center', gap: 4
                     }}
                   >
-                    {col.label}
+                    <span>{col.label}</span>
                     {col.field && <SortIndicator field={col.field} />}
                   </div>
                 ))}

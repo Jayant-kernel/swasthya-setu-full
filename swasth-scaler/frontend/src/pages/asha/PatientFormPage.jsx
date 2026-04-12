@@ -40,7 +40,7 @@ function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-main)' }}>{p.name}</div>
                   <div style={{ fontSize: '0.8125rem', color: '#374151', marginTop: 4, fontFamily: "'Noto Sans Oriya', sans-serif" }}>
-                    ନାମ: {p.name} | वय: {p.age} | जिल्हा: {p.district}
+                    ନାମ: {p.name} | ବୟସ: {p.age} | ଜିଲ୍ଲା: {p.district}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
                     {p.gender && `${p.gender} · `}{p.triage_records?.length || 0} visit{p.triage_records?.length !== 1 ? 's' : ''}
@@ -73,14 +73,10 @@ function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
 }
 
 const ALL_DISTRICTS = [
-  "Ahilyanagar", "Akola", "Amravati", "Beed", "Bhandara", "Buldhana", "Chandrapur",
-  "Chhatrapati Sambhajinagar", "Dharashiv", "Dhule", "Gadchiroli", "Gondia", "Hingoli",
-  "Jalgaon", "Jalna", "Kolhapur", "Latur", "Mumbai City", "Mumbai Suburban", "Nagpur",
-  "Nanded", "Nandurbar", "Nashik", "Palghar", "Parbhani", "Pune", "Raigad", "Ratnagiri",
-  "Sangli", "Satara", "Sindhudurg", "Solapur", "Thane", "Wardha", "Washim", "Yavatmal"
+  "Angul", "Boudh", "Balangir", "Bargarh", "Balasore", "Bhadrak", "Cuttack", "Deogarh", "Dhenkanal", "Ganjam", "Gajapati", "Jharsuguda", "Jajpur", "Jagatsinghpur", "Khordha", "Keonjhar", "Kalahandi", "Kandhamal", "Koraput", "Kendrapara", "Malkangiri", "Mayurbhanj", "Nabarangpur", "Nuapada", "Nayagarh", "Puri", "Rayagada", "Sambalpur", "Subarnapur", "Sundargarh"
 ]
 
-const HIGH_RISK = new Set(["Gadchiroli","Chandrapur","Nagpur","Wardha","Bhandara","Gondia","Amravati","Yavatmal","Akola","Washim","Buldhana","Nandurbar","Dhule"])
+const HIGH_RISK = new Set(["Koraput", "Malkangiri", "Nabarangpur", "Rayagada", "Kalahandi", "Nuapada", "Kandhamal", "Boudh", "Keonjhar", "Mayurbhanj"])
 
 export default function PatientFormPage() {
   const navigate = useNavigate()
