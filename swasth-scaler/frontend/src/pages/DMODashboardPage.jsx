@@ -326,8 +326,12 @@ export default function DMODashboardPage() {
         {/* Top Navbar */}
         <header style={{ height: 72, background: '#fff', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0 }}>
           <div style={{ position: 'relative', width: 360 }}>
-             <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><SearchIcon /></span>
-             <input type="text" placeholder="Search for patients or reports..." style={{ width: '100%', height: 44, padding: '0 1rem 0 3rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, outline: 'none', fontSize: '0.875rem' }} />
+             {activeView === 'home' && (
+               <>
+                 <span style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }}><SearchIcon /></span>
+                 <input type="text" placeholder="Search for patients or reports..." style={{ width: '100%', height: 44, padding: '0 1rem 0 3rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, outline: 'none', fontSize: '0.875rem' }} />
+               </>
+             )}
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -341,7 +345,7 @@ export default function DMODashboardPage() {
         </header>
 
         {/* Scrollable View */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '2.5rem' }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: activeView === 'map' ? 0 : '2.5rem' }}>
           
           {activeView === 'home' && (
             <div style={{ maxWidth: 1400, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -389,8 +393,7 @@ export default function DMODashboardPage() {
                           { label: 'Identification No.', key: 'patient_id' },
                           { label: 'Location', key: 'district' },
                           { label: 'Status', key: 'reviewed' },
-                          { label: 'Severity', key: 'severity' },
-                          { label: 'Actions', key: null }
+                          { label: 'Severity', key: 'severity' }
                         ].map(col => (
                           <th 
                             key={col.label} 
@@ -439,13 +442,12 @@ export default function DMODashboardPage() {
                           <td style={{ padding: '1rem 1.5rem' }}>
                              <span style={{ 
                                fontSize: '0.875rem', fontWeight: 700,
-                               color: record.severity === 'red' ? '#ef4444' : record.severity === 'yellow' ? '#f59e0b' : '#10b981'
+                               color: (record.severity === 'red' || Number(record.severity) >= 7) ? '#ef4444' : 
+                                      (record.severity === 'yellow' || (Number(record.severity) >= 4 && Number(record.severity) <= 6)) ? '#f59e0b' : '#10b981'
                              }}>
-                               {record.severity ? record.severity.toUpperCase() : 'STABLE'}
+                               { (record.severity === 'red' || Number(record.severity) >= 7) ? 'CRITICAL' : 
+                                 (record.severity === 'yellow' || (Number(record.severity) >= 4 && Number(record.severity) <= 6)) ? 'MODERATE' : 'STABLE'}
                              </span>
-                          </td>
-                          <td style={{ padding: '1rem 1.5rem' }}>
-                            <button style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '1.25rem' }}>⋮</button>
                           </td>
                         </tr>
                       ))}
@@ -457,12 +459,8 @@ export default function DMODashboardPage() {
           )}
 
           {activeView === 'map' && (
-            <div style={{ height: '100%', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1e293b' }}>District Heatmap</h1>
-                    <button onClick={() => setActiveView('home')} className="btn-primary" style={{ background: '#fff', border: '1px solid #e2e8f0', color: '#475569' }}>← Back Dashboard</button>
-                </div>
-                <div style={{ flex: 1, background: '#fff', borderRadius: 20, border: '1px solid #f1f5f9', overflow: 'hidden', minHeight: 600 }}>
+            <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ flex: 1, background: '#fff', overflow: 'hidden' }}>
                     <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center' }}>Loading Region Map...</div>}>
                         <DistrictHeatmap district={dmoDistrict} points={mapPoints} center={center} bounds={bounds} />
                     </Suspense>
