@@ -4,11 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from database import get_db
 from models import DiseaseOutbreak
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 router = APIRouter()
 
 class OutbreakResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     year: Optional[int] = None
     week: Optional[int] = None
@@ -21,9 +23,6 @@ class OutbreakResponse(BaseModel):
     latitude: Optional[float] = None
     longitude: Optional[float] = None
 
-    class Config:
-        from_attributes = True
-
 @router.get("/", response_model=List[OutbreakResponse])
 async def get_outbreaks(district: Optional[str] = None, db: AsyncSession = Depends(get_db)):
     query = select(DiseaseOutbreak)
@@ -31,4 +30,5 @@ async def get_outbreaks(district: Optional[str] = None, db: AsyncSession = Depen
         query = query.where(DiseaseOutbreak.district == district)
     
     result = await db.execute(query)
-    return result.scalars().all()
+    outbreaks = result.scalars().all()
+    return [OutbreakResponse.model_validate(o) for o in outbreaks]
