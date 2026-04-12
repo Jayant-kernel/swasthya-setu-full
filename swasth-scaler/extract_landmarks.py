@@ -40,7 +40,8 @@ VALID_LABELS = [
     "KHANSI", "SANS-TAKLEEF", "SEENE-DARD", "CHAKKAR", "KAMZORI", "UNKNOWN"
 ]
 
-# Signs that REQUIRE both hands -- skip frames with fewer than 2 hands
+# Hand count groups — hard gates for training data validation
+ONE_HAND_SIGNS = {"DARD", "BUKHAR", "PET-DARD", "ULTI", "KHANSI", "SEENE-DARD", "CHAKKAR"}
 TWO_HAND_SIGNS = {"SAR-DARD", "SANS-TAKLEEF", "KAMZORI"}
 
 # ── Per-hand normalization ─────────────────────────────────────────────────────
@@ -175,8 +176,13 @@ for fname in video_files:
 
         hands_found = len(result.hand_landmarks)
 
-        # Two-hand signs: skip frames where fewer than 2 hands are visible
-        if needs_two and hands_found < 2:
+        # ── Hand count validation — hard gate ──────────────────────────────────
+        # ONE_HAND_SIGNS must have exactly 1 hand
+        if label in ONE_HAND_SIGNS and hands_found != 1:
+            skip_hands += 1
+            continue
+        # TWO_HAND_SIGNS must have exactly 2 hands
+        if label in TWO_HAND_SIGNS and hands_found != 2:
             skip_hands += 1
             continue
 
@@ -200,15 +206,75 @@ detector.close()
 with open(DATA_PATH, "w") as f:
     json.dump(training_data, f)
 
-print("\n--------------------------------------------------")
-print("Total samples extracted       : " + str(total_extracted))
-print("Total frames skipped (no hand): " + str(total_skipped))
-if total_skipped_hands:
-    print("Skipped (1-hand for 2-hand sign): " + str(total_skipped_hands))
-print("\ntraining_data.json updated:")
-for k, v in training_data.items():
-    if v:
-        print("  " + k.ljust(16) + ": " + str(len(v)) + " samples")
-print("\nSaved -> " + DATA_PATH)
-print("\nNOTE: Each sample is now 126 floats (right[63] + left[63]).")
-print("      Re-run train_isl.py to retrain after adding new data.")
+print("\n" + "=" * 50)
+print("EXTRACTION COMPLETE — SAMPLE COUNT REPORT")
+print("=" * 50)
+
+# ── One-hand signs report ──────────────────────────────────────────────────
+print("\nONE HAND SIGNS — sample counts")
+print("-" * 50)
+one_hand_counts = {s: len(training_data.get(s, [])) for s in ONE_HAND_SIGNS}
+for sign in sorted(ONE_HAND_SIGNS):
+    count = one_hand_counts[sign]
+    flag = "  [LOW]" if count < 80 else ""
+    print("  " + sign.ljust(16) + ": " + str(count).rjust(4) + " samples" + flag)
+
+one_hand_min = min(one_hand_counts.values()) if one_hand_counts else 0
+one_hand_max = max(one_hand_counts.values()) if one_hand_counts else 0
+one_hand_balanced = one_hand_max == 0 or (one_hand_max - one_hand_min) <= one_hand_max * 0.5
+print("-" * 50)
+print("  Min in group  : " + str(one_hand_min))
+print("  Max in group  : " + str(one_hand_max))
+print("  Balanced (gap <50%): " + ("YES" if one_hand_balanced else "NO  [WARNING]"))
+
+# ── Two-hand signs report ──────────────────────────────────────────────────
+print("\nTWO HAND SIGNS — sample counts")
+print("-" * 50)
+two_hand_counts = {s: len(training_data.get(s, [])) for s in TWO_HAND_SIGNS}
+for sign in sorted(TWO_HAND_SIGNS):
+    count = two_hand_counts[sign]
+    flag = "  [LOW]" if count < 80 else ""
+    print("  " + sign.ljust(16) + ": " + str(count).rjust(4) + " samples" + flag)
+
+two_hand_min = min(two_hand_counts.values()) if two_hand_counts else 0
+two_hand_max = max(two_hand_counts.values()) if two_hand_counts else 0
+two_hand_balanced = two_hand_max == 0 or (two_hand_max - two_hand_min) <= two_hand_max * 0.5
+print("-" * 50)
+print("  Min in group  : " + str(two_hand_min))
+print("  Max in group  : " + str(two_hand_max))
+print("  Balanced (gap <50%): " + ("YES" if two_hand_balanced else "NO  [WARNING]"))
+
+# ── UNKNOWN report ─────────────────────────────────────────────────────────
+unknown_count = len(training_data.get("UNKNOWN", []))
+print("\nUNKNOWN negative samples")
+print("-" * 50)
+print("  UNKNOWN       : " + str(unknown_count).rjust(4) + " samples",
+      " [CRITICAL: need >= 300]" if unknown_count < 300 else "")
+
+# ── Summary and recommendations ────────────────────────────────────────────
+print("\n" + "=" * 50)
+print("SUMMARY & RECOMMENDATIONS")
+print("=" * 50)
+
+recommendations = []
+if one_hand_min < 80:
+    recommendations.append("- Re-record " + ", ".join(s for s in ONE_HAND_SIGNS if one_hand_counts[s] < 80))
+if not one_hand_balanced:
+    recommendations.append("- Balance one-hand signs (gap between min/max is >50%)")
+if two_hand_min < 80:
+    recommendations.append("- Re-record " + ", ".join(s for s in TWO_HAND_SIGNS if two_hand_counts[s] < 80))
+if not two_hand_balanced:
+    recommendations.append("- Balance two-hand signs (gap between min/max is >50%)")
+if unknown_count < 300:
+    recommendations.append("- Record " + str(300 - unknown_count) + " more UNKNOWN negative samples")
+
+if recommendations:
+    for rec in recommendations:
+        print(rec)
+else:
+    print("All signs are well-balanced and have sufficient samples.")
+    print("Ready to retrain: py -3.11 train_isl.py")
+
+print("\n" + "=" * 50)
+print("Saved -> " + DATA_PATH)
+print("Total extracted: " + str(total_extracted) + " | Skipped: " + str(total_skipped + total_skipped_hands))
