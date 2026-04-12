@@ -1,4 +1,4 @@
-# ISL Model Training — Instructions for Next Session
+# ISL Model Training — Instructions
 
 ## Context
 
@@ -6,23 +6,47 @@ Project: **Swasthya Setu** — rural healthcare triage app for ASHA workers.
 Repo root: `swasth-scaler/`
 
 The ISL (Indian Sign Language) pipeline is:
-**Webcam → MediaPipe Hands (21 landmarks) → normalize to Float32[63] → TF.js MLP → one of 7 symptom labels**
+**Webcam → MediaPipe Hands (21 landmarks) → normalize to Float32[63] → TF.js MLP → one of 10 symptom labels**
 
 ---
 
-## Files That Already Exist — DO NOT OVERWRITE
+## 10 Sign Classes
+
+| class_id | Sign ID       | English          | Urgency  | ICD-10  |
+|----------|---------------|------------------|----------|---------|
+| 0        | DARD          | Pain             | HIGH     | R52     |
+| 1        | BUKHAR        | Fever            | HIGH     | R50.9   |
+| 2        | SAR-DARD      | Headache         | MEDIUM   | R51     |
+| 3        | PET-DARD      | Stomach Pain     | HIGH     | R10.9   |
+| 4        | ULTI          | Vomiting/Nausea  | MEDIUM   | R11.2   |
+| 5        | KHANSI        | Cough            | MEDIUM   | R05.9   |
+| 6        | SANS-TAKLEEF  | Breathlessness   | CRITICAL | R06.00  |
+| 7        | SEENE-DARD    | Chest Pain       | CRITICAL | R07.9   |
+| 8        | CHAKKAR       | Dizziness        | MEDIUM   | R42     |
+| 9        | KAMZORI       | Weakness/Fatigue | MEDIUM   | R53.83  |
+| 10       | UNKNOWN       | (reserved)       | —        | —       |
+
+**CRITICAL signs (SANS-TAKLEEF, SEENE-DARD):** model must output on FIRST qualifying frame.
+Recall gate: ≥ 0.97 — do NOT deploy if either fails.
+
+---
+
+## Files
 
 | File | What it is |
 |------|-----------|
-| `frontend/public/tfjs_model/model.json` | TF.js Sequential MLP, input `[null, 63]`, 7 output classes, converted from Keras 2.15 |
-| `frontend/public/tfjs_model/group1-shard1of1.bin` | Weights shard for the above |
-| `frontend/public/label_classes.json` | 7 class labels in this exact order: `["BREATHLESS","COUGH","DIZZINESS","FEVER","PAIN","VOMIT","WEAKNESS"]` |
-| `frontend/isl_model.h5` | Original Keras H5 model (same architecture) |
-| `frontend/training_data.json` | Training dataset — dict with 7 keys, one per label, each key holds a list of samples |
+| `frontend/public/tfjs_model/model.json` | TF.js Sequential MLP, input `[null, 63]`, 11 output classes |
+| `frontend/public/tfjs_model/group1-shard1of1.bin` | Weights shard |
+| `frontend/public/label_classes.json` | 11 class labels in exact order (class_id 0–10) |
+| `frontend/public/isl_sign_data.json` | Full sign metadata: keypoints, differentials, thresholds |
+| `frontend/isl_model.h5` | Keras H5 model (source of truth for TF.js conversion) |
+| `frontend/training_data.json` | Training dataset — dict keyed by sign ID |
+| `isl_feature/inference/isl_detector.py` | Backend ISLDetector class |
+| `train_isl.py` | Training script |
 
 ---
 
-## Current Model Architecture (match this exactly when retraining)
+## Model Architecture
 
 ```
 Input: (63,)
@@ -32,107 +56,93 @@ Dropout(0.3)
 Dense(64, activation='relu')
 BatchNormalization(momentum=0.99, epsilon=0.001)
 Dropout(0.2)
-Dense(7, activation='softmax')
+Dense(11, activation='softmax')   ← 10 signs + UNKNOWN
 ```
 
 Loss: `sparse_categorical_crossentropy`
 Optimizer: `adam`
-Output order MUST match label_classes.json: `BREATHLESS=0, COUGH=1, DIZZINESS=2, FEVER=3, PAIN=4, VOMIT=5, WEAKNESS=6`
+Output order MUST match `label_classes.json`.
 
 ---
 
 ## Training Data Format
 
-`frontend/training_data.json` is structured as:
-
+`frontend/training_data.json`:
 ```json
 {
-  "BREATHLESS": [ [63 floats], [63 floats], ... ],
-  "COUGH":      [ [63 floats], [63 floats], ... ],
-  "DIZZINESS":  [ [63 floats], [63 floats], ... ],
-  "FEVER":      [ [63 floats], [63 floats], ... ],
-  "PAIN":       [],
-  "VOMIT":      [ [63 floats], [63 floats], ... ],
-  "WEAKNESS":   [ [63 floats], [63 floats], ... ]
+  "DARD":          [ [63 floats], ... ],
+  "BUKHAR":        [ [63 floats], ... ],
+  "SAR-DARD":      [ [63 floats], ... ],
+  "PET-DARD":      [ [63 floats], ... ],
+  "ULTI":          [ [63 floats], ... ],
+  "KHANSI":        [ [63 floats], ... ],
+  "SANS-TAKLEEF":  [ [63 floats], ... ],
+  "SEENE-DARD":    [ [63 floats], ... ],
+  "CHAKKAR":       [ [63 floats], ... ],
+  "KAMZORI":       [ [63 floats], ... ],
+  "UNKNOWN":       [ [63 floats], ... ]
 }
 ```
 
-Each array of 63 floats = 21 MediaPipe hand landmarks × (x, y, z), normalized relative to wrist (landmark 0), scaled by distance from wrist to middle-finger MCP (landmark 9).
-
-**Currently:** PAIN key exists but is empty (samples were cleared intentionally). The user will add new JSON data for 4 gestures first to test, then add the rest.
+Each sample = 21 MediaPipe hand landmarks × (x, y, z), wrist-centred, scaled by wrist→middle-MCP.
+Minimum samples: 80/sign/lighting condition (see master training prompt §5A).
 
 ---
 
-## Your Tasks
+## Workflow
 
-### Task 1 — Create `train_isl.py`
+### 1. Collect data
+Collect samples via the frontend camera page. Save to `frontend/training_data.json`.
 
-Create this file at: `swasth-scaler/train_isl.py`
-
-The script must:
-1. Load `frontend/training_data.json`
-2. Skip any label whose sample list is empty
-3. Build label→index mapping using the fixed order from `frontend/public/label_classes.json` (do NOT sort dynamically — order must stay fixed)
-4. Train a Keras Sequential MLP matching the architecture above exactly
-5. Save trained model to `frontend/isl_model.h5`
-6. Print per-class accuracy after training
-
-```python
-# Expected usage:
-python train_isl.py
-# or with a custom data file:
-python train_isl.py --data path/to/your_data.json
-```
-
-### Task 2 — Shell command to convert to TF.js
-
-After training, run this to replace the TF.js model files:
-
+### 2. Train
 ```bash
-tensorflowjs_converter \
-  --input_format=keras \
-  swasth-scaler/frontend/isl_model.h5 \
-  swasth-scaler/frontend/public/tfjs_model/
+cd swasth-scaler
+python train_isl.py
+# optional:
+python train_isl.py --epochs 100 --batch 64 --data path/to/data.json
 ```
 
-This overwrites `model.json` and `group1-shard1of1.bin` in place.
+### 3. Check critical gates
+Training script prints per-class recall. Both critical signs need ≥ 0.97:
+```
+Critical gate SANS-TAKLEEF: recall=0.972  ✓ PASS
+Critical gate SEENE-DARD:   recall=0.981  ✓ PASS
+```
 
-Install if needed: `pip install tensorflowjs`
+### 4. Convert to TF.js
+```bash
+tensorflowjs_converter --input_format=keras \
+    frontend/isl_model.h5 \
+    frontend/public/tfjs_model/
+```
 
-### Task 3 — Verify data before running
-
-Before running `train_isl.py`, check the user's JSON file matches this format:
-- Top-level: a dict with gesture label strings as keys
-- Each value: a list of samples
-- Each sample: a flat list of exactly 63 floats
-
-Run this quick check:
-```python
-import json
-with open('frontend/training_data.json') as f:
-    data = json.load(f)
-for label, samples in data.items():
-    if samples:
-        assert len(samples[0]) == 63, f"{label} sample has wrong length: {len(samples[0])}"
-        print(f"{label}: {len(samples)} samples — OK")
-    else:
-        print(f"{label}: EMPTY (will be skipped in training)")
+### 5. Restart backend
+```bash
+uvicorn main:app --reload
 ```
 
 ---
 
-## What NOT to touch
+## Confidence Thresholds (per class)
 
-- `frontend/src/components/ISLCamera.jsx` — frontend camera + inference UI
-- `frontend/src/pages/ISLPage.jsx` — ISL page
-- `backend/main.py` line 331 — WebSocket `/ws/isl` endpoint
-- `frontend/public/label_classes.json` — label order is fixed, do not change
+| Sign          | Min confidence | Escalate at |
+|---------------|----------------|-------------|
+| DARD          | 0.78           | 0.70        |
+| BUKHAR        | 0.82           | 0.70        |
+| SAR-DARD      | 0.80           | —           |
+| PET-DARD      | 0.76           | 0.70        |
+| ULTI          | 0.84           | —           |
+| KHANSI        | 0.88           | —           |
+| SANS-TAKLEEF  | 0.85           | **0.60**    |
+| SEENE-DARD    | 0.86           | **0.60**    |
+| CHAKKAR       | 0.79           | —           |
+| KAMZORI       | 0.75           | —           |
 
 ---
 
-## Current Status
+## Prohibited
 
-- User has data for **4 gestures only** (will provide the JSON file)
-- Goal: train on those 4, test that the pipeline works end-to-end
-- Remaining 3 gestures will be added later once testing passes
-- PAIN samples were intentionally cleared — user will re-collect PAIN data fresh
+- Do NOT deploy if SANS-TAKLEEF or SEENE-DARD recall < 0.97
+- Do NOT train on synthetic poses only
+- Do NOT use temporal reversal augmentation
+- Do NOT report only aggregate accuracy — per-class breakdown is mandatory

@@ -1,10 +1,13 @@
 [
-  "BREATHLESS",
-  "COUGH",
-  "DIZZINESS",
-  "FEVER",
-  "PAIN",
-  "VOMIT",
-  "WEAKNESS",
+  "DARD",
+  "BUKHAR",
+  "SAR-DARD",
+  "PET-DARD",
+  "ULTI",
+  "KHANSI",
+  "SANS-TAKLEEF",
+  "SEENE-DARD",
+  "CHAKKAR",
+  "KAMZORI",
   "UNKNOWN"
 ]

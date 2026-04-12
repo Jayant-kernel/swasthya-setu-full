@@ -3,9 +3,27 @@ import ISLCamera from './ISLCamera'
 
 const TEAL = '#0F6E56'
 
-// ─── Animated SVG Hand Diagrams for 7 signs ──────────────────────────────────
+// ─── Animated SVG Hand Diagrams for 10 ISL signs ─────────────────────────────
 
-function SvgFever() {
+function SvgDard() {
+  return (
+    <svg viewBox="0 0 120 160" width="100%" height="100%">
+      <rect x="30" y="90" width="60" height="55" rx="10" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="31" y="42" width="13" height="52" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="47" y="32" width="13" height="62" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="63" y="38" width="13" height="56" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="79" y="52" width="10" height="44" rx="5" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <g>
+        <animateTransform attributeName="transform" type="scale" values="1;1.15;1" dur="0.8s" repeatCount="indefinite" additive="sum"/>
+        <circle cx="60" cy="24" r="6" fill="none" stroke="#ef4444" strokeWidth="2.5"/>
+        <line x1="56" y1="20" x2="64" y2="28" stroke="#ef4444" strokeWidth="2"/>
+        <line x1="64" y1="20" x2="56" y2="28" stroke="#ef4444" strokeWidth="2"/>
+      </g>
+    </svg>
+  )
+}
+
+function SvgBukhar() {
   return (
     <svg viewBox="0 0 120 160" width="100%" height="100%">
       <rect x="30" y="90" width="60" height="55" rx="10" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
@@ -18,17 +36,60 @@ function SvgFever() {
   )
 }
 
-function SvgCough() {
+function SvgSarDard() {
   return (
     <svg viewBox="0 0 120 160" width="100%" height="100%">
-      {/* Closed fist body */}
+      <rect x="30" y="90" width="60" height="55" rx="10" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="52" y="30" width="13" height="62" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <g>
+        <animateTransform attributeName="transform" type="scale" values="1;1.2;1" dur="0.7s" repeatCount="indefinite" additive="sum"/>
+        <circle cx="58" cy="20" r="10" fill="none" stroke="#ef4444" strokeWidth="2" strokeDasharray="6 4"/>
+      </g>
+    </svg>
+  )
+}
+
+function SvgPetDard() {
+  return (
+    <svg viewBox="0 0 120 160" width="100%" height="100%">
+      <rect x="28" y="84" width="62" height="56" rx="10" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="30" y="30" width="12" height="56" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="45" y="28" width="12" height="58" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="60" y="32" width="12" height="54" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="75" y="38" width="10" height="48" rx="5" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <g>
+        <animateTransform attributeName="transform" type="translate" values="0,0;0,4;0,0" dur="1s" repeatCount="indefinite"/>
+        <ellipse cx="60" cy="115" rx="14" ry="8" fill="none" stroke="#ef4444" strokeWidth="2" strokeDasharray="6 4"/>
+      </g>
+    </svg>
+  )
+}
+
+function SvgUlti() {
+  return (
+    <svg viewBox="0 0 120 160" width="100%" height="100%">
+      <rect x="28" y="84" width="62" height="56" rx="10" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="30" y="30" width="12" height="56" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="45" y="28" width="12" height="58" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="60" y="32" width="12" height="54" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="75" y="38" width="10" height="48" rx="5" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <g>
+        <animateTransform attributeName="transform" type="translate" values="0,0;0,-6;0,0" dur="1s" repeatCount="indefinite"/>
+        <polygon points="60,110 54,122 66,122" fill={TEAL}/>
+        <line x1="60" y1="108" x2="60" y2="130" stroke={TEAL} strokeWidth="2.5"/>
+      </g>
+    </svg>
+  )
+}
+
+function SvgKhansi() {
+  return (
+    <svg viewBox="0 0 120 160" width="100%" height="100%">
       <rect x="30" y="72" width="60" height="52" rx="10" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      {/* Curled fingers */}
       <rect x="33" y="54" width="12" height="22" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
       <rect x="48" y="50" width="12" height="26" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
       <rect x="63" y="52" width="12" height="24" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
       <rect x="77" y="58" width="10" height="18" rx="5" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      {/* Up-down bounce arrow */}
       <g>
         <animateTransform attributeName="transform" type="translate" values="0,0;0,-8;0,0" dur="0.6s" repeatCount="indefinite"/>
         <polygon points="60,22 54,34 66,34" fill={TEAL}/>
@@ -39,30 +100,57 @@ function SvgCough() {
   )
 }
 
-
-function SvgVomit() {
+function SvgSansTakleef() {
   return (
     <svg viewBox="0 0 120 160" width="100%" height="100%">
-      <rect x="28" y="84" width="62" height="56" rx="10" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      <rect x="30" y="30" width="12" height="56" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      <rect x="45" y="28" width="12" height="58" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      <rect x="60" y="32" width="12" height="54" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      <rect x="75" y="38" width="10" height="48" rx="5" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      {/* Fingers pushing outward */}
+      <rect x="28" y="80" width="64" height="60" rx="10" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="30" y="28" width="13" height="55" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="46" y="22" width="13" height="62" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="62" y="26" width="13" height="57" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="78" y="34" width="10" height="50" rx="5" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
       <g>
-        <animateTransform attributeName="transform" type="translate" values="0,0;0,-6;0,0" dur="1s" repeatCount="indefinite"/>
-        <polygon points="60,110 54,122 66,122" fill={TEAL}/>
-        <line x1="60" y1="108" x2="60" y2="130" stroke={TEAL} strokeWidth="2.5"/>
+        <animateTransform attributeName="transform" type="translate" values="0,0;8,0;0,0" dur="1s" repeatCount="indefinite"/>
+        <polygon points="108,55 96,49 96,61" fill="#ef4444"/>
+        <line x1="110" y1="55" x2="90" y2="55" stroke="#ef4444" strokeWidth="2.5"/>
       </g>
     </svg>
   )
 }
 
-function SvgWeakness() {
+function SvgSeeneDard() {
+  return (
+    <svg viewBox="0 0 120 160" width="100%" height="100%">
+      <rect x="28" y="80" width="64" height="60" rx="10" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="30" y="28" width="13" height="55" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="46" y="22" width="13" height="62" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="62" y="26" width="13" height="57" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="78" y="34" width="10" height="50" rx="5" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <g>
+        <animateTransform attributeName="transform" type="scale" values="1;1.15;1" dur="0.6s" repeatCount="indefinite" additive="sum"/>
+        <circle cx="60" cy="100" r="10" fill="none" stroke="#ef4444" strokeWidth="2.5"/>
+        <line x1="55" y1="95" x2="65" y2="105" stroke="#ef4444" strokeWidth="2"/>
+      </g>
+    </svg>
+  )
+}
+
+function SvgChakkar() {
+  return (
+    <svg viewBox="0 0 120 160" width="100%" height="100%">
+      <rect x="30" y="90" width="60" height="55" rx="10" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <rect x="52" y="30" width="13" height="62" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
+      <g>
+        <animateTransform attributeName="transform" type="rotate" values="0 58 28;360 58 28" dur="1.5s" repeatCount="indefinite"/>
+        <circle cx="58" cy="16" r="8" stroke={TEAL} fill="none" strokeWidth="2.5" strokeDasharray="14 8"/>
+      </g>
+    </svg>
+  )
+}
+
+function SvgKamzori() {
   return (
     <svg viewBox="0 0 120 160" width="100%" height="100%">
       <rect x="40" y="60" width="50" height="80" rx="10" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      {/* Drooping fingers */}
       <g>
         <animateTransform attributeName="transform" type="rotate" values="0 65 100;12 65 100;0 65 100" dur="1.8s" repeatCount="indefinite"/>
         <rect x="42" y="100" width="10" height="40" rx="5" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
@@ -70,7 +158,6 @@ function SvgWeakness() {
         <rect x="68" y="103" width="10" height="40" rx="5" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
         <rect x="80" y="108" width="8" height="35" rx="4" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
       </g>
-      {/* Downward arrow */}
       <g>
         <animateTransform attributeName="transform" type="translate" values="0,0;0,6;0,0" dur="1.8s" repeatCount="indefinite"/>
         <polygon points="25,40 19,28 31,28" fill={TEAL}/>
@@ -80,45 +167,17 @@ function SvgWeakness() {
   )
 }
 
-function SvgDizziness() {
-  return (
-    <svg viewBox="0 0 120 160" width="100%" height="100%">
-      <rect x="30" y="90" width="60" height="55" rx="10" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      <rect x="52" y="30" width="13" height="62" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      {/* Spinning circle at fingertip */}
-      <g>
-        <animateTransform attributeName="transform" type="rotate" values="0 58 28;360 58 28" dur="1.5s" repeatCount="indefinite"/>
-        <circle cx="58" cy="16" r="8" stroke={TEAL} fill="none" strokeWidth="2.5" strokeDasharray="14 8"/>
-      </g>
-    </svg>
-  )
-}
-
-function SvgBreathless() {
-  return (
-    <svg viewBox="0 0 120 160" width="100%" height="100%">
-      <rect x="28" y="80" width="64" height="60" rx="10" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      <rect x="30" y="28" width="13" height="55" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      <rect x="46" y="22" width="13" height="62" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      <rect x="62" y="26" width="13" height="57" rx="6" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      <rect x="78" y="34" width="10" height="50" rx="5" fill="#FDDCB5" stroke="#c8956a" strokeWidth="1.8"/>
-      {/* Push outward ripple */}
-      <g>
-        <animateTransform attributeName="transform" type="translate" values="0,0;8,0;0,0" dur="1s" repeatCount="indefinite"/>
-        <polygon points="108,55 96,49 96,61" fill={TEAL}/>
-        <line x1="110" y1="55" x2="90" y2="55" stroke={TEAL} strokeWidth="2.5"/>
-      </g>
-    </svg>
-  )
-}
-
 const SIGNS_MAP = {
-  'FEVER':      { odia: 'ଜ୍ୱର',      Diagram: SvgFever,      desc: 'Open palm facing out' },
-  'COUGH':      { odia: 'କାଶ',        Diagram: SvgCough,      desc: 'Closed fist, move up & down' },
-  'VOMIT':      { odia: 'ବାନ୍ତି',     Diagram: SvgVomit,      desc: 'Fingers out from mouth' },
-  'WEAKNESS':   { odia: 'ଦୁର୍ବଳତା',   Diagram: SvgWeakness,   desc: 'Wrist down, fingers limp' },
-  'DIZZINESS':  { odia: 'ମୁଣ୍ଡ ବୁଲାଇ', Diagram: SvgDizziness,  desc: 'Index finger at forehead' },
-  'BREATHLESS': { odia: 'ଶ୍ୱାସ କଷ୍ଟ',  Diagram: SvgBreathless, desc: 'Palm on chest, push out' },
+  'DARD':         { hindi: 'दर्द',         Diagram: SvgDard,        desc: 'Pain - general' },
+  'BUKHAR':       { hindi: 'बुखार',        Diagram: SvgBukhar,      desc: 'Fever - open palm' },
+  'SAR-DARD':     { hindi: 'सर दर्द',      Diagram: SvgSarDard,     desc: 'Headache - finger at head' },
+  'PET-DARD':     { hindi: 'पेट दर्द',     Diagram: SvgPetDard,     desc: 'Stomach pain' },
+  'ULTI':         { hindi: 'उल्टी',        Diagram: SvgUlti,        desc: 'Vomiting motion' },
+  'KHANSI':       { hindi: 'खांसी',        Diagram: SvgKhansi,      desc: 'Cough - fist bounce' },
+  'SANS-TAKLEEF': { hindi: 'सांस तकलीफ',  Diagram: SvgSansTakleef, desc: 'Breathlessness' },
+  'SEENE-DARD':   { hindi: 'सीने में दर्द', Diagram: SvgSeeneDard,   desc: 'Chest pain' },
+  'CHAKKAR':      { hindi: 'चक्कर',        Diagram: SvgChakkar,     desc: 'Dizziness - spinning' },
+  'KAMZORI':      { hindi: 'कमज़ोरी',      Diagram: SvgKamzori,     desc: 'Weakness - limp hand' },
 }
 
 export default function SignLanguageModal({ isOpen, onClose, onAddSymptom }) {
@@ -184,7 +243,7 @@ export default function SignLanguageModal({ isOpen, onClose, onAddSymptom }) {
                   </div>
                   <div style={{ fontSize: '0.65rem', fontWeight: 900, color: TEAL }}>{key}</div>
                   <div style={{ fontSize: '0.55rem', color: '#94a3b8', marginTop: 2, lineHeight: 1.3 }}>{info.desc}</div>
-                  <div style={{ fontSize: '0.6rem', color: '#64748b', marginTop: 2 }}>{info.odia}</div>
+                  <div style={{ fontSize: '0.6rem', color: '#64748b', marginTop: 2 }}>{info.hindi}</div>
                 </div>
               ))}
             </div>
@@ -194,7 +253,7 @@ export default function SignLanguageModal({ isOpen, onClose, onAddSymptom }) {
             onClick={onClose}
             style={{ width: '100%', marginTop: '1.25rem', padding: '1.125rem', background: TEAL, color: '#fff', border: 'none', borderRadius: 16, fontWeight: 800, cursor: 'pointer', fontSize: '1.1rem', boxShadow: '0 8px 20px rgba(15,110,86,0.3)' }}
           >
-            DONE / ସମାପ୍ତ
+            DONE
           </button>
         </div>
       </div>
