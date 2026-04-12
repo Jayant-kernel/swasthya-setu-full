@@ -67,9 +67,9 @@ class DiseaseOutbreak(Base):
     cases = Column(Integer, nullable=True)
     deaths = Column(Integer, nullable=True)
     status = Column(String, nullable=True)
-    district_as_per_source = Column(String(50), nullable=True)
-    disease_illness_name = Column(String(50), nullable=True)
-    # Optional map fields
+    # district_as_per_source = Column(String(50), nullable=True)
+    # disease_illness_name = Column(String(50), nullable=True)
+    # # Optional map fields
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
