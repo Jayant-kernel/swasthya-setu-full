@@ -9,6 +9,7 @@ const DistrictHeatmap = lazy(() => import('../../components/DistrictHeatmap'))
 
 export default function AdminMapPage() {
   const { isDark, toggleTheme } = useTheme()
+  const [isHovered, setIsHovered] = useState(false)
   const [triageRecords, setTriageRecords] = useState([])
   const [outbreaks, setOutbreaks] = useState([])
   const [loading, setLoading] = useState(true)
