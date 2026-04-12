@@ -235,10 +235,7 @@ export default function AdminDashboardPage() {
         
         {/* Top Navbar */}
         <header style={{ height: 72, background: '#fff', borderBottom: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-             <span className="live-pulse" />
-             <span style={{ fontSize: '0.8125rem', fontWeight: 700, color: '#10b981' }}>LIVE NATIONAL MONITORING</span>
-          </div>
+          <div />
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <div style={{ textAlign: 'right', marginRight: '0.5rem' }}>
@@ -270,21 +267,20 @@ export default function AdminDashboardPage() {
                 <StatCard label="Total Triage Instances" value={stats.total} subtext="Records across all states" icon={ActivityIcon} color="#4f46e5" />
                 <StatCard label="Active Districts" value={stats.districts} subtext="Reporting real-time data" icon={GlobeIcon} color="#34d399" />
                 <StatCard label="National Alerts (RED)" value={stats.critical} subtext="High-severity escalations" icon={ActivityIcon} color="#ef4444" />
-                <StatCard label="Sickle Cell Index" value={stats.sickle} subtext="Identified high-risk cases" icon={UsersIcon} color="#8b5cf6" />
               </div>
 
               {/* Patient Table section */}
               <div style={{ background: '#fff', borderRadius: 16, border: '1px solid #f1f5f9', boxShadow: '0 2px 10px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
                 <div style={{ padding: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9' }}>
                   <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: '#1e293b' }}>Recent Global Triage Events</h3>
-                  <button onClick={fetchData} className="btn-primary" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569', fontSize: '0.8125rem' }}>Refresh</button>
+                  {/* Refresh button removed */}
                 </div>
 
                 <div style={{ overflowX: 'auto' }}>
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead style={{ background: '#f8fafc' }}>
                       <tr>
-                        {['Patient', 'District', 'Source', 'Severity', 'Risk Factor', 'Date'].map(h => (
+                        {['Patient', 'District', 'Severity', 'Date'].map(h => (
                           <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{h}</th>
                         ))}
                       </tr>
@@ -298,22 +294,14 @@ export default function AdminDashboardPage() {
                           </td>
                           <td style={{ padding: '1.25rem 1.5rem', color: '#475569', fontSize: '0.875rem', fontWeight: 600 }}>{record.district || 'General'}</td>
                           <td style={{ padding: '1.25rem 1.5rem' }}>
-                             <span style={{ fontSize: '0.8125rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                {record.source === 'helpline_call' ? '📞 IVR' : '📱 App'}
-                             </span>
-                          </td>
-                          <td style={{ padding: '1.25rem 1.5rem' }}>
                              <span style={{ 
                                fontSize: '0.875rem', fontWeight: 700,
-                               color: record.severity === 'red' ? '#ef4444' : record.severity === 'yellow' ? '#f59e0b' : '#10b981'
+                               color: (record.severity === 'red' || Number(record.severity) >= 7) ? '#ef4444' : 
+                                      (record.severity === 'yellow' || (Number(record.severity) >= 4 && Number(record.severity) <= 6)) ? '#f59e0b' : '#10b981'
                              }}>
-                               {record.severity ? record.severity.toUpperCase() : 'STABLE'}
+                               {(record.severity === 'red' || Number(record.severity) >= 7) ? 'CRITICAL' : 
+                                (record.severity === 'yellow' || (Number(record.severity) >= 4 && Number(record.severity) <= 6)) ? 'MODERATE' : 'STABLE'}
                              </span>
-                          </td>
-                          <td style={{ padding: '1.25rem 1.5rem' }}>
-                            {record.sickle_cell_risk ? (
-                                <span style={{ background: '#f5f3ff', color: '#8b5cf6', padding: '4px 10px', borderRadius: 20, fontSize: '0.7rem', fontWeight: 800 }}>SICKLE RISK</span>
-                            ) : <span style={{ color: '#e2e8f0' }}>—</span>}
                           </td>
                           <td style={{ padding: '1.25rem 1.5rem', color: '#94a3b8', fontSize: '0.8125rem' }}>
                             {new Date(record.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
