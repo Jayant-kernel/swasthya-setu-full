@@ -256,17 +256,6 @@ export default function ProfilePage() {
               <div style={{ ...card, padding: '1.75rem' }}>
                 <div style={{ display: 'flex', gap: '1.75rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
 
-                  {/* Avatar */}
-                  <div style={{ position: 'relative', flexShrink: 0 }}>
-                    <div
-                      style={{ width: 88, height: 88, borderRadius: '50%', background: g.insetBg, border: `3px solid ${g.cardBdr}`, overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: `0 0 0 4px ${g.accentL}` }}
-                    >
-                      {avatar
-                        ? <img src={avatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                        : <span style={{ fontSize: '2.25rem' }}>👩‍⚕️</span>
-                      }
-                    </div>
-                  </div>
 
                   {/* Name / edit form */}
                   <div style={{ flex: 1, minWidth: 200 }}>
