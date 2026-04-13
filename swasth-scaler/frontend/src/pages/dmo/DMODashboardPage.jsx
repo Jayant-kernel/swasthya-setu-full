@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import DMOSidebar from '../../components/dmo/DMOSidebar'
+import PatientRecordModal from '../../components/shared/PatientRecordModal'
 import { SunIcon, MoonIcon, SearchIcon, ActivityIcon } from '../admin/AdminIcons'
 import { API, DISTRICT_CENTERS, buildMapPoints } from './DMOShared'
 
@@ -72,6 +73,7 @@ export default function DMODashboardPage() {
   const [loading, setLoading] = useState(true)
   const [selectedDate, setSelectedDate] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null })
+  const [selectedRecord, setSelectedRecord] = useState(null)
 
   const handleSort = useCallback((key) => {
     setSortConfig((prev) => {
@@ -223,7 +225,13 @@ export default function DMODashboardPage() {
                       {sortedRecords.map((r) => (
                         <tr key={r.id} className="table-row" style={{ borderBottom: `1px solid ${g.divider}` }}>
                           <td style={{ padding: '1.25rem 1.5rem' }}>
-                            <div style={{ fontWeight: 700, color: g.text }}>{r.patient_name || 'Anonymous'}</div>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedRecord(r)}
+                              style={{ border: 'none', background: 'transparent', padding: 0, fontWeight: 700, color: '#2563eb', cursor: 'pointer', textAlign: 'left' }}
+                            >
+                              {r.patient_name || 'Anonymous'}
+                            </button>
                             <div style={{ fontSize: '0.7rem', color: g.muted }}>{r.district}</div>
                           </td>
                           <td style={{ padding: '1.25rem 1.5rem', color: g.text, fontSize: '0.85rem' }}>{r.health_condition || 'N/A'}</td>
@@ -251,6 +259,8 @@ export default function DMODashboardPage() {
           </div>
         </div>
       </main>
+
+      <PatientRecordModal record={selectedRecord} isOpen={Boolean(selectedRecord)} onClose={() => setSelectedRecord(null)} g={g} />
     </div>
   )
 }

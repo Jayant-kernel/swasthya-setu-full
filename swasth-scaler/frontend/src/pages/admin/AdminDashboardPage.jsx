@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import AdminSidebar from '../../components/admin/AdminSidebar'
+import PatientRecordModal from '../../components/shared/PatientRecordModal'
 import { SunIcon, MoonIcon, ActivityIcon, GlobeIcon } from './AdminIcons'
 import { API } from './constants'
 
@@ -153,6 +154,7 @@ export default function AdminDashboardPage() {
   const [selectedDistrictStats, setSelectedDistrictStats] = useState(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null })
+  const [selectedRecord, setSelectedRecord] = useState(null)
 
   const handleSort = useCallback((key) => {
     setSortConfig((prev) => {
@@ -390,7 +392,13 @@ export default function AdminDashboardPage() {
                       {sortedRecentRecords.map((record) => (
                         <tr key={record.id} className="table-row" style={{ borderBottom: `1px solid ${g.divider}` }}>
                           <td style={{ padding: '1.25rem 1.5rem' }}>
-                            <div style={{ fontWeight: 700, color: g.text }}>{record.patient_name || 'Anonymous'}</div>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedRecord(record)}
+                              style={{ border: 'none', background: 'transparent', padding: 0, fontWeight: 700, color: '#2563eb', cursor: 'pointer', textAlign: 'left' }}
+                            >
+                              {record.patient_name || 'Anonymous'}
+                            </button>
                             <div style={{ fontSize: '0.75rem', color: g.muted }}>ID: {record.id?.substring(0, 8)}</div>
                           </td>
                           <td style={{ padding: '1.25rem 1.5rem', color: g.text }}>{record.district || 'General'}</td>
@@ -490,6 +498,7 @@ export default function AdminDashboardPage() {
         triageRecords={triageRecords}
         outbreaks={outbreaks}
       />
+      <PatientRecordModal record={selectedRecord} isOpen={Boolean(selectedRecord)} onClose={() => setSelectedRecord(null)} g={g} />
     </div>
   )
 }
