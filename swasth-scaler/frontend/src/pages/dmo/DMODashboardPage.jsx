@@ -73,6 +73,15 @@ export default function DMODashboardPage() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: 'patient_name', direction: 'asc' })
 
+  const handleSort = useCallback((key) => {
+    setSortConfig((prev) => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+      }
+      return { key, direction: 'asc' }
+    })
+  }, [])
+
   const g = useMemo(() => ({
     text: 'var(--g-text)', muted: 'var(--g-muted)', label: 'var(--g-label)', accent: 'var(--g-accent)',
     cardBg: 'var(--g-card-bg)', cardBdr: 'var(--g-card-bdr)', cardShd: 'var(--g-card-shd)',
@@ -98,6 +107,20 @@ export default function DMODashboardPage() {
   }), [triageRecords])
 
   const sortedRecords = useMemo(() => {
+    const getSeverityRank = (record) => {
+      if (record.severity === 'red' || Number(record.severity) >= 7) return 3
+      if (record.severity === 'yellow' || (Number(record.severity) >= 4 && Number(record.severity) <= 6)) return 2
+      return 1
+    }
+
+    const getSortValue = (record, key) => {
+      if (key === 'severity') return getSeverityRank(record)
+      if (key === 'status') return record.reviewed ? 1 : 0
+      if (key === 'patient_name') return (record.patient_name || '').toLowerCase()
+      if (key === 'health_condition') return (record.health_condition || '').toLowerCase()
+      return ''
+    }
+
     let items = [...triageRecords]
     if (selectedDate) {
       items = items.filter(r => {
@@ -106,7 +129,8 @@ export default function DMODashboardPage() {
       })
     }
     items.sort((a,b) => {
-      const av = a[sortConfig.key] || ''; const bv = b[sortConfig.key] || ''
+      const av = getSortValue(a, sortConfig.key)
+      const bv = getSortValue(b, sortConfig.key)
       if (av < bv) return sortConfig.direction === 'asc' ? -1 : 1
       if (av > bv) return sortConfig.direction === 'asc' ? 1 : -1
       return 0
@@ -153,8 +177,36 @@ export default function DMODashboardPage() {
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                     <thead style={{ background: g.insetBg }}>
                       <tr>
-                        {['Patient', 'Health Condition', 'Severity', 'Status'].map(h => (
-                          <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: g.label, textTransform: 'uppercase' }}>{h}</th>
+                        {[
+                          { label: 'Patient', key: 'patient_name' },
+                          { label: 'Health Condition', key: 'health_condition' },
+                          { label: 'Severity', key: 'severity' },
+                          { label: 'Status', key: 'status' },
+                        ].map((h) => (
+                          <th key={h.key} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: g.label, textTransform: 'uppercase' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleSort(h.key)}
+                              style={{
+                                border: 'none',
+                                background: 'transparent',
+                                color: 'inherit',
+                                fontSize: 'inherit',
+                                fontWeight: 'inherit',
+                                textTransform: 'inherit',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                padding: 0,
+                              }}
+                            >
+                              {h.label}
+                              <span style={{ fontSize: '0.65rem', color: sortConfig.key === h.key ? '#3b82f6' : g.muted }}>
+                                {sortConfig.key === h.key ? (sortConfig.direction === 'asc' ? 'ASC' : 'DESC') : '--'}
+                              </span>
+                            </button>
+                          </th>
                         ))}
                       </tr>
                     </thead>
