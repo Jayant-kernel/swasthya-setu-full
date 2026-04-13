@@ -7,8 +7,8 @@ Trains a lightweight MLP gesture classifier on hand-landmark data exported
 from the DataCollector tool, then converts it to TensorFlow.js format.
 
 Architecture:
-  Input(63) → Dense(128, relu) → Dropout(0.3) → Dense(64, relu)
-            → Dropout(0.2) → Dense(NUM_CLASSES, softmax)
+  Input(126) → Dense(128, relu) → Dropout(0.3) → Dense(64, relu)
+             → Dropout(0.2) → Dense(NUM_CLASSES, softmax)
 
 Usage:
   python train_model.py \
@@ -29,12 +29,7 @@ from sklearn.metrics         import classification_report
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
-try:
-    import tensorflowjs as tfjs
-    HAS_TFJS = True
-except Exception:
-    HAS_TFJS = False
-    print('[Warning] tensorflowjs import failed — will use tensorflowjs CLI for conversion instead')
+from h5_to_tfjs import convert as h5_to_tfjs_convert
 
 
 # ─── CLI args ─────────────────────────────────────────────────────────────────
@@ -52,8 +47,10 @@ def parse_args():
 def load_dataset(path: str):
     """
     Expects JSON of shape:
-        { "FEVER": [[f0,…,f62], …], "COUGH": [[…], …], … }
-    Returns X: np.ndarray[N, 63], y: np.ndarray[N] (string labels)
+        { "FEVER": [[f0,…,fN], …], "COUGH": [[…], …], … }
+    Samples may have 63 or 126 features. 63-feature samples are zero-padded
+    to 126 (right-hand only → left-hand zeros) for two-hand model compatibility.
+    Returns X: np.ndarray[N, 126], y: np.ndarray[N] (string labels)
     """
     with open(path) as f:
         raw = json.load(f)
@@ -61,6 +58,9 @@ def load_dataset(path: str):
     X_list, y_list = [], []
     for class_name, samples in raw.items():
         for sample in samples:
+            if len(sample) == 63:
+                # Pad to 126: right-hand features + zeros for left hand
+                sample = sample + [0.0] * 63
             X_list.append(sample)
             y_list.append(class_name.upper())
 
@@ -78,11 +78,11 @@ def load_dataset(path: str):
 def build_model(num_classes: int) -> keras.Model:
     """
     Lightweight MLP — fast enough for browser inference via TF.js.
-    Input: 63 normalised landmark features
+    Input: 126 normalised landmark features (right[63] + left[63])
     Output: softmax over num_classes
     """
     model = keras.Sequential([
-        layers.Input(shape=(63,)),
+        layers.Input(shape=(126,)),
         layers.Dense(128, activation='relu'),
         layers.BatchNormalization(),
         layers.Dropout(0.3),
@@ -159,18 +159,7 @@ def train(args):
 
     # 7. Convert to TF.js format
     os.makedirs(args.output, exist_ok=True)
-    if HAS_TFJS:
-        tfjs.converters.save_keras_model(model, args.output)
-    else:
-        import subprocess
-        result = subprocess.run(
-            ['tensorflowjs_converter', '--input_format=keras', h5_path, args.output],
-            capture_output=True, text=True
-        )
-        if result.returncode != 0:
-            print(f'[Convert] CLI error: {result.stderr}')
-        else:
-            print(f'[Convert] CLI success')
+    h5_to_tfjs_convert(h5_path, args.output)
     print(f'[Convert] TF.js model -> {args.output}/')
 
     # 8. Print final accuracy

@@ -175,11 +175,36 @@ def build_dataset(video_dir: Path):
 
     mp_hands.close()
 
-    # Synthesise NO_SIGN: zero vectors with small noise
+    # Synthesise NO_SIGN samples — three varieties so the model learns
+    # "hand visible but not a known sign" is not the same as a real sign.
     total_real = len(X)
     n_no_sign  = max(int(total_real * NO_SIGN_RATIO), 50)
-    for _ in range(n_no_sign):
-        X.append(np.random.normal(0, NOISE_SIGMA, 126).astype(np.float32))
+
+    rng = np.random.default_rng(RANDOM_SEED)
+
+    def _random_hand_pose() -> np.ndarray:
+        """
+        Plausible-looking 63-float hand vector: wrist at origin,
+        fingers spread in random directions — mimics an open palm.
+        """
+        pts = rng.standard_normal((21, 3)).astype(np.float32) * 0.3
+        pts[0] = 0.0  # wrist at origin (normalised)
+        scale = float(np.linalg.norm(pts[9])) or 1.0
+        return (pts / scale).flatten()
+
+    for i in range(n_no_sign):
+        kind = i % 3
+        if kind == 0:
+            # Classic: near-zero vector (no hand / idle)
+            v = rng.normal(0, NOISE_SIGMA, 126).astype(np.float32)
+        elif kind == 1:
+            # Random open-palm pose (right hand only, left zeroed)
+            v = np.concatenate([_random_hand_pose(),
+                                 np.zeros(63, dtype=np.float32)])
+        else:
+            # Random open-palm pose (both hands — common when not signing)
+            v = np.concatenate([_random_hand_pose(), _random_hand_pose()])
+        X.append(v)
         y.append(NO_SIGN_IDX)
 
     X_arr = np.stack(X)

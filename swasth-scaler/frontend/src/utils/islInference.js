@@ -48,8 +48,13 @@ const BASE_THRESHOLDS = {
   ULTI:           0.84,
   'SANS-TAKLEEF': 0.85,
   'SEENE-DARD':   0.86,
-  CHAKKAR:        0.79,
+  CHAKKAR:        0.87,  // raised: open-palm false positives at 0.79
   KAMZORI:        0.75,
+}
+
+// Signs requiring minimum confidence margin over 2nd-best class
+const MARGIN_REQUIRED = {
+  CHAKKAR: 0.12,
 }
 
 // ── Demographic adjustments (§3A–D) ──────────────────────────────────────────
@@ -124,10 +129,19 @@ export function predict(model, features) {
       if (scores[i] > scores[bestIdx]) bestIdx = i
     }
 
-    return {
-      label:      LABELS[bestIdx] ?? 'UNCERTAIN',
-      confidence: scores[bestIdx],
-      scores,
+    const label      = LABELS[bestIdx] ?? 'UNCERTAIN'
+    const confidence = scores[bestIdx]
+
+    // Confidence margin gate — prevents ambiguous signs from firing
+    const marginReq = MARGIN_REQUIRED[label] ?? 0
+    if (marginReq > 0) {
+      const sorted   = [...scores].sort((a, b) => b - a)
+      const margin   = sorted[0] - sorted[1]
+      if (margin < marginReq) {
+        return { label: 'NO_SIGN', confidence, scores }
+      }
     }
+
+    return { label, confidence, scores }
   })
 }

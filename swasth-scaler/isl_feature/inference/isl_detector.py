@@ -112,8 +112,14 @@ _BASE_THRESHOLDS: dict[str, float] = {
     "ULTI":          0.84,
     "SANS-TAKLEEF":  0.85,
     "SEENE-DARD":    0.86,
-    "CHAKKAR":       0.79,
+    "CHAKKAR":       0.87,  # raised: open-palm false positives at 0.79
     "KAMZORI":       0.75,
+}
+
+# Signs that also require a minimum confidence margin over the 2nd-best class.
+# Prevents "slightly more than something else" from firing.
+_MARGIN_REQUIRED: dict[str, float] = {
+    "CHAKKAR": 0.12,   # must beat 2nd-best by at least 0.12
 }
 
 # ── Demographic threshold adjustments (§3A–D) ─────────────────────────────────
@@ -350,6 +356,18 @@ class ISLDetector:
             return {**self._base_result(), "has_hand": True,
                     "all_confidences": all_confidences,
                     "model_notes": notes or "Below confidence threshold"}
+
+        # ── Confidence margin gate (anti-confusion for ambiguous signs) ────────
+        margin_req = _MARGIN_REQUIRED.get(best_lbl, 0.0)
+        if margin_req > 0.0:
+            sorted_scores = sorted(raw_scores, reverse=True)
+            margin = sorted_scores[0] - sorted_scores[1]
+            if margin < margin_req:
+                self._vote_buffer.clear()
+                self._fill = 0.0
+                return {**self._base_result(), "has_hand": True,
+                        "all_confidences": all_confidences,
+                        "model_notes": f"Margin {margin:.3f} < required {margin_req} for {best_lbl}"}
 
         # ── Hand-count gate ───────────────────────────────────────────────────
         num_hands = len(results.multi_hand_landmarks)
