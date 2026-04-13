@@ -18,7 +18,8 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { normalizeSingleHand } from '../../utils/islNormalize'
 import { loadModel, predict, LABELS, CRITICAL_SIGNS, getThreshold } from '../../utils/islInference'
-import { loadMediaPipeHands } from '../../utils/loadMediaPipeHands'
+import { loadMediaPipeHands }    from '../../utils/loadMediaPipeHands'
+import { loadMediaPipeFaceMesh } from '../../utils/loadMediaPipeFaceMesh'
 
 const TEAL             = '#0F6E56'
 const INFER_INTERVAL   = 100   // ms between inference calls (10fps)
@@ -30,6 +31,38 @@ const EMA_ALPHA        = 0.35  // smoothing factor for elderly tremor filter
 // Hand-count gates: signs that require exactly one or two hands
 const ONE_HAND_SIGNS = new Set(['DARD', 'BUKHAR', 'PET-DARD', 'ULTI', 'SEENE-DARD', 'CHAKKAR', 'KAMZORI'])
 const TWO_HAND_SIGNS = new Set(['SANS-TAKLEEF', 'SAR-DARD'])
+
+// Proximity gates: sign -> { part, maxDist } in normalised image coords (0–1).
+// Gate is skipped (fail-open) when face is not detected.
+const PROXIMITY_GATES = {
+  BUKHAR:          { part: 'forehead', maxDist: 0.28 },
+  'SAR-DARD':      { part: 'head',     maxDist: 0.32 },
+  'PET-DARD':      { part: 'abdomen',  maxDist: 0.30 },
+  ULTI:            { part: 'mouth',    maxDist: 0.24 },
+  'SANS-TAKLEEF':  { part: 'chest',    maxDist: 0.32 },
+  'SEENE-DARD':    { part: 'chest',    maxDist: 0.30 },
+  CHAKKAR:         { part: 'head',     maxDist: 0.35 },
+}
+
+/**
+ * Extract normalised body reference points from FaceMesh landmarks.
+ * Chest and abdomen are approximated from face geometry (no Pose needed on frontend).
+ * Returns null if landmarks not available.
+ */
+function extractBodyPoints(fl) {
+  if (!fl || fl.length < 468) return null
+  const forehead = { x: fl[10].x,  y: fl[10].y  }
+  const head     = {
+    x: (fl[10].x + fl[1].x + fl[234].x + fl[454].x) / 4,
+    y: (fl[10].y + fl[1].y + fl[234].y + fl[454].y) / 4,
+  }
+  const mouth    = { x: fl[13].x,  y: fl[13].y  }
+  const faceH    = Math.abs(fl[10].y - fl[152].y)   // forehead→chin height
+  const noseX    = fl[1].x
+  const chest    = { x: noseX,     y: fl[152].y + faceH * 1.0 }
+  const abdomen  = { x: noseX,     y: fl[152].y + faceH * 2.0 }
+  return { forehead, head, mouth, chest, abdomen }
+}
 
 // MediaPipe hand skeleton connections
 const CONNECTIONS = [
@@ -79,6 +112,9 @@ export default function ISLCamera({ onSymptomDetected, onDebugUpdate, demographi
 
   // Bonus: landmark smoothing — rolling buffer of last 3 feature vectors
   const smoothBufRef = useRef([])
+
+  // Face landmarks — updated by FaceMesh, read by proximity gate
+  const faceLandmarksRef = useRef(null)
 
   const [status,       setStatus]       = useState('loading')   // 'loading'|'ready'|'no-model'
   const [prediction,   setPrediction]   = useState(null)        // { label, confidence }
@@ -243,6 +279,27 @@ export default function ISLCamera({ onSymptomDetected, onDebugUpdate, demographi
       return
     }
 
+    // Proximity gate: hand must be near the relevant body part for face-area signs.
+    // Skipped (fail-open) when face not detected — never blocks detection in bad lighting.
+    const gate = PROXIMITY_GATES[raw.label]
+    if (gate) {
+      const bodyPts = extractBodyPoints(faceLandmarksRef.current)
+      const ref = bodyPts?.[gate.part]
+      if (ref) {
+        // Find minimum wrist distance across all detected hands
+        const minDist = handsWithIdx.reduce((best, h) => {
+          const wx = h.lm[0].x, wy = h.lm[0].y
+          const d  = Math.hypot(wx - ref.x, wy - ref.y)
+          return Math.min(best, d)
+        }, Infinity)
+        if (minDist > gate.maxDist) {
+          setPrediction(null)
+          voteRef.current = { label: null, count: 0 }
+          return
+        }
+      }
+    }
+
     // Update rolling window
     const win = windowRef.current
     win.push(raw.label)
@@ -280,7 +337,7 @@ export default function ISLCamera({ onSymptomDetected, onDebugUpdate, demographi
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
-    let rafId = null, handsInstance = null, stream = null
+    let rafId = null, handsInstance = null, faceMeshInstance = null, stream = null
 
     async function init() {
       stream = await navigator.mediaDevices.getUserMedia({
@@ -290,6 +347,7 @@ export default function ISLCamera({ onSymptomDetected, onDebugUpdate, demographi
       video.srcObject = stream
       await video.play()
 
+      // Hands
       const Hands = await loadMediaPipeHands()
       handsInstance = new Hands({
         locateFile: f => `https://unpkg.com/@mediapipe/hands@0.4.1646424915/${f}`,
@@ -302,8 +360,32 @@ export default function ISLCamera({ onSymptomDetected, onDebugUpdate, demographi
       })
       handsInstance.onResults(onResults)
 
+      // FaceMesh — only used for position, not expressions
+      try {
+        const FaceMesh = await loadMediaPipeFaceMesh()
+        faceMeshInstance = new FaceMesh({
+          locateFile: f => `https://unpkg.com/@mediapipe/face_mesh@0.4.1633559619/${f}`,
+        })
+        faceMeshInstance.setOptions({
+          maxNumFaces:            1,
+          refineLandmarks:        false,   // skip iris — saves ~3ms/frame
+          minDetectionConfidence: 0.50,
+          minTrackingConfidence:  0.50,
+        })
+        faceMeshInstance.onResults(r => {
+          // Just store the latest face landmarks — used by proximity gate in onResults
+          faceLandmarksRef.current = r.multiFaceLandmarks?.[0] ?? null
+        })
+      } catch (e) {
+        console.warn('[ISLCamera] FaceMesh unavailable — proximity gate disabled:', e)
+      }
+
       const tick = async () => {
-        if (video.readyState >= 2) await handsInstance.send({ image: video })
+        if (video.readyState >= 2) {
+          await handsInstance.send({ image: video })
+          // FaceMesh runs on same frame — results stored in faceLandmarksRef
+          if (faceMeshInstance) await faceMeshInstance.send({ image: video })
+        }
         rafId = requestAnimationFrame(tick)
       }
       rafId = requestAnimationFrame(tick)
@@ -312,9 +394,10 @@ export default function ISLCamera({ onSymptomDetected, onDebugUpdate, demographi
     init().catch(console.error)
 
     return () => {
-      if (rafId)         cancelAnimationFrame(rafId)
-      if (stream)        stream.getTracks().forEach(t => t.stop())
-      if (handsInstance) handsInstance.close()
+      if (rafId)             cancelAnimationFrame(rafId)
+      if (stream)            stream.getTracks().forEach(t => t.stop())
+      if (handsInstance)     handsInstance.close()
+      if (faceMeshInstance)  faceMeshInstance.close()
     }
   }, [onResults])
 

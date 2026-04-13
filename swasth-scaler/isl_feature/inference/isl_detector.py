@@ -148,6 +148,19 @@ WINDOW_SIZE            = 60     # rolling history (6s at 10fps)
 CARDIAC_COMBO_WINDOW_S = 10.0   # seconds for CARDIAC_EMERGENCY combo
 EMA_ALPHA              = 0.35   # tremor filter smoothing factor (elderly)
 
+# ── Proximity gates (sign -> (body_part, max_dist_normalised)) ────────────────
+# Gate: at least one hand wrist must be within max_dist of the body part.
+# If face/pose not detected, gate is skipped (fail-open — never breaks detection).
+PROXIMITY_GATES: dict[str, tuple[str, float]] = {
+    "BUKHAR":       ("forehead", 0.28),   # hand near forehead (fever gesture)
+    "SAR-DARD":     ("head",     0.32),   # hand near head (headache gesture)
+    "PET-DARD":     ("abdomen",  0.30),   # hand near stomach
+    "ULTI":         ("mouth",    0.24),   # hand near mouth (vomiting gesture)
+    "SANS-TAKLEEF": ("chest",    0.32),   # hand near chest (breathless)
+    "SEENE-DARD":   ("chest",    0.30),   # hand near chest (chest pain)
+    "CHAKKAR":      ("head",     0.35),   # hand near head (dizziness)
+}
+
 
 # ── Normalisation ─────────────────────────────────────────────────────────────
 def _normalize(landmarks) -> np.ndarray:
@@ -184,6 +197,23 @@ class ISLDetector:
             model_complexity=1,
             min_detection_confidence=0.50,  # was 0.70 — less shy in poor lighting
             min_tracking_confidence=0.50,   # was 0.60 — reduces mid-sign drops
+        )
+
+        # ── MediaPipe FaceMesh — face reference landmarks ─────────────────────
+        self._mp_face = mp.solutions.face_mesh.FaceMesh(
+            static_image_mode=False,
+            max_num_faces=1,
+            refine_landmarks=False,         # skip iris — saves ~3ms/frame
+            min_detection_confidence=0.50,
+            min_tracking_confidence=0.50,
+        )
+
+        # ── MediaPipe Pose (lite) — chest / abdomen landmarks ─────────────────
+        self._mp_pose = mp.solutions.pose.Pose(
+            static_image_mode=False,
+            model_complexity=0,             # lite model, fast enough for real-time
+            min_detection_confidence=0.50,
+            min_tracking_confidence=0.50,
         )
 
         # ── CLAHE for frame enhancement (Fix 2) ──────────────────────────────
@@ -259,7 +289,9 @@ class ISLDetector:
         enhanced = cv2.cvtColor(cv2.merge([l, a, b]), cv2.COLOR_LAB2BGR)
         rgb      = cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB)
 
-        results = self._mp_hands.process(rgb)
+        results      = self._mp_hands.process(rgb)
+        face_results = self._mp_face.process(rgb)
+        pose_results = self._mp_pose.process(rgb)
 
         if not results.multi_hand_landmarks:
             self._vote_buffer.clear()
@@ -369,6 +401,26 @@ class ISLDetector:
                         "all_confidences": all_confidences,
                         "model_notes": f"Margin {margin:.3f} < required {margin_req} for {best_lbl}"}
 
+        # ── Proximity gate (face + pose body reference) ───────────────────────
+        if best_lbl in PROXIMITY_GATES:
+            part, max_dist = PROXIMITY_GATES[best_lbl]
+            body_pts = self._extract_body_points(face_results, pose_results)
+            ref = body_pts.get(part)
+            if ref is not None:
+                # Check if ANY detected wrist is close enough to the body part
+                min_dist = float("inf")
+                for lm_group in hands_sorted:
+                    wx = lm_group.landmark[0].x
+                    wy = lm_group.landmark[0].y
+                    d  = ((wx - ref[0]) ** 2 + (wy - ref[1]) ** 2) ** 0.5
+                    min_dist = min(min_dist, d)
+                if min_dist > max_dist:
+                    self._vote_buffer.clear()
+                    self._fill = 0.0
+                    return {**self._base_result(), "has_hand": True,
+                            "all_confidences": all_confidences,
+                            "model_notes": f"Proximity gate: hand {min_dist:.2f} > {max_dist} from {part}"}
+
         # ── Hand-count gate ───────────────────────────────────────────────────
         num_hands = len(results.multi_hand_landmarks)
         if num_hands == 1 and best_lbl in TWO_HAND_SIGNS:
@@ -450,9 +502,60 @@ class ISLDetector:
 
     def close(self) -> None:
         self._mp_hands.close()
+        self._mp_face.close()
+        self._mp_pose.close()
         logger.info("[ISLDetector] closed")
 
     # ── Internal helpers ──────────────────────────────────────────────────────
+
+    @staticmethod
+    def _extract_body_points(face_results, pose_results) -> dict[str, tuple[float, float]]:
+        """
+        Extract normalised (x, y) reference points for body parts.
+        Returns only the parts that could be detected — caller must handle missing keys.
+        Coordinates are in flipped-frame space (0–1), consistent with hand landmarks.
+        """
+        pts: dict[str, tuple[float, float]] = {}
+
+        # ── Face landmarks ────────────────────────────────────────────────────
+        if face_results and face_results.multi_face_landmarks:
+            fl = face_results.multi_face_landmarks[0].landmark
+            # forehead: landmark 10
+            pts["forehead"] = (fl[10].x, fl[10].y)
+            # head center: average of forehead(10), nose(1), left(234), right(454)
+            pts["head"] = (
+                (fl[10].x + fl[1].x + fl[234].x + fl[454].x) / 4,
+                (fl[10].y + fl[1].y + fl[234].y + fl[454].y) / 4,
+            )
+            # mouth: upper-lip center (landmark 13)
+            pts["mouth"] = (fl[13].x, fl[13].y)
+
+            # Approximate chest + abdomen from face when pose is unavailable.
+            # Uses chin(152) as anchor: chin + 1× face_height ≈ chest,
+            # chin + 2× face_height ≈ abdomen.  Rough but better than nothing.
+            face_height = abs(fl[10].y - fl[152].y)
+            nose_x = fl[1].x
+            pts["chest_approx"]   = (nose_x, fl[152].y + face_height * 1.0)
+            pts["abdomen_approx"] = (nose_x, fl[152].y + face_height * 2.0)
+
+        # ── Pose landmarks ────────────────────────────────────────────────────
+        if pose_results and pose_results.pose_landmarks:
+            pl = pose_results.pose_landmarks.landmark
+            # chest: midpoint of shoulders(11, 12) + small downward offset
+            cx = (pl[11].x + pl[12].x) / 2
+            cy = (pl[11].y + pl[12].y) / 2 + 0.07
+            pts["chest"] = (cx, cy)
+            # abdomen: midpoint of hips(23, 24) shifted slightly up
+            ax = (pl[23].x + pl[24].x) / 2
+            ay = (pl[23].y + pl[24].y) / 2 - 0.05
+            pts["abdomen"] = (ax, ay)
+        else:
+            # Fall back to face-derived approximations
+            if "chest_approx" in pts:
+                pts["chest"]   = pts["chest_approx"]
+                pts["abdomen"] = pts["abdomen_approx"]
+
+        return pts
 
     def _check_cardiac_emergency(self) -> bool:
         """CARDIAC_EMERGENCY = SEENE-DARD + SANS-TAKLEEF within CARDIAC_COMBO_WINDOW_S."""

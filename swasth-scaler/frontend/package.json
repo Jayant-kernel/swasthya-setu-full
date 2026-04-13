@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "@mediapipe/camera_utils": "^0.3.1640029074",
+    "@mediapipe/face_mesh": "^0.4.1633559619",
     "@mediapipe/hands": "^0.4.1646424915",
+    "@mediapipe/pose": "^0.5.1675469404",
     "@supabase/supabase-js": "^2.39.0",
     "@tensorflow/tfjs": "^4.22.0",
     "@tensorflow/tfjs-backend-webgl": "^4.22.0",
