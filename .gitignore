@@ -1,5 +1,6 @@
 node_modules/
 venv/
+.venv/
 .env
 __pycache__/
 *.pyc
@@ -9,3 +10,4 @@ build/
 .vscode/
 .idea/
 *.log
+swasth-scaler/isl_feature/training/train_env/

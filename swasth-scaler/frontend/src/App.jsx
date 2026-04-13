@@ -23,7 +23,6 @@ import LandingPage from './pages/landing/LandingPage.jsx'
 import RoleSelectionPage from './pages/landing/RoleSelectionPage.jsx'
 import UnderConstructionPage from './pages/landing/UnderConstructionPage.jsx'
 
-import DataCollector from './components/common/DataCollector.jsx'
 
 export default function App() {
   return (
@@ -46,8 +45,6 @@ export default function App() {
               <Route path="/childbirth" element={<ProtectedRoute role="asha"><ChildbirthPage /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute role="asha"><ProfilePage /></ProtectedRoute>} />
               
-              <Route path="/data-collector" element={<DataCollector />} />
-
               {/* DMO Portal */}
               <Route path="/dashboard/dmo" element={<ProtectedRoute role="dmo"><DMODashboardPage /></ProtectedRoute>} />
               <Route path="/dashboard/dmo/map" element={<ProtectedRoute role="dmo"><DMOMapPage /></ProtectedRoute>} />

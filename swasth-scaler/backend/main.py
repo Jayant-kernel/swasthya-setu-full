@@ -324,22 +324,29 @@ Text: {original_transcript}"""
 @app.websocket("/ws/isl")
 async def isl_detect(websocket: WebSocket):
     """
-    WebSocket endpoint for real-time ISL detection.
+    WebSocket endpoint for real-time ISL detection (v2.0).
 
     Client sends JSON:
-      { "type": "frame",  "image": "<base64 JPEG>" }
+      { "type": "frame",   "image": "<base64 JPEG>" }
       { "type": "reset" }
+      { "type": "profile", "demographic": "women|men|child|elderly" }
 
-    Server replies JSON:
+    Server replies JSON per frame:
       {
-        "sign":            "fever" | null,
-        "confidence":      0.0-1.0,
-        "confirmed":       true/false,
-        "fill":            0.0-1.0,
-        "odia":            "ଜ୍ୱର" | null,
-        "english":         "Fever" | null,
-        "has_hand":        true/false,
-        "all_confidences": { "fever": 0.92, ... }
+        "sign":              "BUKHAR" | null,
+        "english":           "Bukhar" | null,
+        "hindi":             "बुखार" | null,
+        "icd10":             "R50.9" | null,
+        "urgency":           "high" | "medium" | "critical" | "unknown",
+        "confidence":        0.0-1.0,
+        "confirmed":         true/false,
+        "escalate":          true/false,
+        "fill":              0.0-1.0,
+        "has_hand":          true/false,
+        "cardiac_emergency": true/false,
+        "all_confidences":   { "BUKHAR": 0.92, ... },
+        "demographic":       "men",
+        "model_notes":       ""
       }
     """
     await websocket.accept()
@@ -363,6 +370,12 @@ async def isl_detect(websocket: WebSocket):
             if payload.get("type") == "reset":
                 detector.reset()
                 await websocket.send_json({"reset": True})
+                continue
+
+            if payload.get("type") == "profile":
+                demographic = payload.get("demographic", "men")
+                detector.set_demographic(demographic)
+                await websocket.send_json({"profile_set": demographic})
                 continue
 
             if payload.get("type") == "frame":
