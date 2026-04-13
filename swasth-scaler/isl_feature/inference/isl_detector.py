@@ -61,6 +61,10 @@ LABELS = [
 
 CRITICAL_SIGNS = {"SANS-TAKLEEF", "SEENE-DARD"}
 
+# Hand-count gates
+ONE_HAND_SIGNS = {"DARD", "BUKHAR", "PET-DARD", "ULTI", "SEENE-DARD", "CHAKKAR", "KAMZORI"}
+TWO_HAND_SIGNS = {"SANS-TAKLEEF", "SAR-DARD"}
+
 URGENCY: dict[str, str] = {
     "DARD":          "high",
     "BUKHAR":        "high",
@@ -301,6 +305,21 @@ class ISLDetector:
             return {**self._base_result(), "has_hand": True,
                     "all_confidences": all_confidences,
                     "model_notes": notes or "Below confidence threshold"}
+
+        # ── Hand-count gate ───────────────────────────────────────────────────
+        num_hands = len(results.multi_hand_landmarks)
+        if num_hands == 1 and best_lbl in TWO_HAND_SIGNS:
+            self._vote_buffer.clear()
+            self._fill = 0.0
+            return {**self._base_result(), "has_hand": True,
+                    "all_confidences": all_confidences,
+                    "model_notes": "Two-hand sign blocked: only 1 hand visible"}
+        if num_hands >= 2 and best_lbl in ONE_HAND_SIGNS:
+            self._vote_buffer.clear()
+            self._fill = 0.0
+            return {**self._base_result(), "has_hand": True,
+                    "all_confidences": all_confidences,
+                    "model_notes": "One-hand sign blocked: 2 hands visible"}
 
         # ── CRITICAL signs: fire immediately (§8) ────────────────────────────
         if best_lbl in CRITICAL_SIGNS:

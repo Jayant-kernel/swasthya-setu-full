@@ -27,6 +27,10 @@ const WINDOW_FRAMES    = 60    // rolling window size (6s at 10fps)
 const CARDIAC_WINDOW   = 10000 // ms — SEENE-DARD + SANS-TAKLEEF combo window
 const EMA_ALPHA        = 0.35  // smoothing factor for elderly tremor filter
 
+// Hand-count gates: signs that require exactly one or two hands
+const ONE_HAND_SIGNS = new Set(['DARD', 'BUKHAR', 'PET-DARD', 'ULTI', 'SEENE-DARD', 'CHAKKAR', 'KAMZORI'])
+const TWO_HAND_SIGNS = new Set(['SANS-TAKLEEF', 'SAR-DARD'])
+
 // MediaPipe hand skeleton connections
 const CONNECTIONS = [
   [0,1],[1,2],[2,3],[3,4],
@@ -175,6 +179,18 @@ export default function ISLCamera({ onSymptomDetected, onDebugUpdate, demographi
       raw.label === 'UNCERTAIN' ||
       raw.label === 'NO_SIGN'
     ) {
+      setPrediction(null)
+      voteRef.current = { label: null, count: 0 }
+      return
+    }
+
+    // Hand-count gate: 1 hand → only single-hand signs valid; 2 hands → only two-hand signs valid
+    if (handsDetected === 1 && TWO_HAND_SIGNS.has(raw.label)) {
+      setPrediction(null)
+      voteRef.current = { label: null, count: 0 }
+      return
+    }
+    if (handsDetected >= 2 && ONE_HAND_SIGNS.has(raw.label)) {
       setPrediction(null)
       voteRef.current = { label: null, count: 0 }
       return
