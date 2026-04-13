@@ -402,7 +402,7 @@ export default function LoginRoleModal({ onClose }) {
                 Welcome Back!
               </h1>
               <p style={{ color: '#9ca3af', fontSize: '0.875rem', margin: 0, fontFamily: 'Inter, sans-serif' }}>
-                Welcome Back
+                परत स्वागत आहे
               </p>
             </div>
 
