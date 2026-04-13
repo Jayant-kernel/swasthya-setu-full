@@ -8,7 +8,7 @@ import { SunIcon, MoonIcon, SearchIcon, ActivityIcon } from '../admin/AdminIcons
 import { API, DISTRICT_CENTERS, buildMapPoints } from './DMOShared'
 
 const StatCard = ({ label, value, subtext, icon: Icon, color = '#3b82f6', g }) => (
-  <div className="stat-card" style={{ background: g.cardBg, borderRadius: 16, padding: '1.5rem', boxShadow: g.cardShd, border: `1px solid ${g.cardBdr}`, flex: 1, backdropFilter: g.blur }}>
+  <div className="stat-card elevated-panel" style={{ background: g.cardBg, borderRadius: 16, padding: '1.5rem', boxShadow: g.cardShd, border: `1px solid ${g.cardBdr}`, flex: 1, backdropFilter: g.blur }}>
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
       <div style={{ width: 44, height: 44, borderRadius: 12, background: `${color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
         <Icon />
@@ -37,7 +37,7 @@ const Calendar = ({ triageRecords, selectedDate, setSelectedDate, g, isDark }) =
   }, [triageRecords])
 
   return (
-    <div style={{ background: g.cardBg, borderRadius: 20, padding: '1.5rem', border: `1px solid ${g.cardBdr}`, boxShadow: g.cardShd, backdropFilter: g.blur }}>
+    <div className="elevated-panel" style={{ background: g.cardBg, borderRadius: 20, padding: '1.5rem', border: `1px solid ${g.cardBdr}`, boxShadow: g.cardShd, backdropFilter: g.blur }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
         <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: g.text }}>Activity Calendar</h3>
         <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#6366f1', background: 'rgba(99, 102, 241, 0.1)', padding: '2px 8px', borderRadius: 6 }}>APRIL 2026</span>
@@ -154,12 +154,17 @@ export default function DMODashboardPage() {
         .nav-link:hover { background: ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}; color: ${g.accent}; }
         .nav-link.active { background: ${isDark ? 'rgba(59,130,246,0.15)' : '#ebf5ff'}; color: #3b82f6; font-weight: 700; border-left: 3px solid #3b82f6; }
         .table-row:hover { background: ${g.insetBg}; cursor: pointer; }
+        .elevated-panel {
+          box-shadow: 0 18px 40px rgba(15, 23, 42, ${isDark ? '0.38' : '0.10'}), 0 2px 10px rgba(59, 130, 246, ${isDark ? '0.14' : '0.08'});
+          background-image: linear-gradient(180deg, ${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.78)'}, transparent 58%);
+        }
         .stat-card { position: relative; top: 0; transition: top 0.2s ease, box-shadow 0.2s ease; }
-        .stat-card:hover { top: -4px; box-shadow: 0 12px 28px rgba(59,130,246,0.14); }
+        .stat-card:hover { top: -4px; box-shadow: 0 22px 40px rgba(15,23,42,${isDark ? '0.42' : '0.14'}), 0 6px 18px rgba(59,130,246,0.18); }
         .patient-row td { transition: background 0.2s ease, box-shadow 0.2s ease; }
         .patient-row:hover td { background: ${isDark ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.06)'}; box-shadow: inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
         .patient-row:hover td:first-child { box-shadow: inset 1px 0 0 #22c55e, inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
         .patient-row:hover td:last-child { box-shadow: inset -1px 0 0 #22c55e, inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
+        .panel-header { background: ${isDark ? 'linear-gradient(180deg, rgba(59,130,246,0.12), rgba(59,130,246,0.02))' : 'linear-gradient(180deg, rgba(59,130,246,0.08), rgba(59,130,246,0.01))'}; }
       `}</style>
 
       <DMOSidebar isHovered={isHovered} setIsHovered={setIsHovered} onLogout={() => {logout(); navigate('/')}} onAdminNav={() => navigate('/dashboard/admin')} />
@@ -184,8 +189,8 @@ export default function DMODashboardPage() {
                 <StatCard label="Sickle Cell Risk" value={stats.sickle} subtext="Screening results" icon={ActivityIcon} color="#8b5cf6" g={g} />
               </div>
 
-              <div style={{ background: g.cardBg, borderRadius: 20, border: `1px solid ${g.cardBdr}`, boxShadow: g.cardShd, overflow: 'hidden' }}>
-                <div style={{ padding: '1.5rem', borderBottom: `1px solid ${g.divider}` }}>
+              <div className="elevated-panel" style={{ background: g.cardBg, borderRadius: 20, border: `1px solid ${g.cardBdr}`, boxShadow: g.cardShd, overflow: 'hidden' }}>
+                <div className="panel-header" style={{ padding: '1.5rem', borderBottom: `1px solid ${g.divider}` }}>
                   <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: g.text }}>Patient Triage Feed</h3>
                 </div>
                 <div style={{ overflowX: 'auto' }}>

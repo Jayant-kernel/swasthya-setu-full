@@ -8,7 +8,7 @@ import { SunIcon, MoonIcon, ActivityIcon, GlobeIcon } from './AdminIcons'
 import { API } from './constants'
 
 const StatCard = ({ label, value, subtext, icon: Icon, color = '#3b82f6', g }) => (
-  <div className="stat-card" style={{ background: g.cardBg, borderRadius: 16, padding: '1.5rem', boxShadow: g.cardShd, border: `1px solid ${g.cardBdr}`, flex: 1, backdropFilter: g.blur }}>
+  <div className="stat-card elevated-panel" style={{ background: g.cardBg, borderRadius: 16, padding: '1.5rem', boxShadow: g.cardShd, border: `1px solid ${g.cardBdr}`, flex: 1, backdropFilter: g.blur }}>
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
       <div style={{ width: 44, height: 44, borderRadius: 12, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
         <Icon />
@@ -306,12 +306,25 @@ export default function AdminDashboardPage() {
         .nav-link:hover { background: ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}; color: ${g.accent}; }
         .nav-link.active { background: ${isDark ? 'rgba(79,70,229,0.15)' : '#eef2ff'}; color: #4f46e5; font-weight: 700; border-left: 3px solid #4f46e5; }
         .table-row:hover { background: ${g.insetBg}; cursor: pointer; }
+        .elevated-panel {
+          box-shadow: 0 18px 42px rgba(15, 23, 42, ${isDark ? '0.40' : '0.11'}), 0 2px 10px rgba(79, 70, 229, ${isDark ? '0.16' : '0.08'});
+          background-image: linear-gradient(180deg, ${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.82)'}, transparent 58%);
+        }
         .stat-card { position: relative; top: 0; transition: top 0.2s ease, box-shadow 0.2s ease; }
-        .stat-card:hover { top: -4px; box-shadow: 0 12px 28px rgba(79,70,229,0.14); }
+        .stat-card:hover { top: -4px; box-shadow: 0 24px 42px rgba(15,23,42,${isDark ? '0.44' : '0.15'}), 0 8px 18px rgba(79,70,229,0.18); }
         .patient-row td { transition: background 0.2s ease, box-shadow 0.2s ease; }
         .patient-row:hover td { background: ${isDark ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.06)'}; box-shadow: inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
         .patient-row:hover td:first-child { box-shadow: inset 1px 0 0 #22c55e, inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
         .patient-row:hover td:last-child { box-shadow: inset -1px 0 0 #22c55e, inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
+        .panel-header { background: ${isDark ? 'linear-gradient(180deg, rgba(79,70,229,0.14), rgba(79,70,229,0.02))' : 'linear-gradient(180deg, rgba(79,70,229,0.08), rgba(79,70,229,0.01))'}; }
+        .analytics-toggle {
+          box-shadow: 0 12px 28px rgba(15,23,42,${isDark ? '0.28' : '0.08'});
+          background-image: linear-gradient(180deg, ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.88)'}, transparent 70%);
+        }
+        .analytics-button { transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease, color 0.18s ease; }
+        .analytics-button:hover { transform: translateY(-1px); box-shadow: 0 10px 20px rgba(79,70,229,0.14); }
+        .analytics-table tbody tr { transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease; }
+        .analytics-table tbody tr:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px ${isDark ? 'rgba(99,102,241,0.32)' : 'rgba(79,70,229,0.18)'}; }
       `}</style>
 
       <AdminSidebar isHovered={isHovered} setIsHovered={setIsHovered} />
@@ -351,8 +364,8 @@ export default function AdminDashboardPage() {
                 <StatCard label="National Alerts (RED)" value={stats.critical} subtext="High-severity cases" icon={ActivityIcon} color="#ef4444" g={g} />
               </div>
 
-              <div style={{ background: g.cardBg, borderRadius: 16, border: `1px solid ${g.cardBdr}`, boxShadow: g.cardShd, overflow: 'hidden' }}>
-                <div style={{ padding: '1.5rem', borderBottom: `1px solid ${g.divider}` }}>
+              <div className="elevated-panel" style={{ background: g.cardBg, borderRadius: 16, border: `1px solid ${g.cardBdr}`, boxShadow: g.cardShd, overflow: 'hidden' }}>
+                <div className="panel-header" style={{ padding: '1.5rem', borderBottom: `1px solid ${g.divider}` }}>
                   <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: g.text }}>Recent Global Triage Events</h3>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
@@ -422,19 +435,19 @@ export default function AdminDashboardPage() {
                   <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: g.text, margin: '0 0 0.25rem' }}>Regional Data Insights</h1>
                   <p style={{ margin: 0, color: g.muted, fontSize: '0.9375rem' }}>Performance and severity breakdown aggregated by active districts.</p>
                 </div>
-                <div style={{ display: 'flex', background: g.cardBg, padding: 4, borderRadius: 12, border: `1px solid ${g.cardBdr}`, gap: 4 }}>
-                  <button onClick={() => setAnalyticsMode('cases')} style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, background: analyticsMode === 'cases' ? '#4f46e5' : 'transparent', color: analyticsMode === 'cases' ? '#fff' : g.muted }}>Triage Cases</button>
-                  <button onClick={() => setAnalyticsMode('outbreaks')} style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, background: analyticsMode === 'outbreaks' ? '#4f46e5' : 'transparent', color: analyticsMode === 'outbreaks' ? '#fff' : g.muted }}>Disease Outbreaks</button>
+                <div className="analytics-toggle" style={{ display: 'flex', background: g.cardBg, padding: 4, borderRadius: 12, border: `1px solid ${g.cardBdr}`, gap: 4 }}>
+                  <button className="analytics-button" onClick={() => setAnalyticsMode('cases')} style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, background: analyticsMode === 'cases' ? 'linear-gradient(135deg, #4f46e5, #6366f1)' : 'transparent', color: analyticsMode === 'cases' ? '#fff' : g.muted, boxShadow: analyticsMode === 'cases' ? '0 10px 22px rgba(79,70,229,0.24)' : 'none' }}>Triage Cases</button>
+                  <button className="analytics-button" onClick={() => setAnalyticsMode('outbreaks')} style={{ padding: '0.5rem 1.25rem', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.8125rem', fontWeight: 700, background: analyticsMode === 'outbreaks' ? 'linear-gradient(135deg, #4f46e5, #6366f1)' : 'transparent', color: analyticsMode === 'outbreaks' ? '#fff' : g.muted, boxShadow: analyticsMode === 'outbreaks' ? '0 10px 22px rgba(79,70,229,0.24)' : 'none' }}>Disease Outbreaks</button>
                 </div>
               </div>
 
-              <div style={{ background: g.cardBg, borderRadius: 20, border: `1px solid ${g.cardBdr}`, overflow: 'hidden', boxShadow: g.cardShd }}>
-                <div style={{ padding: '1.5rem', borderBottom: `1px solid ${g.divider}` }}>
+              <div className="elevated-panel" style={{ background: g.cardBg, borderRadius: 20, border: `1px solid ${g.cardBdr}`, overflow: 'hidden', boxShadow: g.cardShd }}>
+                <div className="panel-header" style={{ padding: '1.5rem', borderBottom: `1px solid ${g.divider}` }}>
                   <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: g.text }}>{analyticsMode === 'cases' ? 'Comparative Region Performance' : 'District Outbreak Comparison'}</h3>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
                   {analyticsMode === 'cases' ? (
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <table className="analytics-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead style={{ background: g.insetBg }}>
                         <tr>
                           {['District', 'Total Traffic', 'Alert Rate', 'Sickle indexed', 'Primary Source'].map(h => (
@@ -459,7 +472,7 @@ export default function AdminDashboardPage() {
                       </tbody>
                     </table>
                   ) : (
-                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <table className="analytics-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
                       <thead style={{ background: g.insetBg }}>
                         <tr>
                           {['District', 'Total Cases', 'Reported Deaths', 'Fatality Rate', 'Diseases Count'].map(h => (
