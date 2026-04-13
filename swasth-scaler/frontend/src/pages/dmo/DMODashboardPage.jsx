@@ -71,14 +71,19 @@ export default function DMODashboardPage() {
   const [triageRecords, setTriageRecords] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedDate, setSelectedDate] = useState(null)
-  const [sortConfig, setSortConfig] = useState({ key: 'patient_name', direction: 'asc' })
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null })
 
   const handleSort = useCallback((key) => {
     setSortConfig((prev) => {
-      if (prev.key === key) {
-        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+      if (prev.key !== key) {
+        return { key, direction: 'asc' }
       }
-      return { key, direction: 'asc' }
+
+      if (prev.direction === 'asc') {
+        return { key, direction: 'desc' }
+      }
+
+      return { key: null, direction: null }
     })
   }, [])
 
@@ -128,13 +133,15 @@ export default function DMODashboardPage() {
         return d.getDate() === selectedDate && d.getMonth() === 3 && d.getFullYear() === 2026
       })
     }
-    items.sort((a,b) => {
-      const av = getSortValue(a, sortConfig.key)
-      const bv = getSortValue(b, sortConfig.key)
-      if (av < bv) return sortConfig.direction === 'asc' ? -1 : 1
-      if (av > bv) return sortConfig.direction === 'asc' ? 1 : -1
-      return 0
-    })
+    if (sortConfig.key && sortConfig.direction) {
+      items.sort((a,b) => {
+        const av = getSortValue(a, sortConfig.key)
+        const bv = getSortValue(b, sortConfig.key)
+        if (av < bv) return sortConfig.direction === 'asc' ? -1 : 1
+        if (av > bv) return sortConfig.direction === 'asc' ? 1 : -1
+        return 0
+      })
+    }
     return items
   }, [triageRecords, sortConfig, selectedDate])
 
@@ -145,8 +152,8 @@ export default function DMODashboardPage() {
         .nav-link:hover { background: ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}; color: ${g.accent}; }
         .nav-link.active { background: ${isDark ? 'rgba(59,130,246,0.15)' : '#ebf5ff'}; color: #3b82f6; font-weight: 700; border-left: 3px solid #3b82f6; }
         .table-row:hover { background: ${g.insetBg}; cursor: pointer; }
-        .stat-card { transition: transform 0.2s ease, box-shadow 0.2s ease; will-change: transform; }
-        .stat-card:hover { transform: translateY(-4px) scale(1.01); box-shadow: 0 12px 28px rgba(59,130,246,0.14); }
+        .stat-card { position: relative; top: 0; transition: top 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card:hover { top: -4px; box-shadow: 0 12px 28px rgba(59,130,246,0.14); }
       `}</style>
 
       <DMOSidebar isHovered={isHovered} setIsHovered={setIsHovered} onLogout={() => {logout(); navigate('/')}} onAdminNav={() => navigate('/dashboard/admin')} />
@@ -205,7 +212,7 @@ export default function DMODashboardPage() {
                             >
                               {h.label}
                               <span style={{ fontSize: '0.65rem', color: sortConfig.key === h.key ? '#3b82f6' : g.muted }}>
-                                {sortConfig.key === h.key ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                                {sortConfig.key === h.key ? (sortConfig.direction === 'asc' ? 'ASC' : 'DESC') : '--'}
                               </span>
                             </button>
                           </th>
