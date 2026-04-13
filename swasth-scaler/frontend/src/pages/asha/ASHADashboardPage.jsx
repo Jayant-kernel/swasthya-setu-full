@@ -363,6 +363,25 @@ export default function ASHADashboardPage() {
         .hp-del:hover{background:rgba(239,68,68,0.15)!important;color:#f87171!important;}
         .hp-cta:hover{opacity:0.87!important;transform:translateY(-1px)!important;}
         .hp-nav:hover{background:var(--g-hover)!important;}
+        
+        /* Responsive Font Scales */
+        .hp-name { font-weight: 700; fontSize: 0.875rem; color: ${g.text}; line-height: 1.25; }
+        .hp-details { font-size: 0.72rem; color: ${g.muted}; line-height: 1.4; }
+        .hp-header-cell { font-size: 0.65rem; font-weight: 700; color: ${g.label}; letter-spacing: 0.07em; text-transform: uppercase; user-select: none; display: flex; alignItems: center; gap: 4px; }
+        .hp-table-grid { display: grid; grid-template-columns: 2fr 1.2fr 1.2fr 1fr 1fr 0.5fr; gap: 0.5rem; }
+        .hp-cell-content { display: flex; align-items: center; }
+
+        @media (max-width: 768px) {
+          .hp-name { font-size: 0.75rem; }
+          .hp-details { font-size: 0.62rem; }
+          .hp-header-cell { font-size: 0.55rem; letter-spacing: 0.02em; }
+          .hp-table-grid { grid-template-columns: 2fr 1fr 1fr 0.8fr 0.8fr 0.4fr; gap: 0.25rem; }
+          .hp-chip { font-size: 0.75rem !important; padding: 0.35rem 0.75rem !important; }
+        }
+        @media (max-width: 480px) {
+          .hp-table-grid { grid-template-columns: 2.5fr 1fr 0.8fr 0.5fr; } /* Hide some columns on very small screens if necessary, or just squash more */
+          .hp-hide-mobile { display: none !important; }
+        }
       `}</style>
 
         <div style={{ padding: 'clamp(1rem, 3.5vw, 2.25rem)', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -444,23 +463,20 @@ export default function ASHADashboardPage() {
 
           {viewTab === 'Table' && sortedResults.length > 0 && (
             <div style={{ ...cardStyle, overflow: 'hidden' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1.2fr 1.2fr 1fr 1fr 0.5fr', padding: '0.875rem 1.375rem', borderBottom: `1px solid ${g.divider}`, background: g.insetBg, backdropFilter: 'blur(8px)' }}>
+              <div className="hp-table-grid" style={{ padding: '0.875rem 1.375rem', borderBottom: `1px solid ${g.divider}`, background: g.insetBg, backdropFilter: 'blur(8px)' }}>
                 {[
-                  { label: 'Name', field: 'name' },
-                  { label: 'Last Visit', field: 'date' },
-                  { label: 'District', field: 'district' },
-                  { label: 'Priority', field: 'severity' },
-                  { label: 'Status', field: 'severity' },
-                  { label: '', field: null }
+                  { label: 'Name', field: 'name', mobile: true },
+                  { label: 'Last Visit', field: 'date', mobile: true },
+                  { label: 'District', field: 'district', mobile: false },
+                  { label: 'Priority', field: 'severity', mobile: true },
+                  { label: 'Status', field: 'severity', mobile: false },
+                  { label: '', field: null, mobile: true }
                 ].map(col => (
                   <div 
                     key={col.label} 
+                    className={`hp-header-cell ${!col.mobile ? 'hp-hide-mobile' : ''}`}
                     onClick={() => col.field && handleSort(col.field)}
-                    style={{ 
-                      fontSize: '0.65rem', fontWeight: 700, color: g.label, letterSpacing: '0.07em', 
-                      textTransform: 'uppercase', cursor: col.field ? 'pointer' : 'default',
-                      userSelect: 'none', display: 'flex', alignItems: 'center', gap: 4
-                    }}
+                    style={{ cursor: col.field ? 'pointer' : 'default' }}
                   >
                     <span>{col.label}</span>
                     {col.field && <SortIndicator field={col.field} />}
@@ -471,23 +487,22 @@ export default function ASHADashboardPage() {
               {sortedResults.map((p, idx) => {
                 const last = p.triage_records?.[0]
                 return (
-                  <div key={p.id} className="hp-row" onClick={() => handlePatientClick(p)} style={{
-                    display: 'grid', gridTemplateColumns: '2fr 1.2fr 1.2fr 1fr 1fr 0.5fr',
+                  <div key={p.id} className="hp-row hp-table-grid" onClick={() => handlePatientClick(p)} style={{
                     padding: '0.75rem 1.375rem', alignItems: 'center',
                     borderBottom: idx < sortedResults.length - 1 ? `1px solid ${g.divider}` : 'none',
                     transition: 'background .12s',
                   }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                      <span style={{ fontWeight: 700, fontSize: '0.875rem', color: g.text }}>{p.name}</span>
-                      <span style={{ fontSize: '0.72rem', color: g.muted }}>
+                      <span className="hp-name">{p.name}</span>
+                      <span className="hp-details">
                         {[p.age && `${p.age} yrs`, p.gender].filter(Boolean).join(' · ')}
                         {last?.brief ? ` · ${last.brief.slice(0, 28)}${last.brief.length > 28 ? '…' : ''}` : ''}
                       </span>
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: g.text, fontWeight: 500 }}>{last ? timeAgo(last.created_at) : '—'}</div>
-                    <div style={{ fontSize: '0.8rem', color: g.text, fontWeight: 500 }}>{p.district || '—'}</div>
-                    <div><PriorityBadge severity={p.latestSeverity} /></div>
-                    <div><SeverityPill severity={p.latestSeverity} /></div>
+                    <div className="hp-cell-content" style={{ fontSize: '0.8rem', color: g.text, fontWeight: 500 }}>{last ? timeAgo(last.created_at) : '—'}</div>
+                    <div className="hp-cell-content hp-hide-mobile" style={{ fontSize: '0.8rem', color: g.text, fontWeight: 500 }}>{p.district || '—'}</div>
+                    <div className="hp-cell-content"><PriorityBadge severity={p.latestSeverity} /></div>
+                    <div className="hp-cell-content hp-hide-mobile"><SeverityPill severity={p.latestSeverity} /></div>
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                       <button className="hp-del" onClick={e => handleDelete(e, p.id)} style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${g.cardBdr}`, background: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: g.muted, transition: 'all .15s' }}>
                         <TrashIcon />
@@ -513,11 +528,11 @@ export default function ASHADashboardPage() {
                       const last = p.triage_records?.[0]
                       return (
                         <div key={p.id} className="hp-row" onClick={() => handlePatientClick(p)} style={{ padding: '0.75rem', borderRadius: 10, border: `1px solid ${g.divider}`, background: isDark ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.22)', backdropFilter: 'blur(8px)', transition: 'all .15s' }}>
-                          <div style={{ fontWeight: 700, fontSize: '0.875rem', color: g.text, marginBottom: 3 }}>{p.name}</div>
-                          <div style={{ fontSize: '0.72rem', color: g.muted, marginBottom: 8 }}>{[p.age && `${p.age} yrs`, p.gender, p.district].filter(Boolean).join(' · ')}</div>
+                          <div className="hp-name" style={{ marginBottom: 3 }}>{p.name}</div>
+                          <div className="hp-details" style={{ marginBottom: 8 }}>{[p.age && `${p.age} yrs`, p.gender, p.district].filter(Boolean).join(' · ')}</div>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <SeverityPill severity={p.latestSeverity} />
-                            <span style={{ fontSize: '0.68rem', color: g.muted }}>{last ? timeAgo(last.created_at) : ''}</span>
+                            <span className="hp-details">{last ? timeAgo(last.created_at) : ''}</span>
                           </div>
                         </div>
                       )
