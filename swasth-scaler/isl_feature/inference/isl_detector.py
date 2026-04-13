@@ -171,14 +171,17 @@ class ISLDetector:
     """
 
     def __init__(self, model_path: Optional[str] = None, demographic: str = "men"):
-        # ── MediaPipe Hands ───────────────────────────────────────────────────
+        # ── MediaPipe Hands (Fix 1: lower thresholds) ─────────────────────────
         self._mp_hands = mp.solutions.hands.Hands(
             static_image_mode=False,
             max_num_hands=2,
             model_complexity=1,
-            min_detection_confidence=0.70,
-            min_tracking_confidence=0.60,
+            min_detection_confidence=0.50,  # was 0.70 — less shy in poor lighting
+            min_tracking_confidence=0.50,   # was 0.60 — reduces mid-sign drops
         )
+
+        # ── CLAHE for frame enhancement (Fix 2) ──────────────────────────────
+        self._clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
 
         # ── Keras model ───────────────────────────────────────────────────────
         if model_path is None:
@@ -211,6 +214,13 @@ class ISLDetector:
         # Tremor EMA state (elderly)
         self._ema: Optional[np.ndarray] = None
 
+        # Fix 4: carry-forward — last good landmarks per hand
+        self._prev_right: np.ndarray = np.zeros(63, dtype=np.float32)
+        self._prev_left:  np.ndarray = np.zeros(63, dtype=np.float32)
+
+        # Bonus: landmark smoothing — rolling buffer of last 3 feature vectors
+        self._smooth_buf: deque[np.ndarray] = deque(maxlen=3)
+
     # ── Public API ────────────────────────────────────────────────────────────
 
     def set_demographic(self, demographic: str) -> None:
@@ -235,8 +245,14 @@ class ISLDetector:
         """
         now = time.time()
 
-        # ── Run MediaPipe ─────────────────────────────────────────────────────
-        rgb     = cv2.cvtColor(bgr_frame, cv2.COLOR_BGR2RGB)
+        # ── Fix 2: CLAHE enhancement + horizontal flip ────────────────────────
+        flipped = cv2.flip(bgr_frame, 1)
+        lab     = cv2.cvtColor(flipped, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        l       = self._clahe.apply(l)
+        enhanced = cv2.cvtColor(cv2.merge([l, a, b]), cv2.COLOR_LAB2BGR)
+        rgb      = cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB)
+
         results = self._mp_hands.process(rgb)
 
         if not results.multi_hand_landmarks:
@@ -245,17 +261,46 @@ class ISLDetector:
             self._ema   = None
             return self._no_hand_result()
 
-        # ── Build 126-float feature vector (right[63] + left[63]) ────────────
+        # ── Fix 3: x-position sorting instead of MediaPipe L/R labels ─────────
+        # Sort hands by wrist x so leftmost wrist = left, rightmost = right
+        # (frame is already flipped so screen-left = real left hand)
+        hands_sorted = sorted(
+            results.multi_hand_landmarks,
+            key=lambda lm: lm.landmark[0].x
+        )
+
         right = np.zeros(63, dtype=np.float32)
         left  = np.zeros(63, dtype=np.float32)
-        for i, lm_group in enumerate(results.multi_hand_landmarks):
-            label  = results.multi_handedness[i].classification[0].label
+
+        for rank, lm_group in enumerate(hands_sorted):
+            # Bonus: per-hand confidence gate — skip if handedness score < 0.75
+            hand_conf = results.multi_handedness[
+                results.multi_hand_landmarks.index(lm_group)
+            ].classification[0].score
+            if hand_conf < 0.75:
+                continue
             normed = _normalize(lm_group.landmark)
-            if label == "Right":
-                right = normed
+            if rank == 0:
+                left  = normed   # leftmost wrist
             else:
-                left = normed
+                right = normed   # rightmost wrist
+
+        # Fix 4: carry-forward — if a hand dropped this frame use last known
+        if np.any(right):
+            self._prev_right = right.copy()
+        else:
+            right = self._prev_right
+
+        if np.any(left):
+            self._prev_left = left.copy()
+        else:
+            left = self._prev_left
+
         features = np.concatenate([right, left])
+
+        # Bonus: landmark smoothing — average last 3 frames to reduce jitter
+        self._smooth_buf.append(features.copy())
+        features = np.mean(self._smooth_buf, axis=0).astype(np.float32)
 
         # ── Elderly tremor filter (EMA) ───────────────────────────────────────
         if self._demographic == "elderly":
@@ -380,6 +425,9 @@ class ISLDetector:
         self._last_confirmed = None
         self._critical_timestamps.clear()
         self._ema            = None
+        self._prev_right     = np.zeros(63, dtype=np.float32)
+        self._prev_left      = np.zeros(63, dtype=np.float32)
+        self._smooth_buf.clear()
         logger.info("[ISLDetector] state reset")
 
     def close(self) -> None:

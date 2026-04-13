@@ -16,7 +16,7 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { normalizeTwoHands } from '../../utils/islNormalize'
+import { normalizeSingleHand } from '../../utils/islNormalize'
 import { loadModel, predict, LABELS, CRITICAL_SIGNS, getThreshold } from '../../utils/islInference'
 import { loadMediaPipeHands } from '../../utils/loadMediaPipeHands'
 
@@ -72,6 +72,13 @@ export default function ISLCamera({ onSymptomDetected, onDebugUpdate, demographi
 
   // FPS tracker
   const fpsRef = useRef({ frames: 0, last: Date.now(), fps: 0 })
+
+  // Fix 4: carry-forward — last good landmarks per hand
+  const prevRightRef = useRef(new Float32Array(63))
+  const prevLeftRef  = useRef(new Float32Array(63))
+
+  // Bonus: landmark smoothing — rolling buffer of last 3 feature vectors
+  const smoothBufRef = useRef([])
 
   const [status,       setStatus]       = useState('loading')   // 'loading'|'ready'|'no-model'
   const [prediction,   setPrediction]   = useState(null)        // { label, confidence }
@@ -149,8 +156,11 @@ export default function ISLCamera({ onSymptomDetected, onDebugUpdate, demographi
     if (handsDetected === 0) {
       setHandVisible(false)
       setPrediction(null)
-      voteRef.current = { label: null, count: 0 }
-      emaRef.current  = null
+      voteRef.current      = { label: null, count: 0 }
+      emaRef.current       = null
+      prevRightRef.current = new Float32Array(63)
+      prevLeftRef.current  = new Float32Array(63)
+      smoothBufRef.current = []
       onDebugUpdate?.({ handsDetected: 0, fps: fp.fps, scores: null })
       return
     }
@@ -164,8 +174,45 @@ export default function ISLCamera({ onSymptomDetected, onDebugUpdate, demographi
     if (now - lastInferTs.current < INFER_INTERVAL) return
     lastInferTs.current = now
 
-    // Feature extraction + optional tremor filter
-    let features = normalizeTwoHands(results.multiHandLandmarks, results.multiHandedness)
+    // Fix 3: x-position sort instead of MediaPipe L/R labels (no more swaps)
+    // Fix 4: carry-forward if a hand is missing this frame
+    const handsWithIdx = (results.multiHandLandmarks || []).map((lm, i) => ({
+      lm,
+      handedness: results.multiHandedness?.[i],
+      wristX: lm[0].x,
+    })).sort((a, b) => a.wristX - b.wristX)  // leftmost wrist first
+
+    const right = new Float32Array(63)
+    const left  = new Float32Array(63)
+
+    handsWithIdx.forEach((h, rank) => {
+      const conf = h.handedness?.classification?.[0]?.score ?? 1
+      if (conf < 0.75) return  // Bonus: per-hand confidence gate
+      const normed = normalizeSingleHand(h.lm)
+      if (rank === 0) left.set(normed)   // leftmost = left hand
+      else            right.set(normed)  // rightmost = right hand
+    })
+
+    // carry-forward: if hand dropped this frame use last known
+    const finalRight = right.some(v => v !== 0) ? right : prevRightRef.current
+    const finalLeft  = left.some(v => v !== 0)  ? left  : prevLeftRef.current
+    if (right.some(v => v !== 0)) prevRightRef.current = right
+    if (left.some(v => v !== 0))  prevLeftRef.current  = left
+
+    let features = new Float32Array(126)
+    features.set(finalRight, 0)
+    features.set(finalLeft, 63)
+
+    // Bonus: landmark smoothing — average last 3 frames to reduce jitter
+    smoothBufRef.current.push(features)
+    if (smoothBufRef.current.length > 3) smoothBufRef.current.shift()
+    if (smoothBufRef.current.length > 1) {
+      const avg = new Float32Array(126)
+      for (const f of smoothBufRef.current)
+        for (let i = 0; i < 126; i++) avg[i] += f[i] / smoothBufRef.current.length
+      features = avg
+    }
+
     features = applyTremorFilter(features)
 
     // Inference
