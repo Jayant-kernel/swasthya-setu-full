@@ -34,9 +34,14 @@ import re
 import sys
 from pathlib import Path
 
+import urllib.request
+
 import cv2
 import mediapipe as mp
 import numpy as np
+from mediapipe.tasks.python import vision as mp_vision
+from mediapipe.tasks.python.vision import HandLandmarkerOptions, HandLandmarker
+from mediapipe.tasks.python.core.base_options import BaseOptions
 from sklearn.model_selection import train_test_split
 
 import tensorflow as tf
@@ -75,8 +80,34 @@ def normalize_hand(landmarks_xyz: np.ndarray) -> np.ndarray:
     return ((landmarks_xyz - wrist) / scale).flatten().astype(np.float32)
 
 
-# ── Feature extraction ────────────────────────────────────────────────────────
-def extract_video_features(video_path: Path, hands) -> list[np.ndarray]:
+# ── HandLandmarker model path / download ──────────────────────────────────────
+def _get_landmarker_model() -> str:
+    """
+    Returns path to hand_landmarker.task, downloading it if not present.
+    Looks next to the frontend/model/ directory that ships with the repo.
+    """
+    candidates = [
+        Path(__file__).resolve().parents[2] / "frontend" / "model" / "hand_landmarker.task",
+        Path(__file__).resolve().parents[2] / "hand_landmarker.task",
+        Path(__file__).resolve().parent / "hand_landmarker.task",
+    ]
+    for p in candidates:
+        if p.exists():
+            return str(p)
+    # Download to training dir
+    dest = Path(__file__).resolve().parent / "hand_landmarker.task"
+    print("Downloading hand_landmarker.task (~9 MB)...")
+    urllib.request.urlretrieve(
+        "https://storage.googleapis.com/mediapipe-models/hand_landmarker/"
+        "hand_landmarker/float16/1/hand_landmarker.task",
+        str(dest),
+    )
+    print("Downloaded.")
+    return str(dest)
+
+
+# ── Feature extraction (Tasks API — captures fists + self-occluded poses) ─────
+def extract_video_features(video_path: Path, detector: HandLandmarker) -> list[np.ndarray]:
     """Return list of 126-float vectors, one per usable frame."""
     cap = cv2.VideoCapture(str(video_path))
     if not cap.isOpened():
@@ -94,22 +125,29 @@ def extract_video_features(video_path: Path, hands) -> list[np.ndarray]:
             continue
         frame_idx += 1
 
-        rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        res = hands.process(rgb)
-        if not res.multi_hand_landmarks:
+        rgb      = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
+        result   = detector.detect(mp_image)   # IMAGE mode — synchronous
+
+        if not result.hand_landmarks:
             continue
+
+        # Sort by wrist x-position for consistent L/R assignment (matches inference)
+        hand_data = sorted(
+            [(lm_group[0].x, lm_group) for lm_group in result.hand_landmarks],
+            key=lambda t: t[0],
+        )
 
         right = np.zeros(63, dtype=np.float32)
         left  = np.zeros(63, dtype=np.float32)
-        for i, lm_group in enumerate(res.multi_hand_landmarks):
-            handed = res.multi_handedness[i].classification[0].label
-            pts = np.array([[lm.x, lm.y, lm.z] for lm in lm_group.landmark],
-                           dtype=np.float32)
+        for rank, (_, lm_group) in enumerate(hand_data):
+            pts    = np.array([[lm.x, lm.y, lm.z] for lm in lm_group], dtype=np.float32)
             normed = normalize_hand(pts)
-            if handed == "Right":
-                right = normed
+            if rank == 0:
+                left  = normed   # leftmost wrist = left hand
             else:
-                left = normed
+                right = normed
+
         feats.append(np.concatenate([right, left]))
 
     cap.release()
@@ -143,13 +181,17 @@ def label_from_filename(name: str) -> str | None:
 
 # ── Dataset build ─────────────────────────────────────────────────────────────
 def build_dataset(video_dir: Path):
-    mp_hands = mp.solutions.hands.Hands(
-        static_image_mode=False,
-        max_num_hands=2,
-        model_complexity=1,
-        min_detection_confidence=0.60,
-        min_tracking_confidence=0.50,
+    # Tasks API HandLandmarker: better fist + self-occlusion detection than legacy API
+    model_path = _get_landmarker_model()
+    options = HandLandmarkerOptions(
+        base_options=BaseOptions(model_asset_path=model_path),
+        num_hands=2,
+        min_hand_detection_confidence=0.40,   # lower: catch fists and partial hands
+        min_hand_presence_confidence=0.40,    # key param — keeps tracking occluded poses
+        min_tracking_confidence=0.40,
+        running_mode=mp_vision.RunningMode.IMAGE,
     )
+    mp_hands = HandLandmarker.create_from_options(options)
 
     X: list[np.ndarray] = []
     y: list[int] = []
@@ -173,7 +215,7 @@ def build_dataset(video_dir: Path):
             X.append(augment_flip(f));  y.append(idx)
         per_class_counts[lbl] += len(feats)
 
-    mp_hands.close()
+    mp_hands.close()  # HandLandmarker.close()
 
     # Synthesise NO_SIGN samples — three varieties so the model learns
     # "hand visible but not a known sign" is not the same as a real sign.

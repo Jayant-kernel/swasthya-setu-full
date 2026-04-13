@@ -35,12 +35,17 @@ from __future__ import annotations
 import logging
 import os
 import time
+import urllib.request
 from collections import deque
+from pathlib import Path
 from typing import Optional
 
 import cv2
 import mediapipe as mp
 import numpy as np
+from mediapipe.tasks.python import vision as mp_vision
+from mediapipe.tasks.python.vision import HandLandmarkerOptions, HandLandmarker
+from mediapipe.tasks.python.core.base_options import BaseOptions
 
 logger = logging.getLogger(__name__)
 
@@ -197,6 +202,27 @@ def _normalize(landmarks) -> np.ndarray:
     return ((pts - wrist) / scale).flatten()
 
 
+# ── HandLandmarker model path ─────────────────────────────────────────────────
+def _get_landmarker_model() -> str:
+    here = Path(__file__).resolve().parent
+    candidates = [
+        here.parents[1] / "frontend" / "model" / "hand_landmarker.task",
+        here.parents[1] / "hand_landmarker.task",
+        here / "hand_landmarker.task",
+    ]
+    for p in candidates:
+        if p.exists():
+            return str(p)
+    dest = here / "hand_landmarker.task"
+    logger.info("Downloading hand_landmarker.task...")
+    urllib.request.urlretrieve(
+        "https://storage.googleapis.com/mediapipe-models/hand_landmarker/"
+        "hand_landmarker/float16/1/hand_landmarker.task",
+        str(dest),
+    )
+    return str(dest)
+
+
 # ── ISLDetector ───────────────────────────────────────────────────────────────
 class ISLDetector:
     """
@@ -211,14 +237,20 @@ class ISLDetector:
     """
 
     def __init__(self, model_path: Optional[str] = None, demographic: str = "men"):
-        # ── MediaPipe Hands (Fix 1: lower thresholds) ─────────────────────────
-        self._mp_hands = mp.solutions.hands.Hands(
-            static_image_mode=False,
-            max_num_hands=2,
-            model_complexity=0,             # lite model — better fist/self-occlusion tracking
-            min_detection_confidence=0.40,  # lowered: fists lose confidence fast
-            min_tracking_confidence=0.40,   # lowered: keep tracking through curl
+        # ── MediaPipe HandLandmarker — Tasks API (better fist/occlusion) ─────
+        # VIDEO mode: monotonic timestamps, temporal tracking between frames.
+        # min_hand_presence_confidence = key param for fists (hand IS there, just occluded).
+        _lm_model = _get_landmarker_model()
+        _opts = HandLandmarkerOptions(
+            base_options=BaseOptions(model_asset_path=_lm_model),
+            num_hands=2,
+            min_hand_detection_confidence=0.40,
+            min_hand_presence_confidence=0.40,
+            min_tracking_confidence=0.40,
+            running_mode=mp_vision.RunningMode.VIDEO,
         )
+        self._detector = HandLandmarker.create_from_options(_opts)
+        self._ts_ms: int = 0   # monotonically increasing timestamp for VIDEO mode
 
         # ── MediaPipe FaceMesh — face reference landmarks ─────────────────────
         self._mp_face = mp.solutions.face_mesh.FaceMesh(
@@ -310,39 +342,47 @@ class ISLDetector:
         enhanced = cv2.cvtColor(cv2.merge([l, a, b]), cv2.COLOR_LAB2BGR)
         rgb      = cv2.cvtColor(enhanced, cv2.COLOR_BGR2RGB)
 
-        results      = self._mp_hands.process(rgb)
+        # ── Tasks API: detect_for_video (monotonic timestamps required) ─────────
+        mp_image   = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
+        self._ts_ms = max(self._ts_ms + 1, int(time.time() * 1000))
+        hand_result  = self._detector.detect_for_video(mp_image, self._ts_ms)
         face_results = self._mp_face.process(rgb)
         pose_results = self._mp_pose.process(rgb)
 
-        if not results.multi_hand_landmarks:
+        if not hand_result.hand_landmarks:
             self._vote_buffer.clear()
             self._fill  = max(0.0, self._fill - 0.15)
             self._ema   = None
             return self._no_hand_result()
 
-        # ── Fix 3: x-position sorting instead of MediaPipe L/R labels ─────────
-        # Sort hands by wrist x so leftmost wrist = left, rightmost = right
-        # (frame is already flipped so screen-left = real left hand)
-        hands_sorted = sorted(
-            results.multi_hand_landmarks,
-            key=lambda lm: lm.landmark[0].x
+        # ── x-position sorting + per-hand confidence gate ─────────────────────
+        hand_data = sorted(
+            [
+                (
+                    lm_group[0].x,                                    # wrist x
+                    hand_result.handedness[i][0].score                # confidence
+                    if hand_result.handedness else 1.0,
+                    lm_group,                                         # landmark list
+                )
+                for i, lm_group in enumerate(hand_result.hand_landmarks)
+            ],
+            key=lambda t: t[0],
         )
 
         right = np.zeros(63, dtype=np.float32)
         left  = np.zeros(63, dtype=np.float32)
 
-        for rank, lm_group in enumerate(hands_sorted):
-            # Bonus: per-hand confidence gate — skip if handedness score < 0.75
-            hand_conf = results.multi_handedness[
-                results.multi_hand_landmarks.index(lm_group)
-            ].classification[0].score
-            if hand_conf < 0.75:
+        for rank, (_, hand_conf, lm_group) in enumerate(hand_data):
+            if hand_conf < 0.60:   # slightly lower gate for fists (confidence naturally drops)
                 continue
-            normed = _normalize(lm_group.landmark)
+            normed = _normalize(lm_group)  # Tasks API: lm_group is list of NormalizedLandmark
             if rank == 0:
                 left  = normed   # leftmost wrist
             else:
                 right = normed   # rightmost wrist
+
+        # Convenience alias so proximity gate below can iterate wrist positions
+        hands_sorted = [t[2] for t in hand_data]  # list of lm_groups in x order
 
         # Fix 4: carry-forward — if a hand dropped this frame use last known
         if np.any(right):
@@ -431,8 +471,8 @@ class ISLDetector:
                 # Check if ANY detected wrist is close enough to the body part
                 min_dist = float("inf")
                 for lm_group in hands_sorted:
-                    wx = lm_group.landmark[0].x
-                    wy = lm_group.landmark[0].y
+                    wx = lm_group[0].x   # Tasks API: list index, not .landmark
+                    wy = lm_group[0].y
                     d  = ((wx - ref[0]) ** 2 + (wy - ref[1]) ** 2) ** 0.5
                     min_dist = min(min_dist, d)
                 if min_dist > max_dist:
@@ -443,7 +483,7 @@ class ISLDetector:
                             "model_notes": f"Proximity gate: hand {min_dist:.2f} > {max_dist} from {part}"}
 
         # ── Hand-count gate ───────────────────────────────────────────────────
-        num_hands = len(results.multi_hand_landmarks)
+        num_hands = len(hand_result.hand_landmarks)
         if num_hands == 1 and best_lbl in TWO_HAND_SIGNS:
             self._vote_buffer.clear()
             self._fill = 0.0
@@ -534,7 +574,7 @@ class ISLDetector:
         logger.info("[ISLDetector] state reset")
 
     def close(self) -> None:
-        self._mp_hands.close()
+        self._detector.close()
         self._mp_face.close()
         self._mp_pose.close()
         logger.info("[ISLDetector] closed")
