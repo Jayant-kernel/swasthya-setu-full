@@ -51,13 +51,12 @@ LABELS = [
     "SAR-DARD",      # 02
     "PET-DARD",      # 03
     "ULTI",          # 04
-    "KHANSI",        # 05
-    "SANS-TAKLEEF",  # 06 — CRITICAL
-    "SEENE-DARD",    # 07 — CRITICAL
-    "CHAKKAR",       # 08
-    "KAMZORI",       # 09
-    "UNCERTAIN",     # 10 — reserved
-    "NO_SIGN",       # 11 — reserved
+    "SANS-TAKLEEF",  # 05 — CRITICAL
+    "SEENE-DARD",    # 06 — CRITICAL
+    "CHAKKAR",       # 07
+    "KAMZORI",       # 08
+    "UNCERTAIN",     # 09 — reserved
+    "NO_SIGN",       # 10 — reserved
 ]
 
 CRITICAL_SIGNS = {"SANS-TAKLEEF", "SEENE-DARD"}
@@ -68,7 +67,6 @@ URGENCY: dict[str, str] = {
     "SAR-DARD":      "medium",
     "PET-DARD":      "high",
     "ULTI":          "medium",
-    "KHANSI":        "medium",
     "SANS-TAKLEEF":  "critical",
     "SEENE-DARD":    "critical",
     "CHAKKAR":       "medium",
@@ -83,7 +81,6 @@ HINDI_LABELS: dict[str, str] = {
     "SAR-DARD":      "सर दर्द",
     "PET-DARD":      "पेट दर्द",
     "ULTI":          "उल्टी",
-    "KHANSI":        "खाँसी",
     "SANS-TAKLEEF":  "सांस तकलीफ",
     "SEENE-DARD":    "सीने में दर्द",
     "CHAKKAR":       "चक्कर",
@@ -96,7 +93,6 @@ ICD10: dict[str, str] = {
     "SAR-DARD":      "R51",
     "PET-DARD":      "R10.9",
     "ULTI":          "R11.2",
-    "KHANSI":        "R05.9",
     "SANS-TAKLEEF":  "R06.00",
     "SEENE-DARD":    "R07.9",
     "CHAKKAR":       "R42",
@@ -110,7 +106,6 @@ _BASE_THRESHOLDS: dict[str, float] = {
     "SAR-DARD":      0.80,
     "PET-DARD":      0.76,
     "ULTI":          0.84,
-    "KHANSI":        0.88,
     "SANS-TAKLEEF":  0.85,
     "SEENE-DARD":    0.86,
     "CHAKKAR":       0.79,

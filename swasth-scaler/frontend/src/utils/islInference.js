@@ -16,26 +16,24 @@ export const LABELS = [
   'SAR-DARD',      // 02 — Headache      MEDIUM
   'PET-DARD',      // 03 — Stomach Pain  HIGH
   'ULTI',          // 04 — Vomiting      MEDIUM
-  'KHANSI',        // 05 — Cough         MEDIUM
-  'SANS-TAKLEEF',  // 06 — Breathless    CRITICAL
-  'SEENE-DARD',    // 07 — Chest Pain    CRITICAL
-  'CHAKKAR',       // 08 — Dizziness     MEDIUM
-  'KAMZORI',       // 09 — Weakness      MEDIUM
-  'UNCERTAIN',     // 10 — reserved: low confidence output
-  'NO_SIGN',       // 11 — reserved: no valid gesture detected
+  'SANS-TAKLEEF',  // 05 — Breathless    CRITICAL
+  'SEENE-DARD',    // 06 — Chest Pain    CRITICAL
+  'CHAKKAR',       // 07 — Dizziness     MEDIUM
+  'KAMZORI',       // 08 — Weakness      MEDIUM
+  'UNCERTAIN',     // 09 — reserved: low confidence output
+  'NO_SIGN',       // 10 — reserved: no valid gesture detected
 ]
 
 export const URGENCY = {
-  DARD:         'high',
-  BUKHAR:       'high',
-  'SAR-DARD':   'medium',
-  'PET-DARD':   'high',
-  ULTI:         'medium',
-  KHANSI:       'medium',
+  DARD:           'high',
+  BUKHAR:         'high',
+  'SAR-DARD':     'medium',
+  'PET-DARD':     'high',
+  ULTI:           'medium',
   'SANS-TAKLEEF': 'critical',
-  'SEENE-DARD': 'critical',
-  CHAKKAR:      'medium',
-  KAMZORI:      'medium',
+  'SEENE-DARD':   'critical',
+  CHAKKAR:        'medium',
+  KAMZORI:        'medium',
 }
 
 // Signs that fire immediately without voting (§8: CRITICAL signs)
@@ -48,7 +46,6 @@ const BASE_THRESHOLDS = {
   'SAR-DARD':     0.80,
   'PET-DARD':     0.76,
   ULTI:           0.84,
-  KHANSI:         0.88,
   'SANS-TAKLEEF': 0.85,
   'SEENE-DARD':   0.86,
   CHAKKAR:        0.79,

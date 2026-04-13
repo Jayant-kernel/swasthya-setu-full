@@ -45,11 +45,11 @@ from tensorflow.keras import layers, models, callbacks
 # ── Labels (must match islInference.js and isl_detector.py) ───────────────────
 LABELS = [
     "DARD", "BUKHAR", "SAR-DARD", "PET-DARD", "ULTI",
-    "KHANSI", "SANS-TAKLEEF", "SEENE-DARD", "CHAKKAR", "KAMZORI",
+    "SANS-TAKLEEF", "SEENE-DARD", "CHAKKAR", "KAMZORI",
     "UNCERTAIN", "NO_SIGN",
 ]
 LABEL_TO_IDX = {lbl: i for i, lbl in enumerate(LABELS)}
-TRAINABLE_SIGNS = set(LABELS[:10])  # 10 real signs
+TRAINABLE_SIGNS = set(LABELS[:9])  # 9 real signs
 NO_SIGN_IDX     = LABEL_TO_IDX["NO_SIGN"]
 
 # ── Config ────────────────────────────────────────────────────────────────────

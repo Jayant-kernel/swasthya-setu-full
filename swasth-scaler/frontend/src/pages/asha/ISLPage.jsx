@@ -25,7 +25,6 @@ const SIGNS_META = {
   'SAR-DARD':     { label: 'Sar Dard / सर दर्द',        icd10: 'R51',    urgency: 'medium',   differentials: ['Migraine', 'Hypertension', 'Meningitis', 'Tension headache'] },
   'PET-DARD':     { label: 'Pet Dard / पेट दर्द',       icd10: 'R10.9',  urgency: 'high',     differentials: ['Appendicitis', 'Gastritis', 'IBS', 'Renal colic', 'Ectopic pregnancy'] },
   ULTI:           { label: 'Ulti / उल्टी',              icd10: 'R11.2',  urgency: 'medium',   differentials: ['GI infection', 'Pregnancy', 'Migraine', 'Meningitis'] },
-  KHANSI:         { label: 'Khansi / खांसी',            icd10: 'R05.9',  urgency: 'medium',   differentials: ['Upper RTI', 'Pneumonia', 'TB', 'Asthma', 'COVID-19'] },
   'SANS-TAKLEEF': { label: 'Sans Takleef / सांस तकलीफ', icd10: 'R06.00', urgency: 'critical', differentials: ['Asthma attack', 'Pulmonary embolism', 'Anaphylaxis', 'MI', 'COPD'] },
   'SEENE-DARD':   { label: 'Seene Dard / सीने दर्द',    icd10: 'R07.9',  urgency: 'critical', differentials: ['Myocardial infarction', 'Angina', 'Aortic dissection', 'Pulmonary embolism'] },
   CHAKKAR:        { label: 'Chakkar / चक्कर',           icd10: 'R42',    urgency: 'medium',   differentials: ['BPPV', 'Vertigo', 'Hypotension', 'TIA', 'Anaemia'] },
