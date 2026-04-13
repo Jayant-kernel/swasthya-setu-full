@@ -224,14 +224,10 @@ export default function DMODashboardPage() {
                     <tbody>
                       {sortedRecords.map((r) => (
                         <tr key={r.id} className="table-row" style={{ borderBottom: `1px solid ${g.divider}` }}>
-                          <td style={{ padding: '1.25rem 1.5rem' }}>
-                            <button
-                              type="button"
-                              onClick={() => setSelectedRecord(r)}
-                              style={{ border: 'none', background: 'transparent', padding: 0, fontWeight: 700, color: '#2563eb', cursor: 'pointer', textAlign: 'left' }}
-                            >
+                          <td onClick={() => setSelectedRecord(r)} style={{ padding: '1.25rem 1.5rem', cursor: 'pointer' }}>
+                            <div style={{ fontWeight: 700, color: '#2563eb' }}>
                               {r.patient_name || 'Anonymous'}
-                            </button>
+                            </div>
                             <div style={{ fontSize: '0.7rem', color: g.muted }}>{r.district}</div>
                           </td>
                           <td style={{ padding: '1.25rem 1.5rem', color: g.text, fontSize: '0.85rem' }}>{r.health_condition || 'N/A'}</td>
