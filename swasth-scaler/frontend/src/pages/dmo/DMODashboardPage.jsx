@@ -212,7 +212,7 @@ export default function DMODashboardPage() {
                             >
                               {h.label}
                               <span style={{ fontSize: '0.65rem', color: sortConfig.key === h.key ? '#3b82f6' : g.muted }}>
-                                {sortConfig.key === h.key ? (sortConfig.direction === 'asc' ? 'ASC' : 'DESC') : '--'}
+                                {sortConfig.key === h.key ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
                               </span>
                             </button>
                           </th>

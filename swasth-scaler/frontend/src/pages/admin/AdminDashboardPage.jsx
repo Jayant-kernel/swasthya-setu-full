@@ -7,7 +7,7 @@ import { SunIcon, MoonIcon, ActivityIcon, GlobeIcon } from './AdminIcons'
 import { API } from './constants'
 
 const StatCard = ({ label, value, subtext, icon: Icon, color = '#3b82f6', g }) => (
-  <div style={{ background: g.cardBg, borderRadius: 16, padding: '1.5rem', boxShadow: g.cardShd, border: `1px solid ${g.cardBdr}`, flex: 1, backdropFilter: g.blur }}>
+  <div className="stat-card" style={{ background: g.cardBg, borderRadius: 16, padding: '1.5rem', boxShadow: g.cardShd, border: `1px solid ${g.cardBdr}`, flex: 1, backdropFilter: g.blur }}>
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
       <div style={{ width: 44, height: 44, borderRadius: 12, background: `${color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
         <Icon />
@@ -152,6 +152,21 @@ export default function AdminDashboardPage() {
   const [analyticsMode, setAnalyticsMode] = useState('cases') // 'cases' | 'outbreaks'
   const [selectedDistrictStats, setSelectedDistrictStats] = useState(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: null })
+
+  const handleSort = useCallback((key) => {
+    setSortConfig((prev) => {
+      if (prev.key !== key) {
+        return { key, direction: 'asc' }
+      }
+
+      if (prev.direction === 'asc') {
+        return { key, direction: 'desc' }
+      }
+
+      return { key: null, direction: null }
+    })
+  }, [])
 
   const fetchData = useCallback(async () => {
     try {
@@ -236,8 +251,36 @@ export default function AdminDashboardPage() {
       ...g,
       diseaseCount: g.diseases.size,
       topDiseases: Array.from(g.diseases).slice(0, 3).join(', ') + (g.diseases.size > 3 ? '...' : '')
-    })).sort((a, b) => b.totalCases - a.totalCases)
+     })).sort((a, b) => b.totalCases - a.totalCases)
   }, [outbreaks])
+
+  const sortedRecentRecords = useMemo(() => {
+    const getSeverityRank = (record) => {
+      if (record.severity === 'red' || Number(record.severity) >= 7) return 3
+      if (record.severity === 'yellow' || (Number(record.severity) >= 4 && Number(record.severity) <= 6)) return 2
+      return 1
+    }
+
+    const getSortValue = (record, key) => {
+      if (key === 'patient_name') return (record.patient_name || '').toLowerCase()
+      if (key === 'district') return (record.district || 'general').toLowerCase()
+      if (key === 'severity') return getSeverityRank(record)
+      if (key === 'created_at') return new Date(record.created_at).getTime() || 0
+      return ''
+    }
+
+    const items = [...triageRecords]
+    if (sortConfig.key && sortConfig.direction) {
+      items.sort((a, b) => {
+        const av = getSortValue(a, sortConfig.key)
+        const bv = getSortValue(b, sortConfig.key)
+        if (av < bv) return sortConfig.direction === 'asc' ? -1 : 1
+        if (av > bv) return sortConfig.direction === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+    return items.slice(0, 15)
+  }, [triageRecords, sortConfig])
 
   const g = useMemo(() => ({
     blur: 'var(--g-blur)',
@@ -261,6 +304,8 @@ export default function AdminDashboardPage() {
         .nav-link:hover { background: ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}; color: ${g.accent}; }
         .nav-link.active { background: ${isDark ? 'rgba(79,70,229,0.15)' : '#eef2ff'}; color: #4f46e5; font-weight: 700; border-left: 3px solid #4f46e5; }
         .table-row:hover { background: ${g.insetBg}; cursor: pointer; }
+        .stat-card { position: relative; top: 0; transition: top 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card:hover { top: -4px; box-shadow: 0 12px 28px rgba(79,70,229,0.14); }
       `}</style>
 
       <AdminSidebar isHovered={isHovered} setIsHovered={setIsHovered} />
@@ -305,16 +350,44 @@ export default function AdminDashboardPage() {
                   <h3 style={{ margin: 0, fontSize: '1.125rem', fontWeight: 800, color: g.text }}>Recent Global Triage Events</h3>
                 </div>
                 <div style={{ overflowX: 'auto' }}>
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead style={{ background: g.insetBg }}>
-                      <tr>
-                        {['Patient', 'District', 'Severity', 'Date'].map(h => (
-                          <th key={h} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: g.label, textTransform: 'uppercase' }}>{h}</th>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead style={{ background: g.insetBg }}>
+                        <tr>
+                        {[
+                          { label: 'Patient', key: 'patient_name' },
+                          { label: 'District', key: 'district' },
+                          { label: 'Severity', key: 'severity' },
+                          { label: 'Date', key: 'created_at' },
+                        ].map((h) => (
+                          <th key={h.key} style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: g.label, textTransform: 'uppercase' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleSort(h.key)}
+                              style={{
+                                border: 'none',
+                                background: 'transparent',
+                                color: 'inherit',
+                                fontSize: 'inherit',
+                                fontWeight: 'inherit',
+                                textTransform: 'inherit',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                padding: 0,
+                              }}
+                            >
+                              {h.label}
+                              <span style={{ fontSize: '0.65rem', color: sortConfig.key === h.key ? '#4f46e5' : g.muted }}>
+                                {sortConfig.key === h.key ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                              </span>
+                            </button>
+                          </th>
                         ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {triageRecords.slice(0, 15).map((record) => (
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {sortedRecentRecords.map((record) => (
                         <tr key={record.id} className="table-row" style={{ borderBottom: `1px solid ${g.divider}` }}>
                           <td style={{ padding: '1.25rem 1.5rem' }}>
                             <div style={{ fontWeight: 700, color: g.text }}>{record.patient_name || 'Anonymous'}</div>
