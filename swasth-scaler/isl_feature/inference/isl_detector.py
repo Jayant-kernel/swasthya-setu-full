@@ -163,6 +163,27 @@ PROXIMITY_GATES: dict[str, tuple[str, float]] = {
 
 
 # ── Normalisation ─────────────────────────────────────────────────────────────
+def _finger_curl_ratio(norm_vec: np.ndarray) -> float:
+    """
+    Returns 0.0 (fully open hand) → 1.0 (full fist).
+    norm_vec: wrist-centred, palm-scaled (63,) float32 from one hand.
+    Checks 4 fingers (skip thumb — unreliable in fists): if fingertip is
+    closer to wrist than its MCP joint, the finger is curled.
+    """
+    if not np.any(norm_vec):
+        return 0.0
+    pts = norm_vec.reshape(21, 3)
+    # (tip_idx, mcp_idx) for index, middle, ring, pinky
+    pairs = [(8, 5), (12, 9), (16, 13), (20, 17)]
+    curl_count = 0
+    for tip_i, mcp_i in pairs:
+        tip_d = float(np.linalg.norm(pts[tip_i]))
+        mcp_d = float(np.linalg.norm(pts[mcp_i]))
+        if tip_d < mcp_d * 0.85:  # tip closer to wrist than 85% of MCP dist
+            curl_count += 1
+    return curl_count / 4.0
+
+
 def _normalize(landmarks) -> np.ndarray:
     """
     Wrist-centred, palm-width normalised — matches frontend islNormalize.js exactly.
@@ -194,9 +215,9 @@ class ISLDetector:
         self._mp_hands = mp.solutions.hands.Hands(
             static_image_mode=False,
             max_num_hands=2,
-            model_complexity=1,
-            min_detection_confidence=0.50,  # was 0.70 — less shy in poor lighting
-            min_tracking_confidence=0.50,   # was 0.60 — reduces mid-sign drops
+            model_complexity=0,             # lite model — better fist/self-occlusion tracking
+            min_detection_confidence=0.40,  # lowered: fists lose confidence fast
+            min_tracking_confidence=0.40,   # lowered: keep tracking through curl
         )
 
         # ── MediaPipe FaceMesh — face reference landmarks ─────────────────────
@@ -435,6 +456,18 @@ class ISLDetector:
             return {**self._base_result(), "has_hand": True,
                     "all_confidences": all_confidences,
                     "model_notes": "One-hand sign blocked: 2 hands visible"}
+
+        # ── Fist gate: SANS-TAKLEEF requires actual closed fist ──────────────
+        # Prevents any-hand-shape-near-chest from hallucinating breathlessness.
+        if best_lbl == "SANS-TAKLEEF":
+            right_curl = _finger_curl_ratio(right)
+            left_curl  = _finger_curl_ratio(left)
+            if max(right_curl, left_curl) < 0.50:
+                self._vote_buffer.clear()
+                self._fill = 0.0
+                return {**self._base_result(), "has_hand": True,
+                        "all_confidences": all_confidences,
+                        "model_notes": f"Fist gate: curl={max(right_curl, left_curl):.2f} < 0.50 for SANS-TAKLEEF"}
 
         # ── CRITICAL signs: fire immediately (§8) ────────────────────────────
         if best_lbl in CRITICAL_SIGNS:

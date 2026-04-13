@@ -15,7 +15,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import { useRef, useEffect, useState, useCallback } from 'react'
 import { normalizeSingleHand } from '../../utils/islNormalize'
 import { loadModel, predict, LABELS, CRITICAL_SIGNS, getThreshold } from '../../utils/islInference'
 import { loadMediaPipeHands }    from '../../utils/loadMediaPipeHands'
@@ -49,6 +49,24 @@ const PROXIMITY_GATES = {
  * Chest and abdomen are approximated from face geometry (no Pose needed on frontend).
  * Returns null if landmarks not available.
  */
+/**
+ * Returns 0.0 (open hand) → 1.0 (full fist).
+ * lm: array of 21 MediaPipe landmark objects {x,y,z}.
+ * Checks 4 fingers: if fingertip is closer to wrist than MCP → curled.
+ */
+function fingerCurlRatio(lm) {
+  if (!lm) return 0
+  const wrist = lm[0]
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y, a.z - b.z)
+  // (tip_idx, mcp_idx) for index, middle, ring, pinky
+  const pairs = [[8,5],[12,9],[16,13],[20,17]]
+  let curled = 0
+  for (const [ti, mi] of pairs) {
+    if (dist(lm[ti], wrist) < dist(lm[mi], wrist) * 0.85) curled++
+  }
+  return curled / 4
+}
+
 function extractBodyPoints(fl) {
   if (!fl || fl.length < 468) return null
   const forehead = { x: fl[10].x,  y: fl[10].y  }
@@ -279,6 +297,16 @@ export default function ISLCamera({ onSymptomDetected, onDebugUpdate, demographi
       return
     }
 
+    // Fist gate: SANS-TAKLEEF requires a closed fist — blocks any-hand-near-chest hallucinations
+    if (raw.label === 'SANS-TAKLEEF') {
+      const curls = handsWithIdx.map(h => fingerCurlRatio(h.lm))
+      if (Math.max(...curls) < 0.50) {
+        setPrediction(null)
+        voteRef.current = { label: null, count: 0 }
+        return
+      }
+    }
+
     // Proximity gate: hand must be near the relevant body part for face-area signs.
     // Skipped (fail-open) when face not detected — never blocks detection in bad lighting.
     const gate = PROXIMITY_GATES[raw.label]
@@ -354,9 +382,9 @@ export default function ISLCamera({ onSymptomDetected, onDebugUpdate, demographi
       })
       handsInstance.setOptions({
         maxNumHands:            2,
-        modelComplexity:        1,
-        minDetectionConfidence: 0.70,
-        minTrackingConfidence:  0.60,
+        modelComplexity:        0,    // lite model — better fist / self-occlusion tracking
+        minDetectionConfidence: 0.40, // lowered: fists lose confidence fast
+        minTrackingConfidence:  0.40, // lowered: keep tracking through curl
       })
       handsInstance.onResults(onResults)
 
