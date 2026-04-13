@@ -223,8 +223,8 @@ export default function DMODashboardPage() {
                     </thead>
                     <tbody>
                       {sortedRecords.map((r) => (
-                        <tr key={r.id} className="table-row" style={{ borderBottom: `1px solid ${g.divider}` }}>
-                          <td onClick={() => setSelectedRecord(r)} style={{ padding: '1.25rem 1.5rem', cursor: 'pointer' }}>
+                        <tr key={r.id} className="table-row" onClick={() => setSelectedRecord(r)} style={{ borderBottom: `1px solid ${g.divider}` }}>
+                          <td style={{ padding: '1.25rem 1.5rem', cursor: 'pointer' }}>
                             <div style={{ fontWeight: 700, color: '#2563eb' }}>
                               {r.patient_name || 'Anonymous'}
                             </div>

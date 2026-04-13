@@ -390,8 +390,8 @@ export default function AdminDashboardPage() {
                       </thead>
                       <tbody>
                       {sortedRecentRecords.map((record) => (
-                        <tr key={record.id} className="table-row" style={{ borderBottom: `1px solid ${g.divider}` }}>
-                          <td onClick={() => setSelectedRecord(record)} style={{ padding: '1.25rem 1.5rem', cursor: 'pointer' }}>
+                        <tr key={record.id} className="table-row" onClick={() => setSelectedRecord(record)} style={{ borderBottom: `1px solid ${g.divider}` }}>
+                          <td style={{ padding: '1.25rem 1.5rem', cursor: 'pointer' }}>
                             <div style={{ fontWeight: 700, color: '#2563eb' }}>
                               {record.patient_name || 'Anonymous'}
                             </div>
