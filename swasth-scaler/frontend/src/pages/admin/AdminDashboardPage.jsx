@@ -308,6 +308,10 @@ export default function AdminDashboardPage() {
         .table-row:hover { background: ${g.insetBg}; cursor: pointer; }
         .stat-card { position: relative; top: 0; transition: top 0.2s ease, box-shadow 0.2s ease; }
         .stat-card:hover { top: -4px; box-shadow: 0 12px 28px rgba(79,70,229,0.14); }
+        .patient-row td { transition: background 0.2s ease, box-shadow 0.2s ease; }
+        .patient-row:hover td { background: ${isDark ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.06)'}; box-shadow: inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
+        .patient-row:hover td:first-child { box-shadow: inset 1px 0 0 #22c55e, inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
+        .patient-row:hover td:last-child { box-shadow: inset -1px 0 0 #22c55e, inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
       `}</style>
 
       <AdminSidebar isHovered={isHovered} setIsHovered={setIsHovered} />
@@ -390,7 +394,7 @@ export default function AdminDashboardPage() {
                       </thead>
                       <tbody>
                       {sortedRecentRecords.map((record) => (
-                        <tr key={record.id} className="table-row" onClick={() => setSelectedRecord(record)} style={{ borderBottom: `1px solid ${g.divider}` }}>
+                        <tr key={record.id} className="table-row patient-row" onClick={() => setSelectedRecord(record)} style={{ borderBottom: `1px solid ${g.divider}` }}>
                           <td style={{ padding: '1.25rem 1.5rem', cursor: 'pointer' }}>
                             <div style={{ fontWeight: 700, color: '#2563eb' }}>
                               {record.patient_name || 'Anonymous'}
