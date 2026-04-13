@@ -9,7 +9,7 @@ export default function ProtectedRoute({ children, role }) {
     return (
       <div className="loading-screen">
         <div className="spinner spinner-dark" style={{ width: 36, height: 36 }} />
-        <p>Loading… / ଲୋଡ଼ ହେଉଛି…</p>
+        <p>Loading… / लोड होत आहे…</p>
       </div>
     )
   }

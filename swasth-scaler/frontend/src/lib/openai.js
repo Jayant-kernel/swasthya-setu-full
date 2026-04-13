@@ -16,10 +16,10 @@ export const HIGH_RISK_DISTRICTS = [
 ]
 
 export function getTriageSystemPrompt(district) {
-  return `You are an AI medical triage assistant for ASHA workers in rural Odisha, India.
+  return `You are an AI medical triage assistant for ASHA workers in rural Maharashtra, India.
 You follow IMNCI (Integrated Management of Neonatal and Childhood Illness) guidelines.
 
-CRITICAL ODISHA-SPECIFIC RULE:
+CRITICAL DISTRICT-SPECIFIC RULE:
 If the patient's district is one of [Koraput, Malkangiri, Rayagada, Kalahandi, Kandhamal, Nabarangpur, Mayurbhanj] AND symptoms include fever + joint pain + fatigue → set sickle_cell_risk: true and severity: RED.
 
 Patient district: ${district}
@@ -71,7 +71,7 @@ export async function translateToEnglish(text) {
       {
         role: 'system',
         content:
-          'You are a medical translator. The user will give you text describing patient symptoms in Odia or Hindi. Translate it to simple English. Return ONLY the translated English text, nothing else.',
+          'You are a medical translator. The user will give you text describing patient symptoms in Marathi or Hindi. Translate it to simple English. Return ONLY the translated English text, nothing else.',
       },
       { role: 'user', content: text },
     ],

@@ -8,7 +8,7 @@ const slides = [
   {
     id: 'asha',
     role: 'ASHA Worker',
-    roleOdia: 'ଆଶା କର୍ମୀ',
+    roleOdia: 'आशा कार्यकर्ती',
     tagline: 'Community Health Champion',
     description: 'Track home visits, log patient data, and coordinate care for your village clusters — all from one place.',
     cta: 'Sign in as ASHA Worker',
@@ -22,7 +22,7 @@ const slides = [
   {
     id: 'dmo',
     role: 'District Officer',
-    roleOdia: 'ଜିଲ୍ଲା ଚିକିତ୍ସା ଅଧିକାରୀ',
+    roleOdia: 'जिल्हा वैद्यकीय अधिकारी',
     tagline: 'District-Wide Health Command',
     description: 'Monitor district health metrics, approve escalations, and coordinate multi-village response logistics.',
     cta: 'Sign in as District Officer',
@@ -171,9 +171,9 @@ export default function HeroSlider() {
                     {s.role}
                   </h2>
 
-                  {/* Odia subtitle */}
+                  {/* Marathi subtitle */}
                   <div style={{
-                    fontFamily: "'Noto Sans Oriya', 'Noto Sans Devanagari', sans-serif",
+                    fontFamily: "'Noto Sans Devanagari', sans-serif",
                     fontSize: '1rem',
                     color: s.accent,
                     fontWeight: 600,

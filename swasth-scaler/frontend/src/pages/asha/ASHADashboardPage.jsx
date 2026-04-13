@@ -296,7 +296,7 @@ export default function ASHADashboardPage() {
   const districtsExtra = (
     <>
       <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', marginTop: '1.125rem' }}>
-        Districts <span style={{ opacity: 0.6 }}>/ ଜିଲ୍ଲା</span>
+        Districts <span style={{ opacity: 0.6 }}>/ जिल्हे</span>
       </div>
       {DISTRICT_GROUPS.map(d => {
         const on = districtFilter === d.label

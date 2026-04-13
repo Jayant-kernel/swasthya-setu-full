@@ -9,7 +9,7 @@ const ROLES = [
   {
     id: 'asha',
     title: 'ASHA Worker',
-    titleOdia: 'ଆଶା କର୍ମୀ',
+    titleOdia: 'आशा कार्यकर्ती',
     icon: '🏥',
     image: loginImg2,
     description: 'Track village visits, log health data & support community care.',
@@ -20,7 +20,7 @@ const ROLES = [
   {
     id: 'dmo',
     title: 'District Officer',
-    titleOdia: 'ଜିଲ୍ଲା ଅଧିକାରୀ',
+    titleOdia: 'जिल्हा अधिकारी',
     icon: '🏛️',
     image: loginImg3,
     description: 'Oversee district health metrics and coordinate response logistics.',

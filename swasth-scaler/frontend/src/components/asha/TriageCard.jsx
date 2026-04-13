@@ -94,7 +94,7 @@ export default function TriageCard({ severity, symptoms, sickle_cell_risk, brief
                 marginTop: 2,
               }}
             >
-              {config.odia}
+              {config.marathi}
             </div>
           </div>
         </div>
@@ -119,7 +119,7 @@ export default function TriageCard({ severity, symptoms, sickle_cell_risk, brief
           <div>
             <div>Sickle Cell Risk</div>
             <div style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", fontSize: '0.875rem', opacity: 0.9 }}>
-              ସିକଲ ସେଲ ଆଶଙ୍କା
+              सिकल सेलचा संशय
             </div>
           </div>
         </div>
@@ -161,7 +161,7 @@ export default function TriageCard({ severity, symptoms, sickle_cell_risk, brief
                 marginBottom: '0.5rem',
               }}
             >
-              Identified Symptoms / ଚିହ୍ନଟ ଲକ୍ଷଣ
+              Identified Symptoms / ओळखलेली लक्षणे
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
               {symptoms.map((s, i) => (

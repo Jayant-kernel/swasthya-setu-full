@@ -8,33 +8,33 @@ import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
 import { useTheme } from '../../context/ThemeContext.jsx'
 
 const SEVERITY_BADGE = {
-  green:  { label: 'Stable / ସ୍ଥିର',       cls: 'badge-green' },
-  yellow: { label: 'Moderate / ମଧ୍ୟମ',        cls: 'badge-yellow' },
-  red:    { label: 'Emergency / ଜରୁରୀ',       cls: 'badge-red' },
+  green:  { label: 'Stable / स्थिर', cls: 'badge-green' },
+  yellow: { label: 'Moderate / मध्यम', cls: 'badge-yellow' },
+  red:    { label: 'Emergency / तातडीचे', cls: 'badge-red' },
 }
 
 const QUICK_REPLIES = [
-  { odia: 'କି ଔଷଧ ଦେବାକୁ ପଡିବ?', english: 'What medicine should I give?' },
-  { odia: 'ଏହା କେତେ ଗୁରୁତର?',   english: 'How serious is this case?' },
-  { odia: 'ଡାକ୍ତରଙ୍କ ପାଖକୁ ପଠାଇବି କି?', english: 'Should I refer to a doctor?' },
+  { odia: 'कोणते औषध द्यावे?', english: 'What medicine should I give?' },
+  { odia: 'ही केस किती गंभीर आहे?', english: 'How serious is this case?' },
+  { odia: 'डॉक्टरांकडे पाठवावे का?', english: 'Should I refer to a doctor?' },
 ]
 
 function buildGreeting(patient, triage) {
   const sickleNote = triage.sickle_cell_risk
-    ? '\n\n🔴 ସତର୍କତା: ଏହି ରୋଗୀଙ୍କୁ ତୁରନ୍ତ ଜିଲ୍ଲା ଡାକ୍ତରଖାନାକୁ ପଠାନ୍ତୁ।'
+    ? '\n\n🔴 इशारा: या रुग्णाला तात्काळ जिल्हा रुग्णालयात पाठवा.'
     : ''
 
   const historyNote = (patient.history && patient.history.length > 1)
-    ? `\n\nଏହି ରୋଗୀଙ୍କର ପୂର୍ବର **${patient.history.length}** ପରିଦର୍ଶନର ଇତିହାସ ଅଛି।`
+    ? `\n\nया रुग्णाच्या आधीच्या **${patient.history.length}** भेटींचा इतिहास आहे.`
     : ''
 
-  return `ନମସ୍କାର! ମୁଁ ଆପଣଙ୍କର AI ସ୍ୱାସ୍ଥ୍ୟ ସହାୟକ। 
-ରୋଗୀ **${patient.name}** ବିଷୟରେ ଆପଣଙ୍କର କ’ଣ ପ୍ରଶ୍ନ ଅଛି?
+  return `नमस्कार! मी तुमचा AI आरोग्य सहाय्यक आहे.
+रुग्ण **${patient.name}** बद्दल तुमचा काय प्रश्न आहे?
 
-**ଟ୍ରାୟଜ୍ ଫଳାଫଳ: ${triage.severity.toUpperCase()}**
+**ट्रायेज निकाल: ${triage.severity.toUpperCase()}**
 ${triage.brief}
 
-ଲକ୍ଷଣ: ${triage.symptoms.join(', ')}${sickleNote}${historyNote}`
+लक्षणे: ${triage.symptoms.join(', ')}${sickleNote}${historyNote}`
 }
 
 export default function ChatPage() {
@@ -481,12 +481,12 @@ export default function ChatPage() {
                 type="button"
                 onClick={() => sendMessage(chip.english)}
                 disabled={loading}
-                style={{ padding: '0.625rem 1.25rem', borderRadius: '999px', border: '1px solid var(--color-primary)', background: 'var(--color-surface)', color: 'var(--color-primary)', fontSize: '0.875rem', fontWeight: 600, cursor: loading ? 'default' : 'pointer', fontFamily: "'Noto Sans Oriya', sans-serif", whiteSpace: 'nowrap', transition: 'all 0.2s', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
+                style={{ padding: '0.625rem 1.25rem', borderRadius: '999px', border: '1px solid var(--color-primary)', background: 'var(--color-surface)', color: 'var(--color-primary)', fontSize: '0.875rem', fontWeight: 600, cursor: loading ? 'default' : 'pointer', fontFamily: "'Noto Sans Devanagari', sans-serif", whiteSpace: 'nowrap', transition: 'all 0.2s', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
               >
                 {chip.odia}
               </button>
             ))}
-            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', alignSelf: 'center', fontFamily: "'Noto Sans Oriya', sans-serif" }} className="hide-mobile">ଓଡ଼ିଆ କିମ୍ବା ଇଂରାଜୀରେ ଲେଖନ୍ତୁ</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', alignSelf: 'center', fontFamily: "'Noto Sans Devanagari', sans-serif" }} className="hide-mobile">मराठीत किंवा इंग्रजीत लिहा</span>
           </div>
 
           <form
@@ -507,7 +507,7 @@ export default function ChatPage() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Ask a question… / ପ୍ରଶ୍ନ ପଚାରନ୍ତୁ…"
+              placeholder="Ask a question… / प्रश्न विचारा…"
               disabled={loading}
               rows={1}
               style={{

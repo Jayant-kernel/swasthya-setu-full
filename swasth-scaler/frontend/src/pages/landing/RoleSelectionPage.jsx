@@ -5,9 +5,9 @@ import HeroSlider from '../../components/landing/HeroSlider.jsx'
 
 const marqueeItems = [
   { text: 'Health is not a privilege — it reaches every door', lang: 'en' },
-  { text: 'ଘରେ ଘରେ ସ୍ୱାସ୍ଥ୍ୟ, ଗ୍ରାମ ଗ୍ରାମ ଆଶା', lang: 'or' },
+  { text: 'घराघरांत आरोग्य, गावोगावी आशा', lang: 'mr' },
   { text: 'Your ASHA worker is closer than the nearest hospital', lang: 'en' },
-  { text: 'ଆମ ଗ୍ରାମ, ଆମ ଦାୟିତ୍ୱ — ସ୍ୱାସ୍ଥ୍ୟ ଆମ ଅଧିକାର', lang: 'or' },
+  { text: 'आपलं गाव, आपली जबाबदारी — आरोग्य हा आपला हक्क', lang: 'mr' },
   { text: 'No village too far, no family left behind', lang: 'en' }
 ]
 
@@ -18,7 +18,7 @@ export default function RoleSelectionPage() {
     {
       id: 'asha',
       title: 'ASHA Worker',
-      titleOdia: 'ଆଶା କର୍ମୀ',
+      titleOdia: 'आशा कार्यकर्ती',
       icon: '🏥',
       path: '/login/asha',
       color: '#0F6E56'
@@ -26,7 +26,7 @@ export default function RoleSelectionPage() {
     {
       id: 'dmo',
       title: 'District Medical Officer',
-      titleOdia: 'ଜିଲ୍ଲା ଚିକିତ୍ସା ଅଧିକାରୀ',
+      titleOdia: 'जिल्हा वैद्यकीय अधिकारी',
       icon: '🏛️',
       path: '/login/dmo',
       color: '#0a5040'
@@ -51,7 +51,7 @@ export default function RoleSelectionPage() {
           Swasthya Setu
         </h1>
         <div style={{ color: 'var(--color-text-muted)', fontSize: '1.5rem', fontWeight: 600, marginBottom: '1rem' }}>
-          ଆରୋଗ୍ୟ ସେତୁ
+          आरोग्य सेतु
         </div>
       </div>
 
@@ -91,7 +91,7 @@ export default function RoleSelectionPage() {
 
       <div style={{ textAlign: 'center', marginBottom: '2rem', padding: '0 1rem' }}>
          <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--color-text)' }}>
-          Select your role / ଆପଣଙ୍କ ଭୂମିକା ବାଛନ୍ତୁ
+          Select your role / आपली भूमिका निवडा
         </h2>
       </div>
 

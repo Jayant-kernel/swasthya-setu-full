@@ -4,7 +4,7 @@ import ChatBubble from '../../components/asha/ChatBubble.jsx'
 import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
 import { useTheme } from '../../context/ThemeContext.jsx'
 
-const SYSTEM_PROMPT = `You are a maternal health assistant for ASHA (Accredited Social Health Activist) workers in rural Odisha, India.
+const SYSTEM_PROMPT = `You are a maternal health assistant for ASHA (Accredited Social Health Activist) workers in rural Maharashtra, India.
 
 Your role is to guide ASHA workers through:
 1. Pre-natal care advice (nutrition, danger signs, ANC visits)
@@ -20,7 +20,7 @@ Your role is to guide ASHA workers through:
    - Baby birthweight <1.5 kg
 5. IMNCI newborn protocols
 
-Always respond in simple, practical language. Use both English and Odia words when helpful.
+Always respond in simple, practical language. Use both English and Marathi words when helpful.
 If there is a danger sign, respond with: 🔴 REFER IMMEDIATELY and explain why.
 Otherwise give calm, step-by-step guidance.`
 
@@ -128,7 +128,7 @@ export default function ChildbirthPage() {
         </div>
         <div>
           <div style={{ fontWeight: 700, fontSize: '0.875rem', color: 'var(--g-text)' }}>Childbirth Assistant</div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--g-muted)', fontWeight: 600 }}>ପ୍ରସବ ସହାୟକ</div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--g-muted)', fontWeight: 600 }}>प्रसूती सहाय्यक</div>
         </div>
     </div>
   )
@@ -233,7 +233,7 @@ export default function ChildbirthPage() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Ask about maternal or newborn care… / ପ୍ରଶ୍ନ କରନ୍ତୁ…"
+          placeholder="Ask about maternal or newborn care… / प्रश्न विचारा…"
           disabled={loading}
           rows={1}
           style={{

@@ -18,8 +18,8 @@ function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
       <div style={{ background: 'var(--surface)', borderRadius: 16, maxWidth: 480, width: '100%', overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.2)' }}>
         <div style={{ padding: '1.25rem 1.25rem 0.75rem', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-main)', fontFamily: "'Noto Sans Oriya', sans-serif" }}>
-            ଏହି ରୋଗୀ ଆଗରୁ ଅଛନ୍ତି
+          <div style={{ fontWeight: 700, fontSize: '1rem', color: 'var(--text-main)', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+            हा रुग्ण आधीपासून नोंदलेला आहे
           </div>
           <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)', marginTop: 2 }}>Patient already exists — select or add new</div>
         </div>
@@ -39,8 +39,8 @@ function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
               >
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: 'var(--text-main)' }}>{p.name}</div>
-                  <div style={{ fontSize: '0.8125rem', color: '#374151', marginTop: 4, fontFamily: "'Noto Sans Oriya', sans-serif" }}>
-                    ନାମ: {p.name} | ବୟସ: {p.age} | ଜିଲ୍ଲା: {p.district}
+                  <div style={{ fontSize: '0.8125rem', color: '#374151', marginTop: 4, fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+                    नाव: {p.name} | वय: {p.age} | जिल्हा: {p.district}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
                     {p.gender && `${p.gender} · `}{p.triage_records?.length || 0} visit{p.triage_records?.length !== 1 ? 's' : ''}
@@ -63,8 +63,8 @@ function DuplicateModal({ matches, onSelect, onNewPatient, onClose }) {
             Cancel
           </button>
           <button onClick={onNewPatient}
-            style={{ flex: 1, minHeight: 44, border: 'none', background: '#0F6E56', color: 'var(--surface)', borderRadius: 10, fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', fontFamily: "'Noto Sans Oriya', sans-serif" }}>
-            ନା, ନୂଆ ରୋଗୀ / New
+            style={{ flex: 1, minHeight: 44, border: 'none', background: '#0F6E56', color: 'var(--surface)', borderRadius: 10, fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+            नाही, नवीन रुग्ण / New
           </button>
         </div>
       </div>
@@ -100,7 +100,7 @@ export default function PatientFormPage() {
   const [saving, setSaving] = useState(false)
   const [showResult, setShowResult] = useState(false)
   const [listening, setListening] = useState(false)
-  const [voiceLang, setVoiceLang] = useState('or-IN')
+  const [voiceLang, setVoiceLang] = useState('mr-IN')
   const [interimText, setInterimText] = useState('')
   const [translating, setTranslating] = useState(false)
   const [voiceError, setVoiceError] = useState('')
@@ -180,7 +180,7 @@ export default function PatientFormPage() {
         messages: [
           {
             role: 'system',
-            content: `You are a rural healthcare assistant for Odisha.
+            content: `You are a rural healthcare assistant for Maharashtra.
 Given a triage result, provide exactly 3 short precautions in simple language that an ASHA worker can follow right now.
 Each precaution must be under 10 words.
 Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precaution 3"],"priority":"immediate|within_hours|monitor_at_home"}`,
@@ -204,7 +204,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
   }
 
   const LANG_LABELS = {
-    'or-IN': { speak: 'ଲକ୍ଷଣ କୁହନ୍ତୁ', recording: 'ଶୁଣୁଛି… କହନ୍ତୁ', translating: 'ଅନୁବାଦ ହେଉଛି…' },
+    'mr-IN': { speak: 'लक्षणे सांगा', recording: 'ऐकत आहे… बोला', translating: 'भाषांतर होत आहे…' },
     'hi-IN': { speak: 'लक्षण बताएं', recording: 'सुन रहा हूँ… बोलिए', translating: 'अनुवाद हो रहा है…' },
     'en-IN': { speak: 'Speak symptoms', recording: 'Listening… speak now', translating: null },
   }
@@ -227,7 +227,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
       setListening(false)
       setInterimText('')
       if (e.error === 'language-not-supported') {
-        setVoiceError('Odia voice not supported in this browser. Try Chrome on Android.')
+        setVoiceError('Marathi voice is not supported in this browser. Try Chrome on Android.')
       } else if (e.error === 'no-speech') {
         setVoiceError('No speech detected. Please try again.')
       } else {
@@ -241,7 +241,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
       setInterimText(interim)
       if (final) {
         setInterimText('')
-        if (voiceLang === 'or-IN' || voiceLang === 'hi-IN') {
+        if (voiceLang === 'mr-IN' || voiceLang === 'hi-IN') {
           setTranslating(true)
           try {
             const english = await translateToEnglish(final)
@@ -459,7 +459,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           <div className="form-group">
             <label className="form-label" htmlFor="name">
               Patient Name
-              <span className="odia-label">ରୋଗୀଙ୍କ ନାମ</span>
+              <span className="odia-label">रुग्णाचे नाव</span>
             </label>
             <input
               id="name"
@@ -478,7 +478,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             <div className="form-group">
               <label className="form-label" htmlFor="age">
                 Age
-                <span className="odia-label">ବୟସ</span>
+                <span className="odia-label">वय</span>
               </label>
               <input
                 id="age"
@@ -497,7 +497,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             <div className="form-group">
               <label className="form-label" htmlFor="gender">
                 Gender
-                <span className="odia-label">ଲିଙ୍ଗ</span>
+                <span className="odia-label">लिंग</span>
               </label>
               <select
                 id="gender"
@@ -507,9 +507,9 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                 onChange={handleChange}
               >
                 <option value="">Select</option>
-                <option value="Male">Male / ପୁରୁଷ</option>
-                <option value="Female">Female / ମହିଳା</option>
-                <option value="Other">Other / ଅନ୍ୟାନ୍ୟ</option>
+                <option value="Male">Male / पुरुष</option>
+                <option value="Female">Female / महिला</option>
+                <option value="Other">Other / इतर</option>
               </select>
             </div>
           </div>
@@ -517,7 +517,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           <div className="form-group">
             <label className="form-label" htmlFor="district">
               District
-              <span className="odia-label">ଜିଲ୍ଲା</span>
+              <span className="odia-label">जिल्हा</span>
             </label>
             <select
               id="district"
@@ -527,12 +527,12 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
               onChange={handleChange}
             >
               <option value="">Select district</option>
-              <optgroup label="High-Risk Districts / ଉଚ୍ଚ-ଝୁଁକି ଜିଲ୍ଲା">
+              <optgroup label="High-Risk Districts / उच्च-जोखीम जिल्हे">
                 {ALL_DISTRICTS.filter((d) => HIGH_RISK.has(d)).map((d) => (
                   <option key={d} value={d}>{d} ⚠</option>
                 ))}
               </optgroup>
-              <optgroup label="Other Districts / ଅନ୍ୟ ଜିଲ୍ଲା">
+              <optgroup label="Other Districts / इतर जिल्हे">
                 {ALL_DISTRICTS.filter((d) => !HIGH_RISK.has(d)).map((d) => (
                   <option key={d} value={d}>{d}</option>
                 ))}
@@ -550,7 +550,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           <div className="form-group">
             <label className="form-label" htmlFor="symptomText">
               Describe Symptoms
-              <span className="odia-label">ଲକ୍ଷଣ ବର୍ଣ୍ଣନା କରନ୍ତୁ</span>
+              <span className="odia-label">लक्षणांचे वर्णन करा</span>
             </label>
             <textarea
               id="symptomText"
@@ -566,7 +566,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           <div className="form-group" style={{ marginBottom: '1.5rem' }}>
             <label className="form-label">
               GPS Location (Optional)
-              <span className="odia-label">ଜିପିଏସ୍ ଅବସ୍ଥିତି (ଐଚ୍ଛିକ)</span>
+              <span className="odia-label">जीपीएस स्थान (ऐच्छिक)</span>
             </label>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.75rem', borderRadius: 12, border: '1px solid var(--island-border)' }}>
               <button
@@ -623,7 +623,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
           >
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
               {[
-                { code: 'or-IN', label: 'ଓଡ଼ିଆ' },
+                { code: 'mr-IN', label: 'मराठी' },
                 { code: 'hi-IN', label: 'हिंदी' },
                 { code: 'en-IN', label: 'English' },
               ].map(({ code, label }) => (
@@ -696,7 +696,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                 {!listening && !translating && (
                   <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: 2 }}>
                     {voiceLang !== 'en-IN'
-                      ? 'Auto-translated to English for triage'
+                      ? 'Automatically translated to English for triage'
                       : 'Click 🎤 to describe symptoms by voice'}
                   </div>
                 )}
@@ -733,7 +733,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             }}
           >
             🤟 ISL Mode — Use Hand Signs
-            <span style={{ fontFamily: "'Noto Sans Oriya', sans-serif", fontSize: '0.8125rem' }}>/ ସାଙ୍କେତିକ ଭାଷା</span>
+            <span style={{ fontFamily: "'Noto Sans Devanagari', sans-serif", fontSize: '0.8125rem' }}>/ सांकेतिक भाषा</span>
           </button>
 
           <SignLanguageModal 
@@ -768,14 +768,14 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
             {triageLoading ? (
               <>
                 <span className="spinner" style={{ width: 22, height: 22 }} />
-                <span>ବିଶ୍ଳେଷଣ କରୁଛି… / Analyzing…</span>
+                <span>विश्लेषण सुरू आहे… / Analyzing…</span>
               </>
             ) : (
               <>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
-                <span>ବିଶ୍ଳେଷଣ କରନ୍ତୁ / Analyze</span>
+                <span>विश्लेषण करा / Analyze</span>
               </>
             )}
           </button>
@@ -791,8 +791,8 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
 
             {result.severity === 'red' && result.sickle_cell_risk && (
               <div style={{ marginTop: '1rem', background: '#FFF7ED', border: '2px solid #F97316', borderRadius: 12, padding: '1rem' }}>
-                <div style={{ fontWeight: 700, fontSize: '1rem', color: '#C2410C', marginBottom: '0.375rem', fontFamily: "'Noto Sans Oriya', sans-serif" }}>
-                  ⚠ ସତର୍କତା: ସିକଲ ସେଲ ଆଶଙ୍କା
+                <div style={{ fontWeight: 700, fontSize: '1rem', color: '#C2410C', marginBottom: '0.375rem', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+                  ⚠ इशारा: सिकल सेलचा संशय
                 </div>
                 <div style={{ fontSize: '0.875rem', color: '#9A3412', fontWeight: 600 }}>WARNING: Possible sickle cell crisis.</div>
                 <div style={{ fontSize: '0.875rem', color: '#9A3412', marginTop: 4 }}>Do NOT give standard malaria medicine. Blood test required first.</div>
@@ -813,7 +813,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                   onClick={handleGoToChat}
                   style={{ minHeight: 48, padding: '0 1.25rem', background: '#0F6E56', color: 'var(--surface)', border: 'none', borderRadius: 10, fontSize: '0.9375rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                 >
-                  💬 AI ସହ ପଚାରନ୍ତୁ / Ask AI
+                  💬 AI ला विचारा / Ask AI
                 </button>
               </div>
             )}
@@ -836,13 +836,13 @@ function precautionEmoji(text) {
 }
 
 const ODIA_MAP = {
-  '💧': 'ପ୍ରଚୁର ପାଣି ଓ ORS ଦିଅନ୍ତୁ',
-  '🛏': 'ରୋଗୀଙ୍କୁ ବିଶ୍ରାମ ଦିଅନ୍ତୁ',
-  '🏥': 'ନିକଟ ସ୍ୱାସ୍ଥ୍ୟ କେନ୍ଦ୍ରକୁ ପଠାନ୍ତୁ',
-  '💊': 'ଡାକ୍ତରଙ୍କ ପରାମର୍ଶ ଅନୁଯାୟୀ ଔଷଧ ଦିଅନ୍ତୁ',
-  '🥗': 'ହାଲୁକା ଖାଦ୍ୟ ଦିଅନ୍ତୁ',
-  '🩸': 'ରକ୍ତ ପରୀକ୍ଷା କରାନ୍ତୁ',
-  '⚠': 'ସତର୍କ ରୁହନ୍ତୁ ଓ ନଜର ରଖନ୍ତୁ',
+  '💧': 'पुरेसे पाणी आणि ORS द्या',
+  '🛏': 'रुग्णाला विश्रांती द्या',
+  '🏥': 'जवळच्या आरोग्य केंद्रात पाठवा',
+  '💊': 'डॉक्टरांच्या सल्ल्याने औषध द्या',
+  '🥗': 'हलका आहार द्या',
+  '🩸': 'रक्त तपासणी करा',
+  '⚠': 'सावध राहा आणि लक्ष ठेवा',
 }
 
 function TriageResultCard({ result, precautionData, precautionLoading }) {
@@ -854,9 +854,9 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
 
   const priority = precautionData?.priority
   const priorityConfig = {
-    immediate:       { bg: 'var(--error-bg)', border: '#FCA5A5', color: '#C0392B', label: '🚨 ତୁରନ୍ତ ଧ୍ୟାନ ଦରକାର / Immediate Attention' },
-    within_hours:    { bg: '#FFF7ED', border: '#FED7AA', color: '#C2410C', label: '⏰ ୨୪ ଘଣ୍ଟା ଭିତରେ / Within 24 Hours' },
-    monitor_at_home: { bg: '#F0FDF4', border: '#86EFAC', color: '#166534', label: '🏠 ଘରେ ନଜର ରଖନ୍ତୁ / Monitor at Home' },
+    immediate:       { bg: 'var(--error-bg)', border: '#FCA5A5', color: '#C0392B', label: '🚨 तात्काळ लक्ष द्या / Immediate Attention' },
+    within_hours:    { bg: '#FFF7ED', border: '#FED7AA', color: '#C2410C', label: '⏰ २४ तासांच्या आत / Within 24 Hours' },
+    monitor_at_home: { bg: '#F0FDF4', border: '#86EFAC', color: '#166534', label: '🏠 घरी लक्ष ठेवा / Monitor at Home' },
   }
   const pc = priorityConfig[priority] || null
 
@@ -864,7 +864,7 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
     <div style={{ background: cardBg, border: `2px solid ${cardBorder}`, borderRadius: 14, overflow: 'hidden' }}>
 
       {pc && (
-        <div style={{ background: pc.bg, borderBottom: `1px solid ${pc.border}`, padding: '0.625rem 1rem', fontWeight: 700, fontSize: '0.875rem', color: pc.color, fontFamily: "'Noto Sans Oriya', sans-serif" }}>
+        <div style={{ background: pc.bg, borderBottom: `1px solid ${pc.border}`, padding: '0.625rem 1rem', fontWeight: 700, fontSize: '0.875rem', color: pc.color, fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
           {pc.label}
         </div>
       )}
@@ -875,8 +875,8 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
         </div>
         <div>
           <div style={{ fontWeight: 800, fontSize: '1.25rem', color: sevColor }}>{sev === 'red' ? 'Emergency' : sev === 'yellow' ? 'Moderate' : 'Stable'}</div>
-          <div style={{ fontSize: '0.9375rem', color: sevColor, opacity: 0.8, fontFamily: "'Noto Sans Oriya', sans-serif" }}>
-            {sev === 'red' ? 'ଜରୁରୀ' : sev === 'yellow' ? 'ମଧ୍ୟମ' : 'ସ୍ଥିର'}
+          <div style={{ fontSize: '0.9375rem', color: sevColor, opacity: 0.8, fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+            {sev === 'red' ? 'तातडीचे' : sev === 'yellow' ? 'मध्यम' : 'स्थिर'}
           </div>
         </div>
       </div>
@@ -891,8 +891,8 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
 
         {result.symptoms?.length > 0 && (
           <div style={{ marginBottom: '0.875rem' }}>
-            <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: sevColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.375rem', fontFamily: "'Noto Sans Oriya', sans-serif" }}>
-              Identified Symptoms / ଚିହ୍ନଟ ଲକ୍ଷଣ
+            <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: sevColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.375rem', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+              Identified Symptoms / ओळखलेली लक्षणे
             </div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.375rem' }}>
               {result.symptoms.map((s, i) => (
@@ -905,8 +905,8 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
         )}
 
         <div style={{ borderTop: `1px solid ${cardBorder}`, paddingTop: '0.875rem' }}>
-          <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: sevColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.625rem', fontFamily: "'Noto Sans Oriya', sans-serif" }}>
-            ⚠ ସତର୍କତା / Precautions
+          <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: sevColor, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.625rem', fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+            ⚠ काळजीसूचना / Precautions
           </div>
           {precautionLoading && (
             <div style={{ fontSize: '0.8125rem', color: '#9ca3af', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -922,7 +922,7 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
                 <span style={{ fontSize: '1.1rem', flexShrink: 0, lineHeight: 1.4 }}>{emoji}</span>
                 <div>
                   <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#1f2937', lineHeight: 1.4 }}>{p}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: 1, fontFamily: "'Noto Sans Oriya', sans-serif" }}>{odiaHint}</div>
+                  <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginTop: 1, fontFamily: "'Noto Sans Devanagari', sans-serif" }}>{odiaHint}</div>
                 </div>
               </div>
             )
@@ -969,7 +969,7 @@ function VisitHistory({ name, patientId }) {
   return (
     <div style={{ marginBottom: '1.25rem', border: '1px solid var(--color-border)', borderRadius: 'var(--radius)', overflow: 'hidden' }}>
       <div style={{ padding: '0.625rem 0.875rem', background: 'var(--color-bg)', borderBottom: '1px solid var(--color-border)', fontSize: '0.8125rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-        Visit History / ପୂର୍ବ ପରିଦର୍ଶନ
+        Visit History / मागील भेटी
       </div>
       {records.map((r) => (
         <div key={r.id} style={{ padding: '0.75rem 0.875rem', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

@@ -39,7 +39,7 @@ export default function DMOLoginPage() {
             District Medical Officer Login
           </h1>
           <div style={{ fontWeight: 600, opacity: 0.9 }}>
-            ଜିଲ୍ଲା ଚିକିତ୍ସା ଅଧିକାରୀ ଲଗଇନ୍
+            जिल्हा वैद्यकीय अधिकारी लॉगिन
           </div>
         </div>
 
@@ -49,7 +49,7 @@ export default function DMOLoginPage() {
           <div className="form-group">
             <label className="form-label">
               Email Address
-              <span className="marathi-label" style={{ marginLeft: '0.5rem', opacity: 0.6 }}>ଇମେଲ୍ ଠିକଣା</span>
+              <span className="marathi-label" style={{ marginLeft: '0.5rem', opacity: 0.6 }}>ईमेल पत्ता</span>
             </label>
             <input
               type="email"
@@ -64,7 +64,7 @@ export default function DMOLoginPage() {
           <div className="form-group">
             <label className="form-label">
               Password
-              <span className="marathi-label" style={{ marginLeft: '0.5rem', opacity: 0.6 }}>ପାସୱାର୍ଡ</span>
+              <span className="marathi-label" style={{ marginLeft: '0.5rem', opacity: 0.6 }}>पासवर्ड</span>
             </label>
             <input
               type="password"
@@ -77,7 +77,7 @@ export default function DMOLoginPage() {
           </div>
 
           <button type="submit" className="btn btn-primary" disabled={loading}>
-            {loading ? 'Signing in...' : 'Sign In / ଲଗଇନ୍ କରନ୍ତୁ'}
+            {loading ? 'Signing in...' : 'Sign In / लॉगिन करा'}
           </button>
         </form>
 
