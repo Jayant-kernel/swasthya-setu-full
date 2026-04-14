@@ -85,7 +85,7 @@ export default function PatientFormPage() {
   const prefillPatientId = location.state?.patientId || null
 
   const { setPatientData, setTriageResult } = usePatient()
-  const { result, loading: triageLoading, error: triageError, runTriage } = useTriage()
+  const { result, hfResult, loading: triageLoading, error: triageError, runTriage } = useTriage()
 
   const [form, setForm] = useState({
     name: prefill?.name || '',
@@ -787,6 +787,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
               result={result}
               precautionData={precautionData}
               precautionLoading={precautionLoading}
+              hfResult={hfResult}
             />
 
             {result.severity === 'red' && result.sickle_cell_risk && (
@@ -845,7 +846,14 @@ const ODIA_MAP = {
   '⚠': 'सावध राहा आणि लक्ष ठेवा',
 }
 
-function TriageResultCard({ result, precautionData, precautionLoading }) {
+// ── Severity label helpers for HF/WHO suggestion badge ───────────────────────
+const HF_SEV_STYLE = {
+  red:    { bg: '#fdf2f2', border: '#f5b7b1', color: '#c0392b', dot: '#e74c3c', label: 'Emergency' },
+  yellow: { bg: '#fef9e7', border: '#f8d7a0', color: '#b7770d', dot: '#f39c12', label: 'Moderate'  },
+  green:  { bg: '#eafaf1', border: '#a9dfbf', color: '#1e8449', dot: '#27ae60', label: 'Stable'    },
+}
+
+function TriageResultCard({ result, precautionData, precautionLoading, hfResult }) {
   const sev = result.severity?.toLowerCase()
   const cardBg    = sev === 'red' ? 'var(--error-bg)' : sev === 'yellow' ? '#FFFBEB' : '#F0FDF4'
   const cardBorder= sev === 'red' ? '#FCA5A5' : sev === 'yellow' ? '#FCD34D' : '#86EFAC'
@@ -928,6 +936,35 @@ function TriageResultCard({ result, precautionData, precautionLoading }) {
             )
           })}
         </div>
+
+        {/* ── Secondary suggestion: HF ML model or WHO rules ─────────────────── */}
+        {hfResult && (() => {
+          const hc = HF_SEV_STYLE[hfResult.label] || HF_SEV_STYLE.green
+          return (
+            <div style={{ borderTop: `1px solid ${cardBorder}`, paddingTop: '0.875rem', marginTop: '0.25rem' }}>
+              <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#6b7280', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                {hfResult.source === 'HF' ? '🤖 ML Model Suggestion' : '📋 WHO Protocol Check'}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', background: hc.bg, border: `1px solid ${hc.border}`, borderRadius: 8, padding: '0.5rem 0.75rem' }}>
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: hc.dot, flexShrink: 0, display: 'inline-block' }} />
+                <div style={{ flex: 1 }}>
+                  <span style={{ fontWeight: 700, fontSize: '0.875rem', color: hc.color }}>{hc.label}</span>
+                  {hfResult.confidence !== 'rule-based' && (
+                    <span style={{ fontSize: '0.75rem', color: '#9ca3af', marginLeft: 6 }}>
+                      {hfResult.confidence}% confidence
+                    </span>
+                  )}
+                </div>
+                <span style={{ fontSize: '0.6875rem', color: '#9ca3af', fontWeight: 500, flexShrink: 0 }}>
+                  {hfResult.source === 'HF' ? 'bart-large-mnli' : 'WHO IMNCI rules'}
+                </span>
+              </div>
+              <p style={{ fontSize: '0.6875rem', color: '#9ca3af', margin: '0.375rem 0 0', lineHeight: 1.4 }}>
+                Secondary check only — OpenAI GPT-4o result above is primary.
+              </p>
+            </div>
+          )
+        })()}
       </div>
     </div>
   )

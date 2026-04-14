@@ -1,8 +1,10 @@
 import { useState, useCallback } from 'react'
 import { openai, getTriageSystemPrompt } from '../lib/openai'
+import { getHFTriage, getWHOTriage } from '../lib/triageHF'
 
 export function useTriage() {
   const [result, setResult] = useState(null)
+  const [hfResult, setHfResult] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -29,55 +31,59 @@ export function useTriage() {
     setLoading(true)
     setError(null)
     setResult(null)
+    setHfResult(null)
 
-    try {
-      const response = await openai.chat.completions.create({
+    // Fire OpenAI (primary) and HF (secondary suggestion) in parallel
+    const [openAISettled, hfSettled] = await Promise.allSettled([
+      openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [
-          {
-            role: 'system',
-            content: getTriageSystemPrompt(district),
-          },
-          {
-            role: 'user',
-            content: `Patient symptoms: ${symptomText}`,
-          },
+          { role: 'system', content: getTriageSystemPrompt(district) },
+          { role: 'user',   content: `Patient symptoms: ${symptomText}` },
         ],
         temperature: 0.2,
         max_tokens: 300,
-      })
+      }),
+      getHFTriage(symptomText),
+    ])
 
-      const raw = response.choices[0]?.message?.content?.trim()
-
-      if (!raw) {
-        throw new Error('Empty response from AI model.')
+    // ── Process OpenAI (primary) ──────────────────────────────────────────────
+    let parsed = null
+    if (openAISettled.status === 'fulfilled') {
+      try {
+        const raw = openAISettled.value.choices[0]?.message?.content?.trim()
+        if (!raw) throw new Error('Empty response from AI model.')
+        const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
+        parsed = JSON.parse(cleaned)
+        if (
+          !parsed.severity ||
+          !Array.isArray(parsed.symptoms) ||
+          typeof parsed.sickle_cell_risk !== 'boolean' ||
+          !parsed.brief
+        ) {
+          throw new Error('Unexpected response format from AI model.')
+        }
+        setResult(parsed)
+      } catch (err) {
+        setError(err?.message || 'Failed to analyze symptoms. Please try again.')
+        setLoading(false)
+        return null
       }
-
-      // Strip markdown code fences if present
-      const cleaned = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
-      const parsed = JSON.parse(cleaned)
-
-      // Validate shape
-      if (
-        !parsed.severity ||
-        !Array.isArray(parsed.symptoms) ||
-        typeof parsed.sickle_cell_risk !== 'boolean' ||
-        !parsed.brief
-      ) {
-        throw new Error('Unexpected response format from AI model.')
-      }
-
-      setResult(parsed)
-      return parsed
-    } catch (err) {
-      const msg =
-        err?.message || 'Failed to analyze symptoms. Please try again.'
-      setError(msg)
-      return null
-    } finally {
+    } else {
+      setError(openAISettled.reason?.message || 'Failed to analyze symptoms. Please try again.')
       setLoading(false)
+      return null
     }
+
+    // ── Process HF (secondary suggestion) ────────────────────────────────────
+    // HF wins if it responded; otherwise fall back to WHO keyword rules
+    const hfRaw = hfSettled.status === 'fulfilled' ? hfSettled.value : null
+    const suggestion = hfRaw || getWHOTriage(symptomText)
+    setHfResult(suggestion)
+
+    setLoading(false)
+    return parsed
   }, [])
 
-  return { result, loading, error, runTriage }
+  return { result, hfResult, loading, error, runTriage }
 }
