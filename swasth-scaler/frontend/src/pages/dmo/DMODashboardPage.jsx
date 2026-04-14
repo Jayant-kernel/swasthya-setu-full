@@ -68,7 +68,7 @@ const Calendar = ({ triageRecords, selectedDate, setSelectedDate, g, isDark }) =
 }
 
 export default function DMODashboardPage() {
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
   const navigate = useNavigate()
   const { isDark, toggleTheme } = useTheme()
   const [isHovered, setIsHovered] = useState(false)
