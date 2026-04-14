@@ -4,7 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 
 export default function DMOLoginPage() {
   const navigate = useNavigate()
-  const { login } = useAuth()
+  const { login, loginAsGuest } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -19,6 +19,19 @@ export default function DMOLoginPage() {
       navigate('/dashboard/dmo')
     } catch (err) {
       setError('Login failed. Please check your credentials.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  async function handleGuestSignIn() {
+    setLoading(true)
+    setError('')
+    try {
+      await loginAsGuest('dmo')
+      navigate('/dashboard/dmo')
+    } catch (err) {
+      setError('Guest sign in failed. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -78,6 +91,16 @@ export default function DMOLoginPage() {
 
           <button type="submit" className="btn btn-primary" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In / लॉगिन करा'}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleGuestSignIn}
+            disabled={loading}
+            className="btn"
+            style={{ marginTop: '0.875rem', width: '100%', border: '1.5px solid var(--color-primary)', color: 'var(--color-primary)', background: 'transparent', fontWeight: 700 }}
+          >
+            Continue as Guest
           </button>
         </form>
 

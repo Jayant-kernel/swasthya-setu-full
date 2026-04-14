@@ -16,8 +16,10 @@ export function AuthProvider({ children }) {
     const token = localStorage.getItem('access_token')
     const savedRole = localStorage.getItem('userRole')
     const savedUser = localStorage.getItem('user')
+    const ashaBypass = localStorage.getItem('asha_bypass') === 'true'
+    const dmoBypass = localStorage.getItem('dmo_bypass') === 'true'
 
-    if (token) {
+    if (token || ashaBypass || dmoBypass) {
       setSession({ access_token: token })
       setUserRole(savedRole)
       try {
@@ -54,10 +56,33 @@ export function AuthProvider({ children }) {
     return data
   }
 
+  const loginAsGuest = (role) => {
+    const guestUser = {
+      id: `guest-${role}`,
+      name: role === 'dmo' ? 'Guest DMO' : 'Guest ASHA Worker',
+      role,
+      guest: true,
+    }
+
+    localStorage.removeItem('access_token')
+    localStorage.setItem('userRole', role)
+    localStorage.setItem('user', JSON.stringify(guestUser))
+    localStorage.setItem('asha_bypass', role === 'asha' ? 'true' : 'false')
+    localStorage.setItem('dmo_bypass', role === 'dmo' ? 'true' : 'false')
+
+    setSession({ access_token: null })
+    setUserRole(role)
+    setUser(guestUser)
+
+    return guestUser
+  }
+
   const logout = async () => {
     localStorage.removeItem('access_token')
     localStorage.removeItem('userRole')
     localStorage.removeItem('user')
+    localStorage.removeItem('asha_bypass')
+    localStorage.removeItem('dmo_bypass')
 
     setSession(null)
     setUserRole(null)
@@ -65,7 +90,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ session, userRole, user, loading, login, logout, setUserRole }}>
+    <AuthContext.Provider value={{ session, userRole, user, loading, login, loginAsGuest, logout, setUserRole }}>
       {children}
     </AuthContext.Provider>
   )

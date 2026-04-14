@@ -143,6 +143,20 @@ export default function LoginRoleModal({ onClose }) {
     }
   };
 
+  const handleGuestAccess = async () => {
+    if (!selected) return;
+    setAuthError('');
+    setAuthLoading(true);
+    try {
+      await auth.loginAsGuest(selected.id);
+      navigate(selected.path);
+    } catch (err) {
+      setAuthError(err.message || 'Guest sign-in failed.');
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   return (
     <>
       <style>{`
@@ -329,6 +343,38 @@ export default function LoginRoleModal({ onClose }) {
 
         .lrm-submit-btn:disabled {
           background: #6b7280;
+          cursor: not-allowed;
+        }
+
+        .lrm-guest-btn {
+          width: 100%;
+          min-height: 48px;
+          border-radius: 12px;
+          background: #f8fafc;
+          color: #0F6E56;
+          border: 1.5px solid rgba(15,110,86,0.22);
+          font-size: 0.9375rem;
+          font-weight: 700;
+          font-family: 'Inter', sans-serif;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          margin-top: 0.75rem;
+          transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
+        }
+
+        .lrm-guest-btn:hover:not(:disabled) {
+          background: #eefaf6;
+          box-shadow: 0 6px 20px rgba(15,110,86,0.12);
+          transform: translateY(-1px);
+        }
+
+        .lrm-guest-btn:disabled {
+          color: #94a3b8;
+          border-color: #e2e8f0;
+          background: #f8fafc;
           cursor: not-allowed;
         }
 
@@ -526,6 +572,15 @@ export default function LoginRoleModal({ onClose }) {
                     </svg>
                   </>
                 )}
+              </button>
+
+              <button
+                type="button"
+                className="lrm-guest-btn"
+                onClick={handleGuestAccess}
+                disabled={authLoading || !selected}
+              >
+                Continue as Guest
               </button>
             </form>
 

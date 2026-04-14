@@ -19,6 +19,10 @@ export default function ProtectedRoute({ children, role }) {
     return children
   }
 
+  if (role === 'asha' && localStorage.getItem('asha_bypass') === 'true') {
+    return children
+  }
+
   // Admin uses bypass auth
   if (role === 'admin' && localStorage.getItem('admin_bypass') === 'true') {
     return children
