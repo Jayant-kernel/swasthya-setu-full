@@ -15,6 +15,7 @@ import ChildbirthPage from './pages/asha/ChildbirthPage.jsx'
 import DMODashboardPage from './pages/dmo/DMODashboardPage.jsx'
 import DMOMapPage from './pages/dmo/DMOMapPage.jsx'
 import DMOLoginPage from './pages/dmo/DMOLoginPage.jsx'
+import DMOProfilePage from './pages/dmo/DMOProfilePage.jsx'
 
 import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx'
 import AdminMapPage from './pages/admin/AdminMapPage.jsx'
@@ -48,6 +49,7 @@ export default function App() {
               {/* DMO Portal */}
               <Route path="/dashboard/dmo" element={<ProtectedRoute role="dmo"><DMODashboardPage /></ProtectedRoute>} />
               <Route path="/dashboard/dmo/map" element={<ProtectedRoute role="dmo"><DMOMapPage /></ProtectedRoute>} />
+              <Route path="/dashboard/dmo/profile" element={<ProtectedRoute role="dmo"><DMOProfilePage /></ProtectedRoute>} />
               
               {/* Admin Portal */}
               <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />

@@ -188,7 +188,20 @@ export default function DMODashboardPage() {
             <button onClick={toggleTheme} style={{ width: 40, height: 40, borderRadius: 12, border: `1px solid ${g.divider}`, background: g.cardBg, color: g.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {isDark ? <SunIcon /> : <MoonIcon />}
             </button>
-            <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>D</div>
+            <div 
+              onClick={() => navigate('/dashboard/dmo/profile')}
+              style={{ 
+                width: 40, height: 40, borderRadius: '50%', 
+                background: 'linear-gradient(135deg, #4f46e5, #3b82f6)', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                color: '#fff', fontWeight: 800, cursor: 'pointer',
+                transition: 'transform 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              {(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).name?.[0] : 'D') || 'D'}
+            </div>
           </div>
         </header>
 

@@ -50,6 +50,10 @@ export default function DMOSidebar({ isHovered, setIsHovered, onLogout, onAdminN
         <div onClick={() => navigate('/dashboard/dmo/map')} className={`nav-link ${isMap ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 4 }}>
           <MapIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Districts Map</span>
         </div>
+        <div onClick={() => navigate('/dashboard/dmo/profile')} className={`nav-link ${currentPath === '/dashboard/dmo/profile' ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 4 }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Profile</span>
+        </div>
       </nav>
 
       <div style={{ padding: '1rem', borderTop: `1px solid ${g.divider}`, width: 240 }}>
