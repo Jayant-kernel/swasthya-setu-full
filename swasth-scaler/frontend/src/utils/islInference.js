@@ -41,7 +41,7 @@ export const CRITICAL_SIGNS = new Set(['SANS-TAKLEEF', 'SEENE-DARD'])
 
 // ── Base confidence thresholds per sign ───────────────────────────────────────
 const BASE_THRESHOLDS = {
-  DARD:           0.78,
+  DARD:           0.85,
   BUKHAR:         0.82,
   'SAR-DARD':     0.80,
   'PET-DARD':     0.76,
