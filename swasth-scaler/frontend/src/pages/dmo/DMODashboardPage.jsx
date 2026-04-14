@@ -7,6 +7,7 @@ import PatientRecordModal from '../../components/shared/PatientRecordModal'
 import { SunIcon, MoonIcon, SearchIcon, ActivityIcon } from '../admin/AdminIcons'
 import { API, DISTRICT_CENTERS, buildMapPoints } from './DMOShared'
 import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
+import { ReviewModal, ReviewSection } from '../../components/common/ReviewModal'
 
 
 const StatCard = ({ label, value, subtext, icon: Icon, color = '#3b82f6', g }) => (
@@ -76,6 +77,7 @@ export default function DMODashboardPage() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null })
   const [selectedRecord, setSelectedRecord] = useState(null)
+  const [showReviewModal, setShowReviewModal] = useState(false)
 
   const handleSort = useCallback((key) => {
     setSortConfig((prev) => {
@@ -232,8 +234,10 @@ export default function DMODashboardPage() {
                               }}
                             >
                               {h.label}
-                              <span style={{ fontSize: '0.65rem', color: sortConfig.key === h.key ? '#3b82f6' : g.muted }}>
-                                {sortConfig.key === h.key ? (sortConfig.direction === 'asc' ? 'â†‘' : 'â†“') : 'â†•'}
+                              <span style={{ fontSize: '0.75rem', color: sortConfig.key === h.key ? '#3b82f6' : g.muted, fontWeight: 700, marginLeft: 2 }}>
+                                {sortConfig.key === h.key
+                                  ? (sortConfig.direction === 'asc' ? '↑' : '↓')
+                                  : '↕'}
                               </span>
                             </button>
                           </th>
@@ -273,9 +277,39 @@ export default function DMODashboardPage() {
             </div>
           </div>
         </div>
+
+        {/* Review Section */}
+        <div style={{ padding: '0 2.5rem 2.5rem' }}>
+          <ReviewSection role="dmo" isDark={isDark} />
+          <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+            <button
+              onClick={() => setShowReviewModal(true)}
+              style={{
+                padding: '0.625rem 1.75rem', borderRadius: 99,
+                border: '1.5px solid rgba(239,68,68,0.4)',
+                background: 'transparent', color: '#ef4444',
+                fontWeight: 700, fontSize: '0.845rem', cursor: 'pointer',
+                transition: 'all 0.18s', fontFamily: "'Inter', sans-serif",
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+            >
+              Sign Out
+            </button>
+          </div>
+        </div>
       </main>
 
       <PatientRecordModal record={selectedRecord} isOpen={Boolean(selectedRecord)} onClose={() => setSelectedRecord(null)} g={g} />
+
+      {/* Review Modal on logout */}
+      {showReviewModal && (
+        <ReviewModal
+          role="dmo"
+          onSkip={() => { setShowReviewModal(false); logout(); navigate('/') }}
+          onSubmit={() => { setShowReviewModal(false); logout(); navigate('/') }}
+        />
+      )}
     </div>
   )
 }

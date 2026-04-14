@@ -519,7 +519,7 @@ export default function LoginRoleModal({ onClose }) {
                 <input
                   className="lrm-input"
                   type="text"
-                  placeholder={selected ? `Demo: ${GUEST_CREDENTIALS[selected.id]?.id}` : 'Enter Your Employee / Officer ID'}
+                  placeholder="Enter Your Employee / Officer ID"
                   value={authEmployeeId}
                   onChange={e => setAuthEmployeeId(e.target.value)}
                   required
@@ -537,7 +537,7 @@ export default function LoginRoleModal({ onClose }) {
                 <input
                   className="lrm-input"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder={selected ? `Demo password: ${GUEST_CREDENTIALS[selected.id]?.password}` : 'Enter Your Password'}
+                  placeholder="Enter Your Password"
                   value={authPassword}
                   onChange={e => setAuthPassword(e.target.value)}
                   required

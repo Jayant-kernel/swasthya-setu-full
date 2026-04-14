@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import DashboardLayout from '../../components/asha/DashboardLayout'
 import { GUEST_TRIAGE_RECORDS, buildAshaPatients } from '../../lib/guestDemoData'
+import { ReviewModal, ReviewSection } from '../../components/common/ReviewModal'
 
 /* ─── Constants ──────────────────────────────────────────── */
 const ALL_DISTRICTS = [
@@ -159,6 +160,7 @@ export default function ASHADashboardPage() {
   const [sortField, setSortField] = useState('date')
   const [sortOrder, setSortOrder] = useState('desc')
   const debounceRef = useRef(null)
+  const [showReviewModal, setShowReviewModal] = useState(false)
 
   const [patientResults, setPatientResults] = useState([])
   const [loading, setLoading] = useState(false)
@@ -566,7 +568,37 @@ export default function ASHADashboardPage() {
               </button>
             </div>
           )}
+
+          {/* ── Inline Review Section ── */}
+          <ReviewSection role="asha" isDark={isDark} />
+
+          {/* ── Logout / Review button ── */}
+          <div style={{ textAlign: 'center', paddingBottom: '2rem' }}>
+            <button
+              onClick={() => setShowReviewModal(true)}
+              style={{
+                padding: '0.625rem 1.75rem', borderRadius: 99,
+                border: '1.5px solid rgba(239,68,68,0.4)',
+                background: 'transparent', color: '#ef4444',
+                fontWeight: 700, fontSize: '0.845rem', cursor: 'pointer',
+                transition: 'all 0.18s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+            >
+              Sign Out
+            </button>
+          </div>
         </div>
     </DashboardLayout>
+
+    {/* ── Review Modal on logout ── */}
+    {showReviewModal && (
+      <ReviewModal
+        role="asha"
+        onSkip={() => { setShowReviewModal(false); logout(); navigate('/') }}
+        onSubmit={() => { setShowReviewModal(false); logout(); navigate('/') }}
+      />
+    )}
   )
 }
