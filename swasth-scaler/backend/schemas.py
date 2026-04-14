@@ -18,7 +18,6 @@ class UserCreate(BaseModel):
 class UserUpdateProfile(BaseModel):
     full_name: Optional[str] = None
     location: Optional[str] = None
-    designation: Optional[str] = None
     avatar_b64: Optional[str] = None
     banner_b64: Optional[str] = None
 
@@ -29,7 +28,6 @@ class UserOut(BaseModel):
     role: str
     location: Optional[str] = None
     district: Optional[str] = None
-    designation: Optional[str] = None
     email: Optional[str] = None
     avatar_b64: Optional[str] = None
     banner_b64: Optional[str] = None
@@ -60,4 +58,6 @@ class ReviewCreate(BaseModel):
     categories: Optional[dict] = None
     comment: Optional[str] = None
     userName: Optional[str] = None
+    designation: Optional[str] = None
+    location: Optional[str] = None
     source: Optional[str] = None

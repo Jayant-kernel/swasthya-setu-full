@@ -49,7 +49,6 @@ export default function ProfilePage() {
   const [isEditing, setIsEditing] = useState(false)
   const [forceOnboard, setForceOnboard] = useState(false)
   const [fullName, setFullName] = useState('')
-  const [designation, setDesignation] = useState('')
   const [location2, setLocation2] = useState('')
   const [saveLoading, setSaveLoading] = useState(false)
   const [showReviewModal, setShowReviewModal] = useState(false)
@@ -60,10 +59,8 @@ export default function ProfilePage() {
       setUser(authUser)
       const savedName = authUser.full_name || ''
       const savedLoc = authUser.location || ''
-      const savedDes = authUser.designation || ''
       setFullName(savedName)
       setLocation2(savedLoc)
-      setDesignation(savedDes)
       if (!savedName || !savedLoc) { setForceOnboard(true); setIsEditing(true) }
       try {
         const token = localStorage.getItem('access_token')
@@ -82,24 +79,15 @@ export default function ProfilePage() {
     setSaveLoading(true)
     try {
       const token = localStorage.getItem('access_token')
-      const body = { 
-        full_name: fullName.trim(), 
-        location: location2.trim(),
-        designation: designation.trim() 
-      }
-      const response = await fetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+      await fetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(body)
+        body: JSON.stringify({ full_name: fullName.trim(), location: location2.trim() })
       })
-      if (!response.ok) throw new Error('Failed to update profile')
-      const updatedUser = await response.json()
-      if (authUser?.guest) {
-        localStorage.setItem('user', JSON.stringify({ ...authUser, ...updatedUser, guest: true }))
-      } else {
-        localStorage.setItem('user', JSON.stringify(updatedUser))
-      }
-      window.location.reload()
+      const updated = { ...user, full_name: fullName.trim(), location: location2.trim() }
+      setUser(updated)
+      localStorage.setItem('user', JSON.stringify(updated))
+      setIsEditing(false); setForceOnboard(false)
     } catch (err) { alert('Failed to save: ' + err.message) }
     finally { setSaveLoading(false) }
   }
@@ -192,15 +180,17 @@ export default function ProfilePage() {
                   <div style={{ flex: 1, minWidth: 200 }}>
                     {!isEditing ? (
                       <>
-                        <h1 style={{ margin: '0 0 0.25rem', fontSize: '2rem', fontWeight: 800, color: g.text, letterSpacing: '-0.03em' }}>
-                          {fullName || 'Name not set'}
+                        <h1 style={{ margin: '0 0 0.25rem', fontSize: '1.5rem', fontWeight: 800, color: g.text, letterSpacing: '-0.025em' }}>
+                          {user?.full_name || 'Set your name'}
                         </h1>
-                        <div style={{ fontSize: '1.1rem', color: g.accent, fontWeight: 700, marginBottom: '0.25rem' }}>
-                          {designation || 'ASHA Community Lead'}
-                        </div>
-                        <div style={{ fontSize: '1rem', color: g.muted, fontWeight: 500, marginBottom: '0.75rem' }}>
-                          📍 {location2 || 'Location not set'}
-                        </div>
+                        <div style={{ fontSize: '0.875rem', color: g.accent, fontWeight: 600, marginBottom: '0.25rem' }}>ASHA Worker</div>
+                        {user?.location && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.8125rem', color: g.muted, marginBottom: '0.25rem' }}>
+                            <svg width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
+                            {user.location}
+                          </div>
+                        )}
+                        {user?.employee_id && <div style={{ fontSize: '0.75rem', color: g.label, marginBottom: '1rem' }}>ID: {user.employee_id}</div>}
                         <button 
                           onClick={() => setIsEditing(true)}
                           style={{ padding: '0.4rem 1.25rem', borderRadius: 99, background: g.btn, border: `1px solid ${g.btnBdr}`, color: g.text, fontWeight: 700, fontSize: '0.8125rem', cursor: 'pointer' }}
@@ -372,10 +362,9 @@ export default function ProfilePage() {
                     </button>
                   </div>
                 </div>
-              )}
-            </>
-          )}
-        </div>
+              </>
+            )}
+          </div>
 
       {showReviewModal && (
         <ReviewModal 

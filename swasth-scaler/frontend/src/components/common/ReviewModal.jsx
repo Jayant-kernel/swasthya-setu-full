@@ -42,6 +42,8 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
   const [cats, setCats] = useState({})
   const [comment, setComment] = useState('')
   const [userName, setUserName] = useState('')
+  const [designation, setDesignation] = useState('')
+  const [location, setLocation] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
   useEffect(() => {
@@ -55,7 +57,11 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
 
   async function handleSubmit(e) {
     e.preventDefault()
-    const review = { role, overall, categories: cats, comment, userName, timestamp: new Date().toISOString(), source: 'modal' }
+    const review = { 
+      role, overall, categories: cats, comment, 
+      userName, designation, location,
+      timestamp: new Date().toISOString(), source: 'modal' 
+    }
     
     // Attempt database save
     try {
@@ -137,6 +143,25 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
                     fontFamily: 'inherit',
                   }}
                 />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Designation</label>
+                  <input 
+                    value={designation} onChange={e => setDesignation(e.target.value)}
+                    placeholder="e.g. Cardiologist"
+                    style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem 1rem', borderRadius: 12, border: '1.5px solid #e5e7eb', fontSize: '0.875rem', color: '#111827', background: '#f9fafb', outline: 'none', fontFamily: 'inherit' }}
+                  />
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Location</label>
+                  <input 
+                    value={location} onChange={e => setLocation(e.target.value)}
+                    placeholder="e.g. Pune"
+                    style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem 1rem', borderRadius: 12, border: '1.5px solid #e5e7eb', fontSize: '0.875rem', color: '#111827', background: '#f9fafb', outline: 'none', fontFamily: 'inherit' }}
+                  />
+                </div>
               </div>
 
               {/* Overall */}
@@ -229,6 +254,8 @@ export function ReviewSection({ role, isDark }) {
   const [cats, setCats] = useState({})
   const [comment, setComment] = useState('')
   const [userName, setUserName] = useState('')
+  const [designation, setDesignation] = useState('')
+  const [location, setLocation] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
   // Only show for guest users
@@ -251,7 +278,11 @@ export function ReviewSection({ role, isDark }) {
   async function handleSubmit(e) {
     e.preventDefault()
     if (overall === 0) return
-    const review = { role, overall, categories: cats, comment, userName, timestamp: new Date().toISOString(), source: 'inline' }
+    const review = { 
+      role, overall, categories: cats, comment, 
+      userName, designation, location, 
+      timestamp: new Date().toISOString(), source: 'inline' 
+    }
     
     try {
       await fetch('https://swasthya-setu-full.onrender.com/api/v1/reviews/', {
@@ -350,6 +381,27 @@ export function ReviewSection({ role, isDark }) {
                     onFocus={e => e.target.style.borderColor = '#0F6E56'}
                     onBlur={e => e.target.style.borderColor = inputBdr}
                   />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label style={{ fontSize: '0.65rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Designation</label>
+                    <input 
+                      value={designation} onChange={e => setDesignation(e.target.value)}
+                      placeholder="E.g. Senior ASHA"
+                      style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem 1rem', borderRadius: 12, border: `1.5px solid ${inputBdr}`, background: inputBg, color: textColor, fontSize: '0.875rem', outline: 'none', transition: 'all 0.2s' }}
+                      onFocus={e => e.target.style.borderColor = '#0F6E56'} onBlur={e => e.target.style.borderColor = inputBdr}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <label style={{ fontSize: '0.65rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Location</label>
+                    <input 
+                      value={location} onChange={e => setLocation(e.target.value)}
+                      placeholder="E.g. Cuttack"
+                      style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem 1rem', borderRadius: 12, border: `1.5px solid ${inputBdr}`, background: inputBg, color: textColor, fontSize: '0.875rem', outline: 'none', transition: 'all 0.2s' }}
+                      onFocus={e => e.target.style.borderColor = '#0F6E56'} onBlur={e => e.target.style.borderColor = inputBdr}
+                    />
+                  </div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>

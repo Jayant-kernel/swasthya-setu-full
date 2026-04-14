@@ -200,7 +200,7 @@ export default function DMODashboardPage() {
               onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
               onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
             >
-              {(localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).name?.[0] : 'D') || 'D'}
+              {(user?.full_name || user?.name || 'D')[0].toUpperCase()}
             </div>
           </div>
         </header>

@@ -220,10 +220,7 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
               </div>
               <div style={{ flex: 1, minWidth: 0, opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
                 <div style={{ fontWeight: 600, fontSize: '0.79rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.full_name || 'ASHA Worker'}</div>
-                <div style={{ fontSize: '0.64rem', color: g.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', flexDirection: 'column' }}>
-                  <span>{user?.designation || 'Community Lead'}</span>
-                  <span>📍 {user?.location || 'Maha-Village'}</span>
-                </div>
+                <div style={{ fontSize: '0.64rem', color: g.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.employee_id}</div>
               </div>
               {isExpanded && <ChevronRight />}
             </button>

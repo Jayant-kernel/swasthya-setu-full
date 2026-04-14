@@ -15,7 +15,6 @@ export default function ProfileOverlay({ onClose }) {
   const [isEditing, setIsEditing] = useState(false)
   const [forceOnboard, setForceOnboard] = useState(false)
   const [fullName, setFullName] = useState('')
-  const [designation, setDesignation] = useState('')
   const [location, setLocation] = useState('')
   const [saveLoading, setSaveLoading] = useState(false)
   const [showReviewModal, setShowReviewModal] = useState(false)
@@ -46,12 +45,13 @@ export default function ProfileOverlay({ onClose }) {
       }
       setUser(authUser)
 
-      // Initialize Name, Designation & Location
-      setFullName(authUser.full_name || authUser.name || '')
-      setDesignation(authUser.designation || '')
-      setLocation(authUser.location || '')
+      // Initialize Name & Location
+      const savedName = authUser.full_name || ''
+      const savedLoc = authUser.location || ''
+      setFullName(savedName)
+      setLocation(savedLoc)
 
-      if (!authUser.full_name && !authUser.name) {
+      if (!savedName || !savedLoc) {
         setForceOnboard(true)
         setIsEditing(true)
       }
@@ -170,34 +170,20 @@ export default function ProfileOverlay({ onClose }) {
     setSaveLoading(true)
     try {
       const token = localStorage.getItem('access_token')
-      const body = { 
-        full_name: fullName.trim(), 
-        location: location.trim(),
-        designation: designation.trim() 
-      }
-      const response = await fetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+      await fetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(body)
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ full_name: fullName.trim(), location: location.trim() })
       })
-      
-      if (!response.ok) throw new Error('Failed to update profile')
-      const updatedUser = await response.json()
-      
-      // Sync guest mode if applicable
-      if (authUser?.guest) {
-        localStorage.setItem('user', JSON.stringify({ ...authUser, ...updatedUser, guest: true }))
-      } else {
-        localStorage.setItem('user', JSON.stringify(updatedUser))
-      }
-      
-      window.location.reload()
+
+      const updatedUser = { ...user, full_name: fullName.trim(), location: location.trim() }
+      setUser(updatedUser)
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+
+      setIsEditing(false)
+      setForceOnboard(false)
     } catch (err) {
-      console.error(err)
-      alert(err.message)
+      alert("Failed to save profile: " + err.message)
     } finally {
       setSaveLoading(false)
     }
@@ -325,13 +311,13 @@ export default function ProfileOverlay({ onClose }) {
               {/* Name + role + location */}
               {!isEditing ? (
                 <>
-                  <h2 style={{ margin: '0 0 0.25rem', fontSize: '1.375rem', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.02em' }}>
-                    {fullName || 'Set your name'}
+                  <h2 style={{ margin: '0 0 0.25rem', fontSize: '1.375rem', fontWeight: 800, color: #f8fafc, letterSpacing: '-0.02em' }}>
+                    {user?.full_name || 'Set your name'}
                   </h2>
-                  <div style={{ fontSize: '0.875rem', color: '#14b8a6', fontWeight: 600, marginBottom: '0.375rem' }}>{designation || 'Healthcare Provider'}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: '0.8125rem', color: '#94a3b8', marginBottom: '0.25rem' }}>
+                  <div style={{ fontSize: '0.875rem', color: '#14b8a6', fontWeight: 600, marginBottom: '0.375rem' }}>Healthcare Provider</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, fontSize: '0.8125rem', color: #94a3b8, marginBottom: '0.25rem' }}>
                     <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-                    {location || <span style={{ color: '#475569', fontStyle: 'italic' }}>No location set</span>}
+                    {user?.location || <span style={{ color: '#475569', fontStyle: 'italic' }}>No location set</span>}
                   </div>
                   <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '1.25rem' }}>ID: {user?.employee_id}</div>
 
@@ -368,14 +354,6 @@ export default function ProfileOverlay({ onClose }) {
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', color: '#94a3b8', fontSize: '0.8125rem', fontWeight: 600, marginBottom: 6 }}>Designation</label>
-                      <input
-                        type="text" value={designation} onChange={e => setDesignation(e.target.value)} placeholder="E.g., Senior ASHA Worker"
-                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 12, background: '#0f172a', border: '1px solid #334155', color: '#f8fafc', outline: 'none', fontSize: '0.9375rem', boxSizing: 'border-box' }}
-                        onFocus={e => e.target.style.borderColor = '#14b8a6'} onBlur={e => e.target.style.borderColor = '#334155'}
-                      />
-                    </div>
-                    <div style={{ gridColumn: 'span 2' }}>
                       <label style={{ display: 'block', color: '#94a3b8', fontSize: '0.8125rem', fontWeight: 600, marginBottom: 6 }}>Location / Village</label>
                       <input
                         type="text" value={location} onChange={e => setLocation(e.target.value)} placeholder="E.g., Pune District"
@@ -386,7 +364,7 @@ export default function ProfileOverlay({ onClose }) {
                   </div>
                   <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
                     {!forceOnboard && (
-                      <button onClick={() => { setIsEditing(false); setFullName(user?.full_name || ''); setLocation(user?.location || ''); setDesignation(user?.designation || ''); }} style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontWeight: 600, cursor: 'pointer', padding: '0.5rem 1rem' }}>Cancel</button>
+                      <button onClick={() => { setIsEditing(false); setFullName(user?.full_name || ''); setLocation(user?.location || ''); }} style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontWeight: 600, cursor: 'pointer', padding: '0.5rem 1rem' }}>Cancel</button>
                     )}
                     <button
                       onClick={handleSaveProfile} disabled={saveLoading}

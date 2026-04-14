@@ -67,30 +67,6 @@ export default function DMOSidebar({ isHovered, setIsHovered, onLogout, onAdminN
           <LogoutIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Logout</span>
         </div>
       </div>
-
-      {/* User Info Section */}
-      <div style={{ padding: '0.75rem 0.875rem', borderTop: `1px solid ${g.divider}`, width: 240 }}>
-        <button onClick={() => navigate('/dashboard/dmo/profile')} style={{
-          width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem',
-          padding: '0.5rem 0.375rem', borderRadius: 12, border: 'none',
-          background: 'transparent', cursor: 'pointer', color: g.text, transition: 'all .15s',
-          textAlign: 'left'
-        }}
-          onMouseEnter={e => e.currentTarget.style.background = 'var(--g-hover)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-        >
-          <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg,#4f46e5,#3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(79,70,229,0.2)' }}>
-            <span style={{ color: '#fff', fontSize: '0.85rem', fontWeight: 700 }}>{(user?.full_name || user?.employee_id || 'D')[0].toUpperCase()}</span>
-          </div>
-          <div style={{ flex: 1, minWidth: 0, opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
-            <div style={{ fontWeight: 700, fontSize: '0.82rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: 1.2 }}>{user?.full_name || 'DMO Officer'}</div>
-            <div style={{ fontSize: '0.66rem', color: g.muted, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <span style={{ color: '#4f46e5', fontWeight: 600 }}>{user?.designation || 'Medical Command'}</span>
-              <span>📍 {user?.location || 'Pune District'}</span>
-            </div>
-          </div>
-        </button>
-      </div>
     </aside>
   )
 }
