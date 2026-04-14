@@ -18,6 +18,19 @@ class UserCreate(BaseModel):
 class UserUpdateProfile(BaseModel):
     full_name: Optional[str] = None
     location: Optional[str] = None
+    designation: Optional[str] = None
+    avatar_b64: Optional[str] = None
+    banner_b64: Optional[str] = None
+
+class UserOut(BaseModel):
+    id: str
+    employee_id: str
+    full_name: Optional[str] = None
+    role: str
+    location: Optional[str] = None
+    district: Optional[str] = None
+    designation: Optional[str] = None
+    email: Optional[str] = None
     avatar_b64: Optional[str] = None
     banner_b64: Optional[str] = None
 
