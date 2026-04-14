@@ -73,3 +73,15 @@ class DiseaseOutbreak(Base):
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+
+class Review(Base):
+    __tablename__ = "reviews"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    role = Column(String, nullable=False) # 'asha' or 'dmo'
+    overall = Column(Integer, nullable=False)
+    categories = Column(JSON, default=dict)
+    comment = Column(String)
+    userName = Column(String)
+    source = Column(String) # 'modal' or 'inline'
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))

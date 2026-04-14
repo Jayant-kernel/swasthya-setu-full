@@ -46,6 +46,8 @@ app.include_router(user_routes.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(patient_routes.router, prefix="/api/v1/patients", tags=["Patients"])
 app.include_router(triage_routes.router, prefix="/api/v1/triage_records", tags=["Triage Records"])
 app.include_router(outbreak_routes.router, prefix="/api/v1/outbreaks", tags=["Outbreaks"])
+from routes import review_routes
+app.include_router(review_routes.router, prefix="/api/v1/reviews", tags=["Reviews"])
 
 from sqlalchemy.future import select
 from models import User

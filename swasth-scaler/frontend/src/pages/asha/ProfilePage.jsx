@@ -313,12 +313,12 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {!forceOnboard && (
-                <div style={{ ...card, padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: g.text, marginBottom: 2 }}>Account Actions</div>
-                    <div style={{ fontSize: '0.8125rem', color: g.muted }}>Manage your session and account data</div>
-                  </div>
+              {/* Account Actions - Always visible if loaded */}
+              <div style={{ ...card, padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem' }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: g.text, marginBottom: 2 }}>Account Actions</div>
+                  <div style={{ fontSize: '0.8125rem', color: g.muted }}>Manage your session and account data</div>
+                </div>
                   <div style={{ display: 'flex', gap: '0.875rem' }}>
                     <button
                       onClick={handleLogout}

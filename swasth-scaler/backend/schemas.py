@@ -40,3 +40,11 @@ class TriageCreate(BaseModel):
     district: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+
+class ReviewCreate(BaseModel):
+    role: str
+    overall: int
+    categories: Optional[dict] = None
+    comment: Optional[str] = None
+    userName: Optional[str] = None
+    source: Optional[str] = None

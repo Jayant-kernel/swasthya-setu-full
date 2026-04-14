@@ -52,12 +52,25 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
 
   const roleName = role === 'dmo' ? 'DMO Command Dashboard' : 'ASHA Worker Dashboard'
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
-    const review = { role, overall, categories: cats, comment, userName, timestamp: new Date().toISOString() }
-    // Persist locally
+    const review = { role, overall, categories: cats, comment, userName, timestamp: new Date().toISOString(), source: 'modal' }
+    
+    // Attempt database save
+    try {
+      await fetch('https://swasthya-setu-full.onrender.com/api/v1/reviews/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(review)
+      })
+    } catch(err) {
+      console.warn('Backend review save failed, falling back to local storage', err)
+    }
+
+    // Local backup
     const prev = JSON.parse(localStorage.getItem('swasthya_reviews') || '[]')
     localStorage.setItem('swasthya_reviews', JSON.stringify([...prev, review]))
+    
     setSubmitted(true)
     setTimeout(onSubmit, 1800)
   }
@@ -229,10 +242,21 @@ export function ReviewSection({ role, isDark }) {
   const inputBg  = isDark ? 'rgba(255,255,255,0.05)' : '#f9fafb'
   const inputBdr = isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb'
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     if (overall === 0) return
     const review = { role, overall, comment, userName, timestamp: new Date().toISOString(), source: 'inline' }
+    
+    try {
+      await fetch('https://swasthya-setu-full.onrender.com/api/v1/reviews/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(review)
+      })
+    } catch(err) {
+      console.warn('Backend review save failed', err)
+    }
+
     const prev = JSON.parse(localStorage.getItem('swasthya_reviews') || '[]')
     localStorage.setItem('swasthya_reviews', JSON.stringify([...prev, review]))
     setSubmitted(true)
@@ -298,56 +322,63 @@ export function ReviewSection({ role, isDark }) {
           </div>
 
           <form onSubmit={handleSubmit}>
-            {/* Star rating */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 200 }}>
-                <label style={{ fontSize: '0.7rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Name</label>
-                <input 
-                  value={userName} onChange={e => setUserName(e.target.value)}
-                  placeholder="Enter your name"
-                  style={{
-                    width: '100%', boxSizing: 'border-box',
-                    padding: '0.625rem 0.875rem', borderRadius: 10,
-                    border: `1.5px solid ${inputBdr}`,
-                    background: inputBg, color: textColor,
-                    fontSize: '0.8125rem', outline: 'none',
-                    fontFamily: "'Inter', sans-serif",
-                  }}
-                />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={{ fontSize: '0.7rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Overall Rating</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <StarRating value={overall} onChange={setOverall} size={24} />
-                  {overall > 0 && (
-                    <span style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: 700 }}>
-                      {['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent!'][overall]}
-                    </span>
-                  )}
+            {/* Feedback fields area */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 1fr) 2fr', gap: '1.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: '0.65rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Your Name (रुग्ण / कर्मचारी नाव)</label>
+                  <input 
+                    value={userName} onChange={e => setUserName(e.target.value)}
+                    placeholder="E.g. Priya Sharma"
+                    style={{
+                      width: '100%', boxSizing: 'border-box',
+                      padding: '0.75rem 1rem', borderRadius: 12,
+                      border: `1.5px solid ${inputBdr}`,
+                      background: inputBg, color: textColor,
+                      fontSize: '0.875rem', outline: 'none',
+                      fontFamily: "'Inter', sans-serif",
+                      transition: 'all 0.2s'
+                    }}
+                    onFocus={e => e.target.style.borderColor = '#0F6E56'}
+                    onBlur={e => e.target.style.borderColor = inputBdr}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label style={{ fontSize: '0.65rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Overall Rating (एकूण रेटिंग)</label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <StarRating value={overall} onChange={setOverall} size={28} />
+                    {overall > 0 && (
+                      <span style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: 800 }}>
+                        {['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent!'][overall]}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Comment */}
-            <textarea
-              placeholder="Share your thoughts, suggestions, or any issues you faced…"
-              value={comment}
-              onChange={e => setComment(e.target.value)}
-              rows={2}
-              style={{
-                width: '100%', boxSizing: 'border-box',
-                padding: '0.75rem 1rem', borderRadius: 12,
-                border: `1.5px solid ${inputBdr}`,
-                background: inputBg, color: textColor,
-                fontSize: '0.875rem', resize: 'vertical',
-                marginBottom: '1rem',
-                fontFamily: "'Inter', sans-serif",
-                transition: 'border-color 0.18s',
-                outline: 'none',
-              }}
-              onFocus={e => e.target.style.borderColor = '#0F6E56'}
-              onBlur={e => e.target.style.borderColor = inputBdr}
-            />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: '0.65rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Suggestions or Issues (सूचना किंवा समस्या)</label>
+                <textarea
+                  placeholder="Share your thoughts, suggestions, or any issues you faced…"
+                  value={comment}
+                  onChange={e => setComment(e.target.value)}
+                  style={{
+                    width: '100%', boxSizing: 'border-box', height: '100%', minHeight: 90,
+                    padding: '0.75rem 1rem', borderRadius: 12,
+                    border: `1.5px solid ${inputBdr}`,
+                    background: inputBg, color: textColor,
+                    fontSize: '0.875rem', resize: 'vertical',
+                    fontFamily: "'Inter', sans-serif",
+                    transition: 'all 0.2s',
+                    outline: 'none',
+                  }}
+                  onFocus={e => e.target.style.borderColor = '#0F6E56'}
+                  onBlur={e => e.target.style.borderColor = inputBdr}
+                />
+              </div>
+            </div>
 
             <button
               type="submit"
