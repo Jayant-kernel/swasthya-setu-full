@@ -315,29 +315,25 @@ export default function ProfilePage() {
                     <button
                       onClick={handleLogout}
                       style={{ 
-                        display: 'flex', alignItems: 'center', gap: 10, padding: '0.75rem 1.625rem', 
-                        borderRadius: 14, background: g.btn, border: `1px solid ${g.btnBdr}`, 
-                        color: g.text, fontWeight: 700, fontSize: '0.9375rem', 
+                        display: 'flex', alignItems: 'center', gap: 10, padding: '0.875rem 1.875rem', 
+                        borderRadius: 99, background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)', 
+                        border: 'none', color: '#fff', fontWeight: 800, fontSize: '1rem', 
                         cursor: 'pointer', transition: 'all .25s', backdropFilter: 'blur(12px)',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                        boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)'
                       }}
                       onMouseEnter={e => { 
-                        e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.18)' : '#fff'; 
-                        e.currentTarget.style.color = g.accent;
                         e.currentTarget.style.transform = 'translateY(-2px)';
-                        e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
+                        e.currentTarget.style.boxShadow = '0 15px 35px rgba(239, 68, 68, 0.4)';
                       }}
                       onMouseLeave={e => { 
-                        e.currentTarget.style.background = g.btn; 
-                        e.currentTarget.style.color = g.text;
                         e.currentTarget.style.transform = 'none';
-                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                        e.currentTarget.style.boxShadow = '0 10px 25px rgba(239, 68, 68, 0.3)';
                       }}
                     >
                       <LogoutIcon /> Sign Out
                       {authUser?.guest && (
                         <span style={{ 
-                          marginLeft: '4px', background: g.accent, color: '#fff', 
+                          marginLeft: '4px', background: '#fff', color: '#ef4444', 
                           padding: '2px 8px', borderRadius: 99, fontSize: '0.65rem', 
                           fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' 
                         }}>DEMO</span>

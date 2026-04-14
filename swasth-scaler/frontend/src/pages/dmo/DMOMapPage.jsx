@@ -5,6 +5,7 @@ import { useTheme } from '../../context/ThemeContext.jsx'
 import DMOSidebar from '../../components/dmo/DMOSidebar'
 import { SunIcon, MoonIcon } from '../admin/AdminIcons'
 import { API, DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints } from './DMOShared'
+import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
 
 const DistrictHeatmap = lazy(() => import('../../components/common/DistrictHeatmap'))
 
@@ -33,6 +34,14 @@ export default function DMOMapPage() {
   const fetchData = useCallback(async () => {
     try {
       const token = localStorage.getItem('access_token')
+      
+      // -- Guest mode: inject demo data --
+      if (!token) {
+        setTriageRecords(GUEST_TRIAGE_RECORDS)
+        setLoading(false)
+        return
+      }
+
       const headers = { 'Authorization': `Bearer ${token}` }
       const [triRes, outRes] = await Promise.allSettled([
         fetch(`${API}/triage_records/`, { headers }),

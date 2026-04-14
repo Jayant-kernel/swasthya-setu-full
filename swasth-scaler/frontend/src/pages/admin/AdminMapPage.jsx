@@ -4,6 +4,7 @@ import { useTheme } from '../../context/ThemeContext.jsx'
 import AdminSidebar from '../../components/admin/AdminSidebar'
 import { SunIcon, MoonIcon } from './AdminIcons'
 import { API, DISTRICT_CENTERS, INDIA_CENTER, INDIA_BOUNDS } from './constants'
+import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
 
 const DistrictHeatmap = lazy(() => import('../../components/common/DistrictHeatmap'))
 
@@ -20,6 +21,14 @@ export default function AdminMapPage() {
   const fetchData = useCallback(async () => {
     try {
       const token = localStorage.getItem('access_token')
+
+      // -- Guest mode: inject demo data --
+      if (!token) {
+        setTriageRecords(GUEST_TRIAGE_RECORDS)
+        setLoading(false)
+        return
+      }
+
       const headers = { 'Authorization': `Bearer ${token}` }
       const [triRes, outRes] = await Promise.allSettled([
         fetch(`${API}/triage_records/`, { headers }),

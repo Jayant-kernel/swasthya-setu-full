@@ -12,6 +12,13 @@ export default function DMOProfilePage() {
   const { isDark, toggleTheme } = useTheme()
   const [isHovered, setIsHovered] = useState(false)
   const [showReviewModal, setShowReviewModal] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [fullName, setFullName] = useState(user?.name || '')
+  const [saveLoading, setSaveLoading] = useState(false)
+
+  useEffect(() => {
+    if (user) setFullName(user.name || '')
+  }, [user])
 
   const g = useMemo(() => ({
     text: 'var(--g-text)', muted: 'var(--g-muted)', label: 'var(--g-label)', accent: 'var(--g-accent)',
@@ -22,6 +29,21 @@ export default function DMOProfilePage() {
 
   const handleLogout = () => {
     setShowReviewModal(true)
+  }
+
+  const handleSaveProfile = async () => {
+    if (!fullName.trim()) return
+    setSaveLoading(true)
+    // Simulate save / Persist guest name
+    if (user?.guest) {
+      const updated = { ...user, name: fullName.trim() }
+      localStorage.setItem('user', JSON.stringify(updated))
+      // In a real app we'd call an API, here we just wait a bit
+      await new Promise(r => setTimeout(r, 600))
+      window.location.reload() // Reload to sync with AuthContext for now
+    }
+    setSaveLoading(false)
+    setIsEditing(false)
   }
 
   const cardStyle = {
@@ -46,7 +68,7 @@ export default function DMOProfilePage() {
               {isDark ? <SunIcon /> : <MoonIcon />}
             </button>
             <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>
-              {(user?.name || 'D')[0].toUpperCase()}
+              {(fullName || 'D')[0].toUpperCase()}
             </div>
           </div>
         </header>
@@ -58,14 +80,36 @@ export default function DMOProfilePage() {
             <div style={cardStyle}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '2rem', flexWrap: 'wrap' }}>
                 <div style={{ width: 100, height: 100, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '2.5rem', fontWeight: 800, boxShadow: '0 10px 30px rgba(79, 70, 229, 0.3)' }}>
-                  {(user?.name || 'D')[0].toUpperCase()}
+                  {(fullName || 'D')[0].toUpperCase()}
                 </div>
                 <div style={{ flex: 1, minWidth: 200 }}>
-                  <h1 style={{ margin: '0 0 0.25rem', fontSize: '1.75rem', fontWeight: 800, color: g.text, letterSpacing: '-0.03em' }}>
-                    {user?.name || 'District Medical Officer'}
-                  </h1>
-                  <div style={{ fontSize: '1rem', color: '#4f46e5', fontWeight: 700, marginBottom: '0.5rem' }}>DMO · {user?.designation || 'Medical Command'}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.875rem', color: g.muted }}>
+                  {!isEditing ? (
+                    <>
+                      <h1 style={{ margin: '0 0 0.25rem', fontSize: '1.75rem', fontWeight: 800, color: g.text, letterSpacing: '-0.03em' }}>
+                        {fullName || 'District Medical Officer'}
+                      </h1>
+                      <div style={{ fontSize: '1rem', color: '#4f46e5', fontWeight: 700, marginBottom: '0.875rem' }}>DMO · {user?.designation || 'Medical Command'}</div>
+                      <button 
+                        onClick={() => setIsEditing(true)}
+                        style={{ padding: '0.5rem 1.25rem', borderRadius: 99, background: g.btn, border: `1px solid ${g.btnBdr}`, color: g.text, fontWeight: 700, fontSize: '0.8125rem', cursor: 'pointer' }}
+                      >Edit Name</button>
+                    </>
+                  ) : (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.7rem', fontWeight: 800, color: g.label, textTransform: 'uppercase', marginBottom: 6 }}>Full Name</label>
+                      <input 
+                        value={fullName} onChange={e => setFullName(e.target.value)}
+                        style={{ width: '100%', padding: '0.75rem 1rem', borderRadius: 12, background: isDark ? 'rgba(255,255,255,0.05)' : '#fff', border: `1.5px solid ${g.cardBdr}`, color: g.text, outline: 'none', marginBottom: '1rem', fontSize: '1rem' }}
+                      />
+                      <div style={{ display: 'flex', gap: '0.75rem' }}>
+                        <button onClick={() => { setIsEditing(false); setFullName(user?.name || '') }} style={{ padding: '0.5rem 1.25rem', borderRadius: 99, background: 'transparent', border: `1px solid ${g.cardBdr}`, color: g.muted, fontWeight: 700, fontSize: '0.8125rem', cursor: 'pointer' }}>Cancel</button>
+                        <button onClick={handleSaveProfile} disabled={saveLoading} style={{ padding: '0.5rem 1.25rem', borderRadius: 99, background: '#4f46e5', border: 'none', color: '#fff', fontWeight: 700, fontSize: '0.8125rem', cursor: 'pointer', opacity: saveLoading ? 0.7 : 1 }}>
+                          {saveLoading ? 'Saving...' : 'Save Changes'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.875rem', color: g.muted, marginTop: isEditing ? '1.5rem' : '0.5rem' }}>
                     <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
                     {user?.district || 'Pune District'}
                   </div>

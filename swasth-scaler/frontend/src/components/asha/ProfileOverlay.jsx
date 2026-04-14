@@ -420,32 +420,28 @@ export default function ProfileOverlay({ onClose }) {
                     onClick={handleLogout}
                     style={{ 
                       flex: 1, padding: '1rem', minHeight: '60px', 
-                      background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)', 
-                      border: '1px solid rgba(255,255,255,0.15)', borderRadius: 99, 
+                      background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)', 
+                      border: 'none', borderRadius: 99, 
                       color: '#fff', fontWeight: 800, fontSize: '1rem', 
                       cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', 
                       gap: '0.75rem', transition: 'all 0.25s', whiteSpace: 'nowrap',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                      boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)',
                       position: 'relative', overflow: 'hidden'
                     }}
                     onMouseEnter={e => { 
-                      e.currentTarget.style.background = '#fff'; 
-                      e.currentTarget.style.color = '#0b0f19';
                       e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 15px 35px rgba(255,255,255,0.2)';
+                      e.currentTarget.style.boxShadow = '0 15px 35px rgba(239, 68, 68, 0.4)';
                     }}
                     onMouseLeave={e => { 
-                      e.currentTarget.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%)'; 
-                      e.currentTarget.style.color = '#fff';
                       e.currentTarget.style.transform = 'none';
-                      e.currentTarget.style.boxShadow = '0 10px 25px rgba(0,0,0,0.2)';
+                      e.currentTarget.style.boxShadow = '0 10px 25px rgba(239, 68, 68, 0.3)';
                     }}
                   >
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" x2="9" y2="12" /></svg>
                     Sign Out
                     {user?.guest && (
                       <span style={{ 
-                        marginLeft: '4px', background: '#14b8a6', color: '#0b0f19', 
+                        marginLeft: '4px', background: '#fff', color: '#ef4444', 
                         padding: '2px 8px', borderRadius: 99, fontSize: '0.65rem', 
                         fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' 
                       }}>DEMO</span>
