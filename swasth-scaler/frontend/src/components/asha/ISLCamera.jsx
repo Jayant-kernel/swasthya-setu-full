@@ -44,6 +44,10 @@ const PROXIMITY_GATES = {
   CHAKKAR:         { part: 'head',     maxDist: 0.35 },
 }
 
+// DARD is a claw hand: fingers partially curled (not flat open, not full fist).
+// Block if curl < 0.25 (flat open palm) — idle open hand is NOT dard.
+const DARD_MIN_CURL = 0.25
+
 /**
  * Extract normalised body reference points from FaceMesh landmarks.
  * Chest and abdomen are approximated from face geometry (no Pose needed on frontend).
@@ -301,6 +305,18 @@ export default function ISLCamera({ onSymptomDetected, onDebugUpdate, demographi
     if (raw.label === 'SANS-TAKLEEF') {
       const curls = handsWithIdx.map(h => fingerCurlRatio(h.lm))
       if (Math.max(...curls) < 0.50) {
+        setPrediction(null)
+        voteRef.current = { label: null, count: 0 }
+        return
+      }
+    }
+
+    // Claw gate: DARD is a claw hand (fingers partially curled).
+    // Block if ALL active hands are flat open (curl < DARD_MIN_CURL).
+    // A completely flat open palm in front of the camera is NOT the DARD sign.
+    if (raw.label === 'DARD') {
+      const curls = handsWithIdx.map(h => fingerCurlRatio(h.lm))
+      if (Math.max(...curls) < DARD_MIN_CURL) {
         setPrediction(null)
         voteRef.current = { label: null, count: 0 }
         return

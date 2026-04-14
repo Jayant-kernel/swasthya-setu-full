@@ -509,6 +509,20 @@ class ISLDetector:
                         "all_confidences": all_confidences,
                         "model_notes": f"Fist gate: curl={max(right_curl, left_curl):.2f} < 0.50 for SANS-TAKLEEF"}
 
+        # ── Claw gate: DARD is a claw hand (fingers partially curled) ─────────
+        # A flat open palm in front of the camera is NOT the DARD sign.
+        # Block if the best active hand is fully open (curl < 0.25).
+        if best_lbl == "DARD":
+            right_curl = _finger_curl_ratio(right)
+            left_curl  = _finger_curl_ratio(left)
+            best_curl  = max(right_curl, left_curl)
+            if best_curl < 0.25:
+                self._vote_buffer.clear()
+                self._fill = 0.0
+                return {**self._base_result(), "has_hand": True,
+                        "all_confidences": all_confidences,
+                        "model_notes": f"Claw gate: curl={best_curl:.2f} < 0.25 — open palm is not DARD"}
+
         # ── CRITICAL signs: fire immediately (§8) ────────────────────────────
         if best_lbl in CRITICAL_SIGNS:
             self._critical_timestamps[best_lbl] = now
