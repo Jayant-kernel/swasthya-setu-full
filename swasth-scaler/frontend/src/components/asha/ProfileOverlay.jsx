@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import { ReviewModal } from '../common/ReviewModal'
 
 export default function ProfileOverlay({ onClose }) {
   const navigate = useNavigate()
@@ -16,6 +17,7 @@ export default function ProfileOverlay({ onClose }) {
   const [fullName, setFullName] = useState('')
   const [location, setLocation] = useState('')
   const [saveLoading, setSaveLoading] = useState(false)
+  const [showReviewModal, setShowReviewModal] = useState(false)
 
   const [mounted, setMounted] = useState(false)
   const fileInputRef = useRef(null)
@@ -188,6 +190,10 @@ export default function ProfileOverlay({ onClose }) {
   }
 
   async function handleLogout() {
+    setShowReviewModal(true)
+  }
+
+  async function finalLogout() {
     await logout()
     navigate('/')
   }
@@ -463,6 +469,14 @@ export default function ProfileOverlay({ onClose }) {
           </>
         )}
       </div>
+
+      {showReviewModal && (
+        <ReviewModal 
+          role="asha"
+          onSkip={finalLogout}
+          onSubmit={finalLogout}
+        />
+      )}
     </div>
   )
 }

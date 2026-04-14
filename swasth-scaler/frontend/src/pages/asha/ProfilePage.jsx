@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
+import { ReviewModal } from '../../components/common/ReviewModal'
 
 /* ─── Icons ─────────────────────────────────────────────── */
 const GridIcon = ({ active }) => (
@@ -50,6 +51,7 @@ export default function ProfilePage() {
   const [fullName, setFullName] = useState('')
   const [location2, setLocation2] = useState('')
   const [saveLoading, setSaveLoading] = useState(false)
+  const [showReviewModal, setShowReviewModal] = useState(false)
 
   useEffect(() => {
     async function loadProfile() {
@@ -90,7 +92,13 @@ export default function ProfilePage() {
     finally { setSaveLoading(false) }
   }
 
-  async function handleLogout() { await logout(); navigate('/') }
+  async function handleLogout() { 
+    setShowReviewModal(true)
+  }
+
+  async function finalLogout() {
+    await logout(); navigate('/') 
+  }
 
   async function handleDeleteAccount() {
     if (!window.confirm('Delete your account? All patient history will be permanently erased. This cannot be undone.')) return
@@ -353,6 +361,14 @@ export default function ProfilePage() {
             </>
           )}
         </div>
+
+      {showReviewModal && (
+        <ReviewModal 
+          role="asha"
+          onSkip={finalLogout}
+          onSubmit={finalLogout}
+        />
+      )}
     </DashboardLayout>
   )
 }
