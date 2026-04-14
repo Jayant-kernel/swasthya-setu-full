@@ -107,6 +107,11 @@ function FloatingBadge({ top, left, icon, delay }) {
   );
 }
 
+const GUEST_CREDENTIALS = {
+  asha: { id: 'ASHA-DEMO-001', password: 'guest1234' },
+  dmo:  { id: 'DMO-DEMO-001',  password: 'guest1234' },
+};
+
 export default function LoginRoleModal({ onClose }) {
   const [selected, setSelected] = useState(null);
   const [authEmployeeId, setAuthEmployeeId] = useState('');
@@ -115,6 +120,7 @@ export default function LoginRoleModal({ onClose }) {
   const [authError, setAuthError] = useState('');
   const [authLoading, setAuthLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [showGuestPicker, setShowGuestPicker] = useState(false);
 
   const auth = useAuth();
   const navigate = useNavigate();
@@ -144,12 +150,22 @@ export default function LoginRoleModal({ onClose }) {
   };
 
   const handleGuestAccess = async () => {
-    if (!selected) return;
+    // If no role selected, show the role picker first
+    if (!selected) {
+      setShowGuestPicker(true);
+      return;
+    }
+    await doGuestLogin(selected.id, selected.path);
+  };
+
+  const doGuestLogin = async (roleId, rolePath) => {
     setAuthError('');
     setAuthLoading(true);
+    setShowGuestPicker(false);
     try {
-      await auth.loginAsGuest(selected.id);
-      navigate(selected.path);
+      await auth.loginAsGuest(roleId);
+      const path = rolePath || (roleId === 'dmo' ? '/dashboard/dmo' : '/home');
+      navigate(path);
     } catch (err) {
       setAuthError(err.message || 'Guest sign-in failed.');
     } finally {
@@ -503,7 +519,7 @@ export default function LoginRoleModal({ onClose }) {
                 <input
                   className="lrm-input"
                   type="text"
-                  placeholder="Enter Your Employee / Officer ID"
+                  placeholder={selected ? `Demo: ${GUEST_CREDENTIALS[selected.id]?.id}` : 'Enter Your Employee / Officer ID'}
                   value={authEmployeeId}
                   onChange={e => setAuthEmployeeId(e.target.value)}
                   required
@@ -521,7 +537,7 @@ export default function LoginRoleModal({ onClose }) {
                 <input
                   className="lrm-input"
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter Your Password"
+                  placeholder={selected ? `Demo password: ${GUEST_CREDENTIALS[selected.id]?.password}` : 'Enter Your Password'}
                   value={authPassword}
                   onChange={e => setAuthPassword(e.target.value)}
                   required
@@ -578,9 +594,9 @@ export default function LoginRoleModal({ onClose }) {
                 type="button"
                 className="lrm-guest-btn"
                 onClick={handleGuestAccess}
-                disabled={authLoading || !selected}
+                disabled={authLoading}
               >
-                Continue as Guest
+                👤 Continue as Guest
               </button>
             </form>
 
@@ -599,9 +615,122 @@ export default function LoginRoleModal({ onClose }) {
         </div>
       </div>
 
-      {/* Spinner keyframe */}
+      {/* ══ Guest Role Picker Overlay ══ */}
+      {showGuestPicker && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 300,
+            background: 'rgba(0,0,0,0.7)',
+            backdropFilter: 'blur(16px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1rem',
+            animation: 'lrm-fadein 0.22s ease',
+          }}
+          onClick={() => setShowGuestPicker(false)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: '#fff',
+              borderRadius: '1.5rem',
+              padding: '2.5rem 2rem',
+              maxWidth: 420,
+              width: '100%',
+              boxShadow: '0 40px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.08)',
+              fontFamily: 'Inter, sans-serif',
+              position: 'relative',
+            }}
+          >
+            <button
+              onClick={() => setShowGuestPicker(false)}
+              style={{
+                position: 'absolute', top: '1rem', right: '1rem',
+                width: 32, height: 32, borderRadius: '50%',
+                background: '#f3f4f6', border: 'none',
+                color: '#6b7280', fontSize: '0.9rem',
+                cursor: 'pointer', display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+                minHeight: 'unset',
+              }}
+            >✕</button>
+
+            <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>👤</div>
+              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#111827', margin: '0 0 0.35rem', letterSpacing: '-0.03em' }}>
+                Continue as Guest
+              </h2>
+              <p style={{ fontSize: '0.875rem', color: '#6b7280', margin: 0 }}>
+                Choose your role to explore with demo data
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+              {ROLES.map(role => (
+                <button
+                  key={role.id}
+                  onClick={() => doGuestLogin(role.id, role.path)}
+                  disabled={authLoading}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '1rem',
+                    padding: '1.125rem 1.25rem',
+                    borderRadius: '14px',
+                    border: '1.5px solid #e5e7eb',
+                    background: '#f9fafb',
+                    cursor: 'pointer',
+                    transition: 'all 0.18s ease',
+                    textAlign: 'left',
+                    fontFamily: 'Inter, sans-serif',
+                    width: '100%',
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.border = `1.5px solid ${role.color}`;
+                    e.currentTarget.style.background = '#f0fdf8';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = `0 8px 24px ${role.color}22`;
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.border = '1.5px solid #e5e7eb';
+                    e.currentTarget.style.background = '#f9fafb';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <span style={{ fontSize: '2rem', flexShrink: 0 }}>{role.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, color: '#111827', fontSize: '1rem', marginBottom: '0.1rem' }}>
+                      {role.title}
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                      {role.description}
+                    </div>
+                  </div>
+                  <span style={{ color: role.color, fontSize: '1.1rem', flexShrink: 0 }}>→</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Demo data notice */}
+            <div style={{
+              marginTop: '1.25rem',
+              padding: '0.75rem 1rem',
+              background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)',
+              border: '1px solid #bbf7d0',
+              borderRadius: '10px',
+              display: 'flex', gap: '0.5rem', alignItems: 'flex-start',
+            }}>
+              <span style={{ fontSize: '1rem', flexShrink: 0 }}>ℹ️</span>
+              <p style={{ fontSize: '0.78rem', color: '#166534', margin: 0, lineHeight: 1.5 }}>
+                Guest mode uses realistic demo data — <strong>no login required</strong>. Perfect for exploring the platform.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Spinner + fadein keyframes */}
       <style>{`
         @keyframes lrm-spin { to { transform: rotate(360deg); } }
+        @keyframes lrm-fadein { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
       `}</style>
     </>
   );

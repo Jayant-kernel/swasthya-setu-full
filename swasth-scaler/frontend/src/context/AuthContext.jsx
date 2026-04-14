@@ -57,12 +57,34 @@ export function AuthProvider({ children }) {
   }
 
   const loginAsGuest = (role) => {
-    const guestUser = {
-      id: `guest-${role}`,
-      name: role === 'dmo' ? 'Guest DMO' : 'Guest ASHA Worker',
-      role,
-      guest: true,
-    }
+    const guestUser = role === 'dmo'
+      ? {
+          id: 'guest-dmo-001',
+          employee_id: 'DMO-DEMO-001',
+          name: 'Dr. Ramesh Patil',
+          role: 'dmo',
+          designation: 'District Medical Officer',
+          district: 'Pune',
+          state: 'Maharashtra',
+          email: 'ramesh.patil@health.maha.gov.in',
+          phone: '+91 98765 43210',
+          guest: true,
+        }
+      : {
+          id: 'guest-asha-001',
+          employee_id: 'ASHA-DEMO-001',
+          name: 'Sunita Devi',
+          role: 'asha',
+          designation: 'ASHA Worker',
+          village: 'Wadgaon Sheri',
+          block: 'Haveli',
+          district: 'Pune',
+          state: 'Maharashtra',
+          email: 'sunita.devi@asha.maha.gov.in',
+          phone: '+91 87654 32109',
+          patientsCount: 42,
+          guest: true,
+        }
 
     localStorage.removeItem('access_token')
     localStorage.setItem('userRole', role)

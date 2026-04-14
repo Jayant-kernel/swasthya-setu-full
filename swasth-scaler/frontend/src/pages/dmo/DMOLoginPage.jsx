@@ -67,7 +67,7 @@ export default function DMOLoginPage() {
             <input
               type="email"
               className="form-input"
-              placeholder="Enter your email"
+              placeholder="Demo: dmo.demo@health.maha.gov.in"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -82,7 +82,7 @@ export default function DMOLoginPage() {
             <input
               type="password"
               className="form-input"
-              placeholder="Enter your password"
+              placeholder="Demo password: guest1234"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -100,7 +100,7 @@ export default function DMOLoginPage() {
             className="btn"
             style={{ marginTop: '0.875rem', width: '100%', border: '1.5px solid var(--color-primary)', color: 'var(--color-primary)', background: 'transparent', fontWeight: 700 }}
           >
-            Continue as Guest
+            👤 Continue as Guest (DMO Demo)
           </button>
         </form>
 

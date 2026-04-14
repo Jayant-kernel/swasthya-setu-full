@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LogoIcon from '../../components/common/LogoIcon.jsx'
 import HeroSlider from '../../components/landing/HeroSlider.jsx'
+import { useAuth } from '../../hooks/useAuth'
 
 const marqueeItems = [
   { text: 'Health is not a privilege — it reaches every door', lang: 'en' },
@@ -13,6 +14,22 @@ const marqueeItems = [
 
 export default function RoleSelectionPage() {
   const navigate = useNavigate()
+  const auth = useAuth()
+  const [showGuestPicker, setShowGuestPicker] = useState(false)
+  const [guestLoading, setGuestLoading] = useState(false)
+
+  const doGuestLogin = async (roleId) => {
+    setGuestLoading(true)
+    try {
+      await auth.loginAsGuest(roleId)
+      navigate(roleId === 'dmo' ? '/dashboard/dmo' : '/home')
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setGuestLoading(false)
+      setShowGuestPicker(false)
+    }
+  }
 
   const roles = [
     {
@@ -146,10 +163,160 @@ export default function RoleSelectionPage() {
         ))}
       </div>
 
+      {/* Guest Login Section */}
+      <div style={{ marginTop: '2.5rem', textAlign: 'center', padding: '0 1rem' }}>
+        <div style={{ marginBottom: '1rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>— or —</div>
+        <button
+          onClick={() => setShowGuestPicker(true)}
+          style={{
+            padding: '0.875rem 2.5rem',
+            borderRadius: '999px',
+            border: '1.5px solid var(--color-primary)',
+            background: 'transparent',
+            color: 'var(--color-primary)',
+            fontWeight: 700,
+            fontSize: '1rem',
+            cursor: 'pointer',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            transition: 'all 0.2s ease',
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.background = 'var(--color-primary)'
+            e.currentTarget.style.color = '#fff'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.color = 'var(--color-primary)'
+          }}
+        >
+          👤 Continue as Guest
+        </button>
+        <p style={{ marginTop: '0.625rem', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+          Explore with demo data — no credentials needed
+        </p>
+      </div>
+
+      {/* Guest Role Picker Overlay */}
+      {showGuestPicker && (
+        <div
+          onClick={() => setShowGuestPicker(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 200,
+            background: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(12px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '1rem',
+            animation: 'gp-fadein 0.22s ease',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              background: 'var(--color-white)',
+              borderRadius: '1.5rem',
+              padding: '2.5rem 2rem',
+              maxWidth: 420,
+              width: '100%',
+              boxShadow: '0 40px 80px rgba(0,0,0,0.35)',
+              position: 'relative',
+            }}
+          >
+            <button
+              onClick={() => setShowGuestPicker(false)}
+              style={{
+                position: 'absolute', top: '1rem', right: '1rem',
+                width: 32, height: 32, borderRadius: '50%',
+                background: '#f3f4f6', border: 'none',
+                color: '#6b7280', fontSize: '0.9rem',
+                cursor: 'pointer', display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+              }}
+            >✕</button>
+
+            <div style={{ textAlign: 'center', marginBottom: '1.75rem' }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>👤</div>
+              <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: 'var(--color-text)', margin: '0 0 0.35rem', letterSpacing: '-0.03em' }}>
+                Continue as Guest
+              </h2>
+              <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', margin: 0 }}>
+                Choose your role to explore with demo data
+              </p>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.875rem' }}>
+              {roles.map(role => (
+                <button
+                  key={role.id}
+                  onClick={() => doGuestLogin(role.id)}
+                  disabled={guestLoading}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '1rem',
+                    padding: '1.125rem 1.25rem',
+                    borderRadius: '14px',
+                    border: '1.5px solid var(--color-border, #e5e7eb)',
+                    background: 'var(--color-surface, #f9fafb)',
+                    cursor: guestLoading ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.18s ease',
+                    textAlign: 'left',
+                    width: '100%',
+                    opacity: guestLoading ? 0.6 : 1,
+                  }}
+                  onMouseEnter={e => {
+                    if (!guestLoading) {
+                      e.currentTarget.style.borderColor = role.color
+                      e.currentTarget.style.background = '#f0fdf8'
+                      e.currentTarget.style.transform = 'translateY(-2px)'
+                      e.currentTarget.style.boxShadow = `0 8px 24px ${role.color}22`
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.borderColor = 'var(--color-border, #e5e7eb)'
+                    e.currentTarget.style.background = 'var(--color-surface, #f9fafb)'
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                >
+                  <span style={{ fontSize: '2rem', flexShrink: 0 }}>{role.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, color: 'var(--color-text)', fontSize: '1rem', marginBottom: '0.1rem' }}>
+                      {role.title}
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+                      {role.titleOdia}
+                    </div>
+                  </div>
+                  <span style={{ color: role.color, fontSize: '1.1rem', flexShrink: 0 }}>→</span>
+                </button>
+              ))}
+            </div>
+
+            <div style={{
+              marginTop: '1.25rem',
+              padding: '0.75rem 1rem',
+              background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)',
+              border: '1px solid #bbf7d0',
+              borderRadius: '10px',
+              display: 'flex', gap: '0.5rem', alignItems: 'flex-start',
+            }}>
+              <span style={{ fontSize: '1rem', flexShrink: 0 }}>ℹ️</span>
+              <p style={{ fontSize: '0.78rem', color: '#166534', margin: 0, lineHeight: 1.5 }}>
+                Guest mode uses realistic demo data — <strong>no login required</strong>. Perfect for exploring the platform.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @keyframes marquee {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
+        }
+        @keyframes gp-fadein {
+          from { opacity: 0; }
+          to   { opacity: 1; }
         }
       `}</style>
     </div>
