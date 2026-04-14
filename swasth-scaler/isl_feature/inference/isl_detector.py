@@ -124,7 +124,7 @@ _BASE_THRESHOLDS: dict[str, float] = {
 # Signs that also require a minimum confidence margin over the 2nd-best class.
 # Prevents "slightly more than something else" from firing.
 _MARGIN_REQUIRED: dict[str, float] = {
-    "CHAKKAR": 0.12,   # must beat 2nd-best by at least 0.12
+    "CHAKKAR": 0.08,   # must beat 2nd-best by at least 0.08
 }
 
 # ── Demographic threshold adjustments (§3A–D) ─────────────────────────────────
@@ -163,7 +163,7 @@ PROXIMITY_GATES: dict[str, tuple[str, float]] = {
     "ULTI":         ("mouth",    0.24),   # hand near mouth (vomiting gesture)
     "SANS-TAKLEEF": ("chest",    0.32),   # hand near chest (breathless)
     "SEENE-DARD":   ("chest",    0.30),   # hand near chest (chest pain)
-    "CHAKKAR":      ("head",     0.35),   # hand near head (dizziness)
+    "CHAKKAR":      ("head",     0.45),   # hand near head (dizziness)
 }
 
 

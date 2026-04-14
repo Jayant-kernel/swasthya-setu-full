@@ -41,7 +41,7 @@ const PROXIMITY_GATES = {
   ULTI:            { part: 'mouth',    maxDist: 0.24 },
   'SANS-TAKLEEF':  { part: 'chest',    maxDist: 0.32 },
   'SEENE-DARD':    { part: 'chest',    maxDist: 0.30 },
-  CHAKKAR:         { part: 'head',     maxDist: 0.35 },
+  CHAKKAR:         { part: 'head',     maxDist: 0.45 },
 }
 
 // DARD is a claw hand: fingers partially curled (not flat open, not full fist).

@@ -54,7 +54,7 @@ const BASE_THRESHOLDS = {
 
 // Signs requiring minimum confidence margin over 2nd-best class
 const MARGIN_REQUIRED = {
-  CHAKKAR: 0.12,
+  CHAKKAR: 0.08,
 }
 
 // ── Demographic adjustments (§3A–D) ──────────────────────────────────────────
