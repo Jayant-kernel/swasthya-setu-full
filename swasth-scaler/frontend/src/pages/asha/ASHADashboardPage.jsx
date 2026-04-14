@@ -590,15 +590,15 @@ export default function ASHADashboardPage() {
             </button>
           </div>
         </div>
-    </DashboardLayout>
 
-    {/* ── Review Modal on logout ── */}
-    {showReviewModal && (
-      <ReviewModal
-        role="asha"
-        onSkip={() => { setShowReviewModal(false); logout(); navigate('/') }}
-        onSubmit={() => { setShowReviewModal(false); logout(); navigate('/') }}
-      />
-    )}
+      {/* ── Review Modal on logout ── */}
+      {showReviewModal && (
+        <ReviewModal
+          role="asha"
+          onSkip={() => { setShowReviewModal(false); logout(); navigate('/') }}
+          onSubmit={() => { setShowReviewModal(false); logout(); navigate('/') }}
+        />
+      )}
+    </DashboardLayout>
   )
 }
