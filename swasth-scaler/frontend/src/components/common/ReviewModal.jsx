@@ -224,6 +224,7 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
 ────────────────────────────────────────────────────────── */
 export function ReviewSection({ role, isDark }) {
   const [overall, setOverall] = useState(0)
+  const [cats, setCats] = useState({})
   const [comment, setComment] = useState('')
   const [userName, setUserName] = useState('')
   const [submitted, setSubmitted] = useState(false)
@@ -245,7 +246,7 @@ export function ReviewSection({ role, isDark }) {
   async function handleSubmit(e) {
     e.preventDefault()
     if (overall === 0) return
-    const review = { role, overall, comment, userName, timestamp: new Date().toISOString(), source: 'inline' }
+    const review = { role, overall, categories: cats, comment, userName, timestamp: new Date().toISOString(), source: 'inline' }
     
     try {
       await fetch('https://swasthya-setu-full.onrender.com/api/v1/reviews/', {
@@ -323,11 +324,12 @@ export function ReviewSection({ role, isDark }) {
 
           <form onSubmit={handleSubmit}>
             {/* Feedback fields area */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 1fr) 2fr', gap: '1.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 1.2fr) 2fr 2fr', gap: '2rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
               
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {/* Column 1: Identity & Overall */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label style={{ fontSize: '0.65rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Your Name (रुग्ण / कर्मचारी नाव)</label>
+                  <label style={{ fontSize: '0.65rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Your Name (नाव)</label>
                   <input 
                     value={userName} onChange={e => setUserName(e.target.value)}
                     placeholder="E.g. Priya Sharma"
@@ -346,11 +348,11 @@ export function ReviewSection({ role, isDark }) {
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <label style={{ fontSize: '0.65rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Overall Rating (एकूण रेटिंग)</label>
+                  <label style={{ fontSize: '0.65rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Overall Impression (एकूण रेटिंग)</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <StarRating value={overall} onChange={setOverall} size={28} />
+                    <StarRating value={overall} onChange={setOverall} size={30} />
                     {overall > 0 && (
-                      <span style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: 800 }}>
+                      <span style={{ fontSize: '0.75rem', color: '#f59e0b', fontWeight: 800 }}>
                         {['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent!'][overall]}
                       </span>
                     )}
@@ -358,8 +360,21 @@ export function ReviewSection({ role, isDark }) {
                 </div>
               </div>
 
+              {/* Column 2: Detailed Categories */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)', padding: '1rem', borderRadius: 16, border: `1px solid ${inputBdr}` }}>
+                {CATEGORIES.map(cat => (
+                  <div key={cat.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <div style={{ fontSize: '0.65rem', fontWeight: 700, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span>{cat.emoji}</span> {cat.label}
+                    </div>
+                    <StarRating value={cats[cat.id] || 0} onChange={v => setCats(p => ({ ...p, [cat.id]: v }))} size={15} />
+                  </div>
+                ))}
+              </div>
+
+              {/* Column 3: Comment */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <label style={{ fontSize: '0.65rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Suggestions or Issues (सूचना किंवा समस्या)</label>
+                <label style={{ fontSize: '0.65rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Suggestions or Issues (सूचना)</label>
                 <textarea
                   placeholder="Share your thoughts, suggestions, or any issues you faced…"
                   value={comment}
