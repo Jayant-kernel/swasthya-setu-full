@@ -92,8 +92,13 @@ export default function ProfilePage() {
     finally { setSaveLoading(false) }
   }
 
-  async function handleLogout() { 
-    setShowReviewModal(true)
+  const handleLogout = () => {
+    if (authUser?.guest) {
+      setShowReviewModal(true)
+    } else {
+      logout()
+      navigate('/login/asha')
+    }
   }
 
   async function finalLogout() {

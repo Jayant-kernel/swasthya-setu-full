@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useAuth } from '../../hooks/useAuth'
 
 const STARS = [1, 2, 3, 4, 5]
 
@@ -223,11 +224,15 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
    ReviewSection  –  always visible at bottom of dashboard
 ────────────────────────────────────────────────────────── */
 export function ReviewSection({ role, isDark }) {
+  const { user } = useAuth()
   const [overall, setOverall] = useState(0)
   const [cats, setCats] = useState({})
   const [comment, setComment] = useState('')
   const [userName, setUserName] = useState('')
   const [submitted, setSubmitted] = useState(false)
+
+  // Only show for guest users
+  if (!user?.guest) return null
 
   useEffect(() => {
     try {

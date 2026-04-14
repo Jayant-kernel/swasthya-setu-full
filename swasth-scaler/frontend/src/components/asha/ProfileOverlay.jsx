@@ -189,8 +189,12 @@ export default function ProfileOverlay({ onClose }) {
     }
   }
 
-  async function handleLogout() {
-    setShowReviewModal(true)
+  const handleLogout = () => {
+    if (authUser?.guest) {
+      setShowReviewModal(true)
+    } else {
+      logout()
+    }
   }
 
   async function finalLogout() {

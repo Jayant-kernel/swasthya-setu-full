@@ -28,7 +28,12 @@ export default function DMOProfilePage() {
   }), [isDark])
 
   const handleLogout = () => {
-    setShowReviewModal(true)
+    if (user?.guest) {
+      setShowReviewModal(true)
+    } else {
+      logout()
+      navigate('/')
+    }
   }
 
   const handleSaveProfile = async () => {
