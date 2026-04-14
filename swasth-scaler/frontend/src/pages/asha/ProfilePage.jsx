@@ -97,7 +97,7 @@ export default function ProfilePage() {
       setShowReviewModal(true)
     } else {
       logout()
-      navigate('/login/asha')
+      navigate('/')
     }
   }
 

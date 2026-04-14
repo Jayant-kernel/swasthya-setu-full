@@ -194,6 +194,7 @@ export default function ProfileOverlay({ onClose }) {
       setShowReviewModal(true)
     } else {
       logout()
+      navigate('/')
     }
   }
 
