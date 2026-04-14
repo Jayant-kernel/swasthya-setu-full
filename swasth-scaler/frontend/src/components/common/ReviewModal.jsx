@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 const STARS = [1, 2, 3, 4, 5]
 
@@ -40,13 +40,21 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
   const [overall, setOverall] = useState(0)
   const [cats, setCats] = useState({})
   const [comment, setComment] = useState('')
+  const [userName, setUserName] = useState('')
   const [submitted, setSubmitted] = useState(false)
+
+  useEffect(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem('user') || '{}')
+      if (u.name || u.full_name) setUserName(u.name || u.full_name)
+    } catch(e){}
+  }, [])
 
   const roleName = role === 'dmo' ? 'DMO Command Dashboard' : 'ASHA Worker Dashboard'
 
   function handleSubmit(e) {
     e.preventDefault()
-    const review = { role, overall, categories: cats, comment, timestamp: new Date().toISOString() }
+    const review = { role, overall, categories: cats, comment, userName, timestamp: new Date().toISOString() }
     // Persist locally
     const prev = JSON.parse(localStorage.getItem('swasthya_reviews') || '[]')
     localStorage.setItem('swasthya_reviews', JSON.stringify([...prev, review]))
@@ -97,6 +105,24 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
                 <p style={{ fontSize: '0.8rem', color: '#6b7280', margin: 0 }}>
                   Rate the <strong>{roleName}</strong> before you leave
                 </p>
+              </div>
+
+              {/* Name */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: '1.25rem' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Name</label>
+                <input 
+                  value={userName} onChange={e => setUserName(e.target.value)}
+                  placeholder="Enter your name"
+                  style={{
+                    width: '100%', boxSizing: 'border-box',
+                    padding: '0.75rem 1rem', borderRadius: 12,
+                    border: '1.5px solid #e5e7eb',
+                    fontSize: '0.875rem', color: '#111827',
+                    background: '#f9fafb',
+                    outline: 'none',
+                    fontFamily: 'inherit',
+                  }}
+                />
               </div>
 
               {/* Overall */}
@@ -186,7 +212,15 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
 export function ReviewSection({ role, isDark }) {
   const [overall, setOverall] = useState(0)
   const [comment, setComment] = useState('')
+  const [userName, setUserName] = useState('')
   const [submitted, setSubmitted] = useState(false)
+
+  useEffect(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem('user') || '{}')
+      if (u.name || u.full_name) setUserName(u.name || u.full_name)
+    } catch(e){}
+  }, [])
 
   const bg = isDark ? 'rgba(255,255,255,0.03)' : '#ffffff'
   const bdr = isDark ? 'rgba(255,255,255,0.07)' : '#e5e7eb'
@@ -198,7 +232,7 @@ export function ReviewSection({ role, isDark }) {
   function handleSubmit(e) {
     e.preventDefault()
     if (overall === 0) return
-    const review = { role, overall, comment, timestamp: new Date().toISOString(), source: 'inline' }
+    const review = { role, overall, comment, userName, timestamp: new Date().toISOString(), source: 'inline' }
     const prev = JSON.parse(localStorage.getItem('swasthya_reviews') || '[]')
     localStorage.setItem('swasthya_reviews', JSON.stringify([...prev, review]))
     setSubmitted(true)
@@ -265,14 +299,33 @@ export function ReviewSection({ role, isDark }) {
 
           <form onSubmit={handleSubmit}>
             {/* Star rating */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: muteColor }}>Overall Rating:</span>
-              <StarRating value={overall} onChange={setOverall} size={24} />
-              {overall > 0 && (
-                <span style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: 700 }}>
-                  {['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent!'][overall]}
-                </span>
-              )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '1.25rem', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1, minWidth: 200 }}>
+                <label style={{ fontSize: '0.7rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Your Name</label>
+                <input 
+                  value={userName} onChange={e => setUserName(e.target.value)}
+                  placeholder="Enter your name"
+                  style={{
+                    width: '100%', boxSizing: 'border-box',
+                    padding: '0.625rem 0.875rem', borderRadius: 10,
+                    border: `1.5px solid ${inputBdr}`,
+                    background: inputBg, color: textColor,
+                    fontSize: '0.8125rem', outline: 'none',
+                    fontFamily: "'Inter', sans-serif",
+                  }}
+                />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                <label style={{ fontSize: '0.7rem', fontWeight: 800, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Overall Rating</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <StarRating value={overall} onChange={setOverall} size={24} />
+                  {overall > 0 && (
+                    <span style={{ fontSize: '0.8rem', color: '#f59e0b', fontWeight: 700 }}>
+                      {['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent!'][overall]}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Comment */}
@@ -280,7 +333,7 @@ export function ReviewSection({ role, isDark }) {
               placeholder="Share your thoughts, suggestions, or any issues you faced…"
               value={comment}
               onChange={e => setComment(e.target.value)}
-              rows={3}
+              rows={2}
               style={{
                 width: '100%', boxSizing: 'border-box',
                 padding: '0.75rem 1rem', borderRadius: 12,
