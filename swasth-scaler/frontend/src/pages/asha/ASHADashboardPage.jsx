@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import DashboardLayout from '../../components/asha/DashboardLayout'
+import { GUEST_TRIAGE_RECORDS, buildAshaPatients } from '../../lib/guestDemoData'
 
 /* ─── Constants ──────────────────────────────────────────── */
 const ALL_DISTRICTS = [
@@ -176,6 +177,21 @@ export default function ASHADashboardPage() {
     setLoading(true)
     try {
       const token = localStorage.getItem('access_token')
+
+      // ── Guest mode: use demo data directly ──
+      if (!token) {
+        let rows = [...GUEST_TRIAGE_RECORDS]
+        if (activeTab !== 'ALL') rows = rows.filter(r => r.severity === activeTab.toLowerCase())
+        if (query.trim().length >= 2) rows = rows.filter(r => r.patient_name?.toLowerCase().includes(query.trim().toLowerCase()))
+        if (districtFilter) rows = rows.filter(r => r.district === districtFilter)
+        const patients = buildAshaPatients(rows)
+        setPatientResults(patients)
+        setTotalCount(patients.length)
+        setShowCount(50)
+        setLoading(false)
+        return
+      }
+
       const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', { headers: { Authorization: `Bearer ${token}` } })
       let rows = res.ok ? await res.json() : []
       rows = rows || []

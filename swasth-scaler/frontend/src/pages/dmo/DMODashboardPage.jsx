@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+﻿import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
@@ -6,6 +6,8 @@ import DMOSidebar from '../../components/dmo/DMOSidebar'
 import PatientRecordModal from '../../components/shared/PatientRecordModal'
 import { SunIcon, MoonIcon, SearchIcon, ActivityIcon } from '../admin/AdminIcons'
 import { API, DISTRICT_CENTERS, buildMapPoints } from './DMOShared'
+import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
+
 
 const StatCard = ({ label, value, subtext, icon: Icon, color = '#3b82f6', g }) => (
   <div className="stat-card elevated-panel" style={{ background: g.cardBg, borderRadius: 16, padding: '1.5rem', boxShadow: g.cardShd, border: `1px solid ${g.cardBdr}`, flex: 1, backdropFilter: g.blur }}>
@@ -98,6 +100,14 @@ export default function DMODashboardPage() {
   const fetchData = useCallback(async () => {
     try {
       const token = localStorage.getItem('access_token')
+
+      // -- Guest mode: use demo data directly --
+      if (!token) {
+        setTriageRecords(GUEST_TRIAGE_RECORDS)
+        setLoading(false)
+        return
+      }
+
       const headers = { 'Authorization': `Bearer ${token}` }
       const res = await fetch(`${API}/triage_records/`, { headers })
       if (res.ok) setTriageRecords(await res.json())
@@ -223,7 +233,7 @@ export default function DMODashboardPage() {
                             >
                               {h.label}
                               <span style={{ fontSize: '0.65rem', color: sortConfig.key === h.key ? '#3b82f6' : g.muted }}>
-                                {sortConfig.key === h.key ? (sortConfig.direction === 'asc' ? '↑' : '↓') : '↕'}
+                                {sortConfig.key === h.key ? (sortConfig.direction === 'asc' ? 'â†‘' : 'â†“') : 'â†•'}
                               </span>
                             </button>
                           </th>
@@ -269,3 +279,5 @@ export default function DMODashboardPage() {
     </div>
   )
 }
+
+
