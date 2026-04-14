@@ -404,6 +404,9 @@ export default function ASHADashboardPage() {
 
         <div style={{ padding: 'clamp(1rem, 3.5vw, 2.25rem)', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           
+          {/* ── Inline Review Section ── */}
+          <ReviewSection role="asha" isDark={isDark} />
+
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
             <button className="hp-chip" onClick={() => setActiveTab('ALL')} style={{
               padding: '0.4rem 1rem', borderRadius: 99, cursor: 'pointer', transition: 'all .18s',
@@ -569,21 +572,18 @@ export default function ASHADashboardPage() {
             </div>
           )}
 
-          {/* ── Inline Review Section ── */}
-          <ReviewSection role="asha" isDark={isDark} />
-
           {/* ── Logout / Review button ── */}
-          <div style={{ textAlign: 'center', paddingBottom: '2rem' }}>
+          <div style={{ textAlign: 'center', paddingBottom: '2rem', opacity: 0.6 }}>
             <button
               onClick={() => setShowReviewModal(true)}
               style={{
                 padding: '0.625rem 1.75rem', borderRadius: 99,
-                border: '1.5px solid rgba(239,68,68,0.4)',
+                border: '1.5px solid rgba(239,68,68,0.3)',
                 background: 'transparent', color: '#ef4444',
-                fontWeight: 700, fontSize: '0.845rem', cursor: 'pointer',
+                fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
                 transition: 'all 0.18s',
               }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)' }}
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
             >
               Sign Out

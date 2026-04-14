@@ -314,11 +314,34 @@ export default function ProfilePage() {
                   <div style={{ display: 'flex', gap: '0.875rem' }}>
                     <button
                       onClick={handleLogout}
-                      style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '0.6rem 1.25rem', borderRadius: 10, background: g.btn, border: `1px solid ${g.btnBdr}`, color: g.text, fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', transition: 'all .18s', backdropFilter: 'blur(12px)' }}
-                      onMouseEnter={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.85)'; e.currentTarget.style.color = isDark ? '#fff' : '#0c2a1d' }}
-                      onMouseLeave={e => { e.currentTarget.style.background = g.btn; e.currentTarget.style.color = g.text }}
+                      style={{ 
+                        display: 'flex', alignItems: 'center', gap: 10, padding: '0.75rem 1.625rem', 
+                        borderRadius: 14, background: g.btn, border: `1px solid ${g.btnBdr}`, 
+                        color: g.text, fontWeight: 700, fontSize: '0.9375rem', 
+                        cursor: 'pointer', transition: 'all .25s', backdropFilter: 'blur(12px)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                      }}
+                      onMouseEnter={e => { 
+                        e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.18)' : '#fff'; 
+                        e.currentTarget.style.color = g.accent;
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
+                      }}
+                      onMouseLeave={e => { 
+                        e.currentTarget.style.background = g.btn; 
+                        e.currentTarget.style.color = g.text;
+                        e.currentTarget.style.transform = 'none';
+                        e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                      }}
                     >
                       <LogoutIcon /> Sign Out
+                      {authUser?.guest && (
+                        <span style={{ 
+                          marginLeft: '4px', background: g.accent, color: '#fff', 
+                          padding: '2px 8px', borderRadius: 99, fontSize: '0.65rem', 
+                          fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' 
+                        }}>DEMO</span>
+                      )}
                     </button>
                     <button
                       onClick={handleDeleteAccount}

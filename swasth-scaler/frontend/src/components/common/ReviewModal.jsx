@@ -205,15 +205,37 @@ export function ReviewSection({ role, isDark }) {
   }
 
   return (
-    <div style={{
-      margin: '2rem 0 0',
-      padding: '2rem',
-      borderRadius: 20,
+    <div className="shining-card" style={{
+      margin: '0 0 2rem',
+      padding: '1.75rem 2rem',
+      borderRadius: 24,
       background: bg,
       border: `1px solid ${bdr}`,
-      backdropFilter: 'blur(12px)',
-      boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.2)' : '0 4px 24px rgba(15,110,86,0.06)',
+      backdropFilter: 'blur(16px)',
+      boxShadow: isDark ? '0 20px 50px rgba(0,0,0,0.3), 0 0 20px rgba(16,185,129,0.05)' : '0 10px 30px rgba(15,110,86,0.08)',
+      position: 'relative',
+      overflow: 'hidden',
     }}>
+      <style>{`
+        @keyframes sweep {
+          0% { transform: translateX(-150%) skewX(-25deg); }
+          50%, 100% { transform: translateX(150%) skewX(-25deg); }
+        }
+        .shining-card::before {
+          content: "";
+          position: absolute;
+          top: 0; left: 0; width: 100%; height: 100%;
+          background: linear-gradient(90deg, transparent, ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.4)'}, transparent);
+          transform: translateX(-150%) skewX(-25deg);
+          animation: sweep 4s infinite ease-in-out;
+          pointer-events: none;
+        }
+        .shining-card:hover {
+          border-color: rgba(16,185,129,0.4);
+          box-shadow: ${isDark ? '0 25px 60px rgba(0,0,0,0.4), 0 0 30px rgba(16,185,129,0.15)' : '0 15px 40px rgba(15,110,86,0.12)'};
+        }
+      `}</style>
+
       {submitted ? (
         <div style={{ textAlign: 'center', padding: '1rem 0' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>🙏</div>

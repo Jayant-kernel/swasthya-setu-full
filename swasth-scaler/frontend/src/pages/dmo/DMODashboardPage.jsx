@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
@@ -193,6 +193,8 @@ export default function DMODashboardPage() {
         </header>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '2.5rem' }}>
+          <ReviewSection role="dmo" isDark={isDark} />
+          
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', maxWidth: 1600, margin: '0 auto' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div style={{ display: 'flex', gap: '1.5rem' }}>
@@ -278,25 +280,22 @@ export default function DMODashboardPage() {
           </div>
         </div>
 
-        {/* Review Section */}
-        <div style={{ padding: '0 2.5rem 2.5rem' }}>
-          <ReviewSection role="dmo" isDark={isDark} />
-          <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
-            <button
-              onClick={() => setShowReviewModal(true)}
-              style={{
-                padding: '0.625rem 1.75rem', borderRadius: 99,
-                border: '1.5px solid rgba(239,68,68,0.4)',
-                background: 'transparent', color: '#ef4444',
-                fontWeight: 700, fontSize: '0.845rem', cursor: 'pointer',
-                transition: 'all 0.18s', fontFamily: "'Inter', sans-serif",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-            >
-              Sign Out
-            </button>
-          </div>
+        {/* Logout Section */}
+        <div style={{ padding: '0 2.5rem 2.5rem', textAlign: 'center', opacity: 0.6 }}>
+          <button
+            onClick={() => setShowReviewModal(true)}
+            style={{
+              padding: '0.625rem 1.75rem', borderRadius: 99,
+              border: '1.5px solid rgba(239,68,68,0.3)',
+              background: 'transparent', color: '#ef4444',
+              fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
+              transition: 'all 0.18s', fontFamily: "'Inter', sans-serif",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+          >
+            Sign Out
+          </button>
         </div>
       </main>
 
