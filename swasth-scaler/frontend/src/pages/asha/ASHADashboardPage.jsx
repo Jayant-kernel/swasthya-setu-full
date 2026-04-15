@@ -23,11 +23,6 @@ function timeAgo(iso) {
   return `${Math.floor(h / 24)}d ago`
 }
 
-const TEHSIL_GROUPS = [
-  { label: 'Haveli', color: '#818cf8' },
-  { label: 'Mulshi', color: '#fbbf24' },
-  { label: 'Maval', color: '#34d399' },
-]
 
 /* ─── Icons ──────────────────────────────────────────────── */
 const GridIcon = ({ active }) => (
@@ -157,7 +152,6 @@ export default function ASHADashboardPage() {
   const [activeTab, setActiveTab] = useState('ALL')
   const [viewTab, setViewTab] = useState('Table')
   const [query, setQuery] = useState('')
-  const [tehsilFilter, setTehsilFilter] = useState('')
   const [sortField, setSortField] = useState('date')
   const [sortOrder, setSortOrder] = useState('desc')
   const debounceRef = useRef(null)
@@ -186,7 +180,6 @@ export default function ASHADashboardPage() {
         let rows = [...GUEST_TRIAGE_RECORDS]
         if (activeTab !== 'ALL') rows = rows.filter(r => r.severity === activeTab.toLowerCase())
         if (query.trim().length >= 2) rows = rows.filter(r => r.patient_name?.toLowerCase().includes(query.trim().toLowerCase()))
-        if (tehsilFilter) rows = rows.filter(r => r.tehsil === tehsilFilter)
         const patients = buildAshaPatients(rows)
         setPatientResults(patients)
         setTotalCount(patients.length)
@@ -201,7 +194,6 @@ export default function ASHADashboardPage() {
 
       if (activeTab !== 'ALL') rows = rows.filter(r => r.severity === activeTab.toLowerCase())
       if (query.trim().length >= 2) rows = rows.filter(r => r.patient_name?.toLowerCase().includes(query.trim().toLowerCase()))
-      if (tehsilFilter) rows = rows.filter(r => r.tehsil === tehsilFilter)
 
       const grouped = new Map()
       for (const r of rows) {
@@ -222,13 +214,13 @@ export default function ASHADashboardPage() {
       setDashError(err?.message || 'Unknown error')
       setPatientResults([]); setTotalCount(0)
     } finally { setLoading(false) }
-  }, [activeTab, query, tehsilFilter])
+  }, [activeTab, query])
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(fetchRecords, query ? 400 : 0)
     return () => clearTimeout(debounceRef.current)
-  }, [activeTab, query, tehsilFilter, fetchRecords])
+  }, [activeTab, query, fetchRecords])
 
   const handlePatientClick = p => navigate('/patient', { state: { prefill: { name: p.name, age: p.age, gender: p.gender, district: p.district, tehsil: p.tehsil }, patientId: p.id } })
   const handleDelete = (e, id) => {
@@ -312,30 +304,6 @@ export default function ASHADashboardPage() {
     color: g.text, outline: 'none', transition: 'all .2s',
   }
 
-  const districtsExtra = (
-    <>
-      <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', marginTop: '1.125rem' }}>
-        Tehsils <span style={{ opacity: 0.6 }}>/ तालुके</span>
-      </div>
-      {TEHSIL_GROUPS.map(d => {
-        const on = tehsilFilter === d.label
-        return (
-          <button key={d.label} className="hp-nav"
-            onClick={() => setTehsilFilter(on ? '' : d.label)}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.4rem 0.625rem', borderRadius: 10, marginBottom: 3, background: on ? `${d.color}18` : 'transparent', boxShadow: on ? `inset 3px 0 0 ${d.color}` : 'none', border: '1px solid transparent', color: on ? d.color : g.text, fontWeight: on ? 700 : 500, fontSize: '0.875rem', cursor: 'pointer', textAlign: 'left', transition: 'all .18s' }}
-            onMouseEnter={e => { if (!on) e.currentTarget.style.background = g.hover }}
-            onMouseLeave={e => { if (!on) e.currentTarget.style.background = 'transparent' }}
-          >
-            <div style={{ width: 24, height: 24, borderRadius: 6, background: `${d.color}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: d.color, boxShadow: on ? `0 0 8px ${d.color}` : 'none', transition: 'all .2s' }} />
-            </div>
-            <span style={{ flex: 1, whiteSpace: 'nowrap' }}>{d.label}</span>
-            {on && <ChevRight color={d.color} />}
-          </button>
-        )
-      })}
-    </>
-  )
 
   const topbar = (
     <>
@@ -372,7 +340,7 @@ export default function ASHADashboardPage() {
   )
 
   return (
-    <DashboardLayout sidebarExtra={districtsExtra} topbarContent={topbar}>
+    <DashboardLayout topbarContent={topbar}>
       <style>{`
         ::-webkit-scrollbar{width:4px;}
         ::-webkit-scrollbar-track{background:transparent;}
