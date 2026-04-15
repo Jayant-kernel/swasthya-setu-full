@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { apiFetch } from '../../lib/api'
 
 export default function AIMedicalAdviceCard({
@@ -7,11 +7,16 @@ export default function AIMedicalAdviceCard({
   patientGender = 'unknown',
   patientAge = 0
 }) {
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [suggestion, setSuggestion] = useState(null)
   const [error, setError] = useState(null)
 
+  // Fetch AI suggestion on component mount
+  useEffect(() => {
+    fetchAISuggestion()
+  }, [symptoms, severity, patientGender, patientAge])
+
   async function fetchAISuggestion() {
-    if (loading) return
     setLoading(true)
     setError(null)
 
@@ -37,8 +42,8 @@ export default function AIMedicalAdviceCard({
         throw new Error(err.detail || 'Failed to get AI suggestion')
       }
 
-      // Suggestion received successfully
-      await response.json()
+      const data = await response.json()
+      setSuggestion(data.suggestion)
     } catch (err) {
       setError(err.message || 'Error getting AI suggestion')
       console.error('AI suggestion error:', err)
@@ -103,7 +108,7 @@ export default function AIMedicalAdviceCard({
               letterSpacing: '-0.01em',
             }}
           >
-            AI Medical Assistant
+            AI Medical Assistant Analysis
           </div>
         </div>
         <span
@@ -186,49 +191,70 @@ export default function AIMedicalAdviceCard({
           </div>
         )}
 
-        {/* Ask AI Button */}
-        <button
-          onClick={fetchAISuggestion}
-          disabled={loading}
-          style={{
-            width: '100%',
-            minHeight: 44,
-            background: loading ? config.dot : config.dot,
-            color: '#fff',
-            border: 'none',
-            borderRadius: 10,
-            fontSize: '0.9375rem',
-            fontWeight: 700,
-            cursor: loading ? 'default' : 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '0.5rem',
-            opacity: loading ? 0.8 : 1,
-            transition: 'all 0.2s',
-          }}
-        >
-          {loading ? (
-            <>
-              <span
-                style={{
-                  width: 16,
-                  height: 16,
-                  border: '2px solid rgba(255,255,255,0.4)',
-                  borderTopColor: '#fff',
-                  borderRadius: '50%',
-                  display: 'inline-block',
-                  animation: 'spin 0.8s linear infinite',
-                }}
-              />
-              Getting suggestions…
-            </>
-          ) : (
-            <>
-              💡 Ask AI for Medical Advice
-            </>
-          )}
-        </button>
+        {/* Loading State */}
+        {loading && (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.75rem',
+              color: config.color,
+              fontSize: '0.9375rem',
+              fontWeight: 600,
+              padding: '1.5rem 1rem',
+            }}
+          >
+            <span
+              style={{
+                width: 16,
+                height: 16,
+                border: '2px solid rgba(0,0,0,0.2)',
+                borderTopColor: config.dot,
+                borderRadius: '50%',
+                display: 'inline-block',
+                animation: 'spin 0.8s linear infinite',
+              }}
+            />
+            Analyzing symptoms…
+          </div>
+        )}
+
+        {/* AI Analysis & Precautions */}
+        {!loading && suggestion && (
+          <div
+            style={{
+              background: 'rgba(255,255,255,0.6)',
+              borderRadius: 10,
+              padding: '1rem',
+              marginTop: '0.75rem',
+            }}
+          >
+            <div
+              style={{
+                fontSize: '0.6875rem',
+                fontWeight: 700,
+                color: config.color,
+                textTransform: 'uppercase',
+                letterSpacing: '0.07em',
+                marginBottom: '0.625rem',
+              }}
+            >
+              📋 AI Assessment & Precautions
+            </div>
+            <div
+              style={{
+                fontSize: '0.875rem',
+                color: '#374151',
+                lineHeight: 1.7,
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word',
+              }}
+            >
+              {suggestion}
+            </div>
+          </div>
+        )}
 
         {/* Error Message */}
         {error && (
@@ -246,7 +272,6 @@ export default function AIMedicalAdviceCard({
             ⚠ {error}
           </div>
         )}
-
       </div>
 
       <style>{`
