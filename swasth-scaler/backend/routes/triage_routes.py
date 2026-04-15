@@ -14,6 +14,9 @@ async def get_triage_records(current_user: dict = Depends(get_current_user), db:
     query = select(TriageRecord).order_by(TriageRecord.created_at.desc())
     if current_user["role"] == "asha":
         query = query.where(TriageRecord.user_id == current_user["id"])
+    elif current_user["role"] == "tho" and current_user.get("district"):
+        query = query.where(TriageRecord.district == current_user["district"])
+        
     result = await db.execute(query)
     return result.scalars().all()
 
