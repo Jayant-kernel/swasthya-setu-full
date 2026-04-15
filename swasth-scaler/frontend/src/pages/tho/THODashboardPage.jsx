@@ -159,6 +159,7 @@ export default function THODashboardPage() {
   }, [triageRecords, sortConfig, selectedDate])
 
   return (
+    <>
     <THOLayout
       onLogout={() => { logout(); navigate('/') }}
       topbarContent={<h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: g.text }}>THO Command Dashboard</h2>}
@@ -282,7 +283,7 @@ export default function THODashboardPage() {
             Sign Out
           </button>
         </div>
-      </div>
+      </THOLayout>
 
       <PatientRecordModal record={selectedRecord} isOpen={Boolean(selectedRecord)} onClose={() => setSelectedRecord(null)} g={g} />
 
@@ -293,7 +294,7 @@ export default function THODashboardPage() {
           onSubmit={() => { setShowReviewModal(false); logout(); navigate('/') }}
         />
       )}
-    </THOLayout>
+    </>
   )
 }
 
