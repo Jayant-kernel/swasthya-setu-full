@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import THOLayout from '../../components/tho/THOSidebar'
-import { API, DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints } from './THOShared'
+import { apiFetch, API, DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints } from './THOShared'
 import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
 
 const DistrictHeatmap = lazy(() => import('../../components/common/DistrictHeatmap'))
@@ -37,8 +37,8 @@ export default function THOMapPage() {
       }
       const headers = { 'Authorization': `Bearer ${token}` }
       const [triRes, outRes] = await Promise.allSettled([
-        fetch(`${API}/triage_records/`, { headers }),
-        fetch(`${API}/outbreaks/`, { headers }),
+        apiFetch(`${API}/triage_records/`, { headers }),
+        apiFetch(`${API}/outbreaks/`, { headers }),
       ])
       if (triRes.status === 'fulfilled' && triRes.value.ok) setTriageRecords(await triRes.value.json())
       if (outRes.status === 'fulfilled' && outRes.value.ok) setOutbreaks(await outRes.value.json())

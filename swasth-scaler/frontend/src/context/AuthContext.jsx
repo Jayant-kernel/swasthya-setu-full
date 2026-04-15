@@ -1,9 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
+import { apiFetch, API_BASE_URL } from '../lib/api'
 
 const AuthContext = createContext(null)
-
-// Point this to your backend deployed URL (Render) later. For now local:
-const API_BASE_URL = 'https://swasthya-setu-full.onrender.com/api/v1'
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null) // holds the JWT
@@ -31,7 +29,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = async (employee_id, password, role) => {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
+    const response = await apiFetch(`${API_BASE_URL}/auth/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

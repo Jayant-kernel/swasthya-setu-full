@@ -63,7 +63,7 @@ export default function ProfileOverlay({ onClose }) {
       // Load Triage History via custom backend API
       try {
         const token = localStorage.getItem('access_token')
-        const response = await fetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
+        const response = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
           headers: {
             'Authorization': `Bearer ${token}`
           }
@@ -109,7 +109,7 @@ export default function ProfileOverlay({ onClose }) {
         setAvatar(dataUrl)
         if (user) {
           const token = localStorage.getItem('access_token')
-          fetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+          apiFetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ avatar_b64: dataUrl })
@@ -150,7 +150,7 @@ export default function ProfileOverlay({ onClose }) {
         setBanner(dataUrl)
         if (user) {
           const token = localStorage.getItem('access_token')
-          fetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+          apiFetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
             body: JSON.stringify({ banner_b64: dataUrl })
@@ -170,7 +170,7 @@ export default function ProfileOverlay({ onClose }) {
     setSaveLoading(true)
     try {
       const token = localStorage.getItem('access_token')
-      await fetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+      await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ full_name: fullName.trim(), location: location.trim() })

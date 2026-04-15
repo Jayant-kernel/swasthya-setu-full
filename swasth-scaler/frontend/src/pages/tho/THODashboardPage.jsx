@@ -4,8 +4,9 @@ import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import THOLayout from '../../components/tho/THOSidebar'
 import PatientRecordModal from '../../components/shared/PatientRecordModal'
-import { SearchIcon, ActivityIcon } from '../admin/AdminIcons'
-import { API, DISTRICT_CENTERS, buildMapPoints } from './THOShared'
+const SearchIcon   = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+const ActivityIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+import { apiFetch, API, DISTRICT_CENTERS, buildMapPoints } from './THOShared'
 import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
 import { ReviewSection } from '../../components/common/ReviewModal'
 
@@ -109,7 +110,7 @@ export default function THODashboardPage() {
       }
 
       const headers = { 'Authorization': `Bearer ${token}` }
-      const res = await fetch(`${API}/triage_records/`, { headers })
+      const res = await apiFetch(`${API}/triage_records/`, { headers })
       if (res.ok) setTriageRecords(await res.json())
     } catch (err) { console.error('Fetch error:', err) }
     finally { setLoading(false) }

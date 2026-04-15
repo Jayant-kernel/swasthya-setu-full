@@ -1,3 +1,4 @@
+export { apiFetch as apiFetch } from '../../lib/api'
 export const API = 'https://swasthya-setu-full.onrender.com/api/v1'
 
 export const DISTRICT_CENTERS = {

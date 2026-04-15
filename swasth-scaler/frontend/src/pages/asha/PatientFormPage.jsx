@@ -151,7 +151,7 @@ export default function PatientFormPage() {
       const lookupPatient = async () => {
         try {
           const token = localStorage.getItem('access_token')
-          const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
+          const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
             headers: { 'Authorization': `Bearer ${token}` }
           })
           if (res.ok) {
@@ -286,7 +286,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
 
   async function createNewPatient(patientObj) {
     const token = localStorage.getItem('access_token')
-    const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
+    const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({
@@ -318,7 +318,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
         latitude:         patientObj.latitude || null,
         longitude:        patientObj.longitude || null,
       }
-      const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
+      const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(payload)
@@ -356,7 +356,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
 
     if (!resolvedPatientId) {
       const token = localStorage.getItem('access_token')
-      const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
+      const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       let existing = []
@@ -1115,7 +1115,7 @@ function VisitHistory({ name, patientId }) {
     if (!name || name.trim().length < 3) return
     setLoading(true)
     const token = localStorage.getItem('access_token')
-    fetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
+    apiFetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())

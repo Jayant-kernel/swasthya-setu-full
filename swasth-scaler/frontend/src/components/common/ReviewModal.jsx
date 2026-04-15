@@ -65,7 +65,7 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
     
     // Attempt database save
     try {
-      await fetch('https://swasthya-setu-full.onrender.com/api/v1/reviews/', {
+      await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/reviews/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(review)
@@ -301,7 +301,7 @@ export function ReviewSection({ role, isDark }) {
     }
     
     try {
-      await fetch('https://swasthya-setu-full.onrender.com/api/v1/reviews/', {
+      await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/reviews/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(review)

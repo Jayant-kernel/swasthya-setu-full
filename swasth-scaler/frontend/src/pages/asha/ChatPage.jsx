@@ -80,7 +80,7 @@ export default function ChatPage() {
     setLoadingPatients(true)
     try {
       const token = localStorage.getItem('access_token')
-      const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
+      const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
