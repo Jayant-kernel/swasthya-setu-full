@@ -7,7 +7,7 @@ import PatientRecordModal from '../../components/shared/PatientRecordModal'
 import { SearchIcon, ActivityIcon } from '../admin/AdminIcons'
 import { API, DISTRICT_CENTERS, buildMapPoints } from './THOShared'
 import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
-import { ReviewModal, ReviewSection } from '../../components/common/ReviewModal'
+import { ReviewSection } from '../../components/common/ReviewModal'
 
 
 const StatCard = ({ label, value, subtext, icon: Icon, color = '#3b82f6', g }) => (
@@ -76,7 +76,6 @@ export default function THODashboardPage() {
   const [selectedDate, setSelectedDate] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null })
   const [selectedRecord, setSelectedRecord] = useState(null)
-  const [showReviewModal, setShowReviewModal] = useState(false)
 
   const handleSort = useCallback((key) => {
     setSortConfig((prev) => {
@@ -267,33 +266,9 @@ export default function THODashboardPage() {
           </div>
         </div>
 
-        <div style={{ padding: '0 2.5rem 2.5rem', textAlign: 'center' }}>
-          <button
-            onClick={() => setShowReviewModal(true)}
-            style={{
-              padding: '0.625rem 1.75rem', borderRadius: 99,
-              border: '1.5px solid rgba(239,68,68,0.4)',
-              background: 'transparent', color: '#ef4444',
-              fontWeight: 700, fontSize: '0.845rem', cursor: 'pointer',
-              transition: 'all 0.18s', fontFamily: "'Inter', sans-serif",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.08)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-          >
-            Sign Out
-          </button>
-        </div>
       </THOLayout>
 
       <PatientRecordModal record={selectedRecord} isOpen={Boolean(selectedRecord)} onClose={() => setSelectedRecord(null)} g={g} />
-
-      {showReviewModal && (
-        <ReviewModal
-          role="tho"
-          onSkip={() => { setShowReviewModal(false); logout(); navigate('/') }}
-          onSubmit={() => { setShowReviewModal(false); logout(); navigate('/') }}
-        />
-      )}
     </>
   )
 }
