@@ -111,7 +111,6 @@ export default function THOAnalyticsPage() {
       { id: 0, label: 'Week 1', stats: { stable: 0, moderate: 0, critical: 0 } },
       { id: 1, label: 'Week 2', stats: { stable: 0, moderate: 0, critical: 0 } },
       { id: 2, label: 'Week 3', stats: { stable: 0, moderate: 0, critical: 0 } },
-      { id: 3, label: 'Week 4', stats: { stable: 0, moderate: 0, critical: 0 } },
     ]
 
     const now = new Date()
@@ -120,7 +119,7 @@ export default function THOAnalyticsPage() {
       const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24))
       const weekIdx = Math.floor(diffDays / 7)
       
-      if (weekIdx >= 0 && weekIdx < 4) {
+      if (weekIdx >= 0 && weekIdx < 3) {
         if (r.severity === 'red' || Number(r.severity) >= 7) weeks[weekIdx].stats.critical++
         else if (r.severity === 'yellow' || (Number(r.severity) >= 4 && Number(r.severity) <= 6)) weeks[weekIdx].stats.moderate++
         else weeks[weekIdx].stats.stable++
