@@ -151,7 +151,7 @@ export default function THOAshaWorkersPage() {
                   <div style={{ padding: '3rem', textAlign: 'center', color: g.muted }}>Loading network data...</div>
                 ) : (
                   <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <thead style={{ background: g.insetBg, position: 'sticky', top: 0, zIndex: 2 }}>
+                    <thead style={{ background: isDark ? '#1e293b' : '#f1f5f9', position: 'sticky', top: 0, zIndex: 2 }}>
                       <tr>
                         <th style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: g.label, textTransform: 'uppercase' }}>Worker Profile</th>
                         <th style={{ textAlign: 'left', padding: '1rem 1.5rem', fontSize: '0.75rem', fontWeight: 800, color: g.label, textTransform: 'uppercase' }}>Location</th>
