@@ -50,9 +50,6 @@ const SunIcon = () => (
 const MoonIcon = () => (
   <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-  </svg>
-)
-
 const UsersIcon = () => (
   <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -62,8 +59,17 @@ const UsersIcon = () => (
   </svg>
 )
 
+const BarChartIcon = () => (
+  <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="18" y1="20" x2="18" y2="10" />
+    <line x1="12" y1="20" x2="12" y2="4" />
+    <line x1="6" y1="20" x2="6" y2="14" />
+  </svg>
+)
+
 const NAV_ITEMS = [
   { id: 'home', label: 'Dashboard', Icon: HomeIcon, path: '/dashboard/tho' },
+  { id: 'analytics', label: 'Analytics', Icon: BarChartIcon, path: '/dashboard/tho/analytics' },
   { id: 'ashas', label: 'ASHA Network', Icon: UsersIcon, path: '/dashboard/tho/ashas' },
   { id: 'map',  label: 'District Map', Icon: MapIcon,  path: '/dashboard/tho/map' },
 ]

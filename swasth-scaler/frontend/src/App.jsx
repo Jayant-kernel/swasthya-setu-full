@@ -16,6 +16,7 @@ import THODashboardPage from './pages/tho/THODashboardPage.jsx'
 import THOMapPage from './pages/tho/THOMapPage.jsx'
 import THOLoginPage from './pages/tho/THOLoginPage.jsx'
 import THOAshaWorkersPage from './pages/tho/THOAshaWorkersPage.jsx'
+import THOAnalyticsPage from './pages/tho/THOAnalyticsPage.jsx'
 
 import LandingPage from './pages/landing/LandingPage.jsx'
 import RoleSelectionPage from './pages/landing/RoleSelectionPage.jsx'
@@ -45,6 +46,7 @@ export default function App() {
 
               {/* THO Portal */}
               <Route path="/dashboard/tho" element={<ProtectedRoute role="tho"><THODashboardPage /></ProtectedRoute>} />
+              <Route path="/dashboard/tho/analytics" element={<ProtectedRoute role="tho"><THOAnalyticsPage /></ProtectedRoute>} />
               <Route path="/dashboard/tho/ashas" element={<ProtectedRoute role="tho"><THOAshaWorkersPage /></ProtectedRoute>} />
               <Route path="/dashboard/tho/map" element={<ProtectedRoute role="tho"><THOMapPage /></ProtectedRoute>} />
             </Routes>
