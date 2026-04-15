@@ -99,6 +99,37 @@ export default function THOAnalyticsPage() {
 
   const activeStats = talukaData.find(t => t.name === selectedTaluka)
 
+  // Weekly Aggregation for the Selected Taluka
+  const weeklyData = useMemo(() => {
+    if (!selectedTaluka || !triageRecords.length) return []
+    
+    const filtered = triageRecords.filter(r => 
+      (r.tehsil || r.village || '').toLowerCase() === selectedTaluka.toLowerCase()
+    )
+
+    const weeks = [
+      { id: 0, label: 'Week 1', stats: { stable: 0, moderate: 0, critical: 0 } },
+      { id: 1, label: 'Week 2', stats: { stable: 0, moderate: 0, critical: 0 } },
+      { id: 2, label: 'Week 3', stats: { stable: 0, moderate: 0, critical: 0 } },
+      { id: 3, label: 'Week 4', stats: { stable: 0, moderate: 0, critical: 0 } },
+    ]
+
+    const now = new Date()
+    filtered.forEach(r => {
+      const date = new Date(r.created_at)
+      const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24))
+      const weekIdx = Math.floor(diffDays / 7)
+      
+      if (weekIdx >= 0 && weekIdx < 4) {
+        if (r.severity === 'red' || Number(r.severity) >= 7) weeks[weekIdx].stats.critical++
+        else if (r.severity === 'yellow' || (Number(r.severity) >= 4 && Number(r.severity) <= 6)) weeks[weekIdx].stats.moderate++
+        else weeks[weekIdx].stats.stable++
+      }
+    })
+
+    return weeks
+  }, [triageRecords, selectedTaluka])
+
   return (
     <THOLayout
       onLogout={() => { logout(); navigate('/') }}
@@ -116,19 +147,68 @@ export default function THOAnalyticsPage() {
         .analyt-item.active { background: ${isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.08)'}; border-color: ${isDark ? 'rgba(59,130,246,0.3)' : 'rgba(59,130,246,0.2)'}; }
         
         .bar-wrap { 
-          height: 320px; 
-          display: flex; 
-          align-items: flex-end; 
-          justify-content: space-around; 
-          gap: 1rem; 
-          padding: 2rem 1rem 0; 
-          border-bottom: 1px solid rgba(255,255,255,0.1);
-          background-image: repeating-linear-gradient(0deg, transparent, transparent 38px, rgba(255,255,255,0.04) 38px, rgba(255,255,255,0.04) 40px);
+          min-height: 400px; 
+          padding: 2rem;
+          display: flex;
+          flex-direction: column;
+          gap: 2.5rem;
+          position: relative;
+          background: #050505;
         }
-        .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.75rem; justify-content: flex-end; height: 100%; position: relative; }
-        .bar-stick { width: 100%; max-width: 50px; transition: height 1s cubic-bezier(0.34, 1.56, 0.64, 1); border-radius: 4px 4px 0 0; }
-        .bar-label { font-size: 0.85rem; font-weight: 700; color: #a3a3a3; text-transform: uppercase; white-space: nowrap; }
-        .bar-val { font-size: 1.25rem; font-weight: 800; color: #fff; margin-bottom: -4px; z-index: 2; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .grid-lines {
+          position: absolute;
+          top: 0; left: 100px; right: 2rem; bottom: 0;
+          display: flex;
+          justify-content: space-between;
+          pointer-events: none;
+        }
+        .grid-line {
+          width: 1px;
+          height: 100%;
+          background: rgba(255,255,255,0.05);
+        }
+        
+        .week-row {
+          display: grid;
+          grid-template-columns: 80px 1fr;
+          align-items: center;
+          gap: 1.5rem;
+          z-index: 1;
+        }
+        .week-label {
+          font-size: 0.75rem;
+          font-weight: 800;
+          color: #737373;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+        .bar-group {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          width: 100%;
+        }
+        .h-bar-container {
+          height: 12px;
+          width: 100%;
+          display: flex;
+          align-items: center;
+          position: relative;
+        }
+        .h-bar {
+          height: 100%;
+          border-radius: 0 4px 4px 0;
+          transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+          box-shadow: 0 0 15px currentColor;
+        }
+        .h-bar-val {
+          position: absolute;
+          right: -25px;
+          font-size: 0.7rem;
+          font-weight: 800;
+          color: #fff;
+          opacity: 0.8;
+        }
 
         @media (max-width: 1000px) {
           .analyt-main-grid { grid-template-columns: 1fr; height: auto; display: flex; flex-direction: column; gap: 1.5rem; }
@@ -180,26 +260,52 @@ export default function THOAnalyticsPage() {
                 </div>
               </div>
 
-              {activeStats && (
-                <div style={{ padding: '0 2rem 2rem' }}>
+              {weeklyData.length > 0 && (
+                <div style={{ padding: '0 0 2rem' }}>
                   <div className="bar-wrap">
-                    {[
-                      { label: 'Stable', val: activeStats.stable, color: '#8b5cf6' },    /* Neon Purple */
-                      { label: 'Moderate', val: activeStats.moderate, color: '#eab308' }, /* Neon Yellow */
-                      { label: 'Critical', val: activeStats.critical, color: '#ef4444' }, /* Neon Pink/Red */
-                    ].map(b => {
-                      const max = Math.max(activeStats.totalSick, 1) 
-                      const pct = Math.max((b.val / max) * 100, 2) 
-                      const heightValue = b.val === 0 ? 0 : pct
+                    <div className="grid-lines">
+                      {[...Array(10)].map((_, i) => <div key={i} className="grid-line" />)}
+                    </div>
+                    
+                    {weeklyData.map(w => {
+                      const max = Math.max(...weeklyData.map(wd => Math.max(wd.stats.stable, wd.stats.moderate, wd.stats.critical)), 5)
                       
                       return (
-                        <div key={b.label} className="bar-col">
-                          <div className="bar-val">{b.val}</div>
-                          <div className="bar-stick" style={{ height: `${heightValue}%`, background: b.val > 0 ? b.color : 'transparent' }} />
-                          <div className="bar-label" style={{ opacity: selectedTaluka ? 1 : 0 }}>{b.label}</div>
+                        <div key={w.label} className="week-row">
+                          <div className="week-label">{w.label}</div>
+                          <div className="bar-group">
+                            {/* Stable - Purple */}
+                            <div className="h-bar-container">
+                              <div className="h-bar" style={{ width: `${(w.stats.stable / max) * 100}%`, background: '#8b5cf6', color: 'rgba(139, 92, 246, 0.4)' }} />
+                              <div className="h-bar-val">{w.stats.stable}</div>
+                            </div>
+                            {/* Moderate - Yellow */}
+                            <div className="h-bar-container">
+                              <div className="h-bar" style={{ width: `${(w.stats.moderate / max) * 100}%`, background: '#f59e0b', color: 'rgba(245, 158, 11, 0.4)' }} />
+                              <div className="h-bar-val">{w.stats.moderate}</div>
+                            </div>
+                            {/* Critical - Red */}
+                            <div className="h-bar-container">
+                              <div className="h-bar" style={{ width: `${(w.stats.critical / max) * 100}%`, background: '#ef4444', color: 'rgba(239, 68, 68, 0.4)' }} />
+                              <div className="h-bar-val">{w.stats.critical}</div>
+                            </div>
+                          </div>
                         </div>
                       )
                     })}
+                  </div>
+                  
+                  {/* Legend */}
+                  <div style={{ display: 'flex', gap: '2rem', padding: '1rem 2rem', justifyContent: 'center', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', fontWeight: 800, color: '#a3a3a3' }}>
+                      <div style={{ width: 8, height: 8, borderRadius: 2, background: '#8b5cf6' }} /> STABLE
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', fontWeight: 800, color: '#a3a3a3' }}>
+                      <div style={{ width: 8, height: 8, borderRadius: 2, background: '#f59e0b' }} /> MODERATE
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', fontWeight: 800, color: '#a3a3a3' }}>
+                      <div style={{ width: 8, height: 8, borderRadius: 2, background: '#ef4444' }} /> CRITICAL
+                    </div>
                   </div>
                 </div>
               )}
