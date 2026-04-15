@@ -16,7 +16,6 @@ class User(Base):
     full_name = Column(String)
     location = Column(String)
     district = Column(String)
-    email = Column(String, unique=True, index=True)
     avatar_b64 = Column(String)
     banner_b64 = Column(String)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
