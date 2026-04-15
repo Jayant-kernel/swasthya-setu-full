@@ -46,9 +46,6 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
   const [location, setLocation] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-<<<<<<< HEAD
-  const roleName = role === 'tho' ? 'THO Command Dashboard' : 'ASHA Worker Dashboard'
-=======
   useEffect(() => {
     try {
       const u = JSON.parse(localStorage.getItem('user') || '{}')
@@ -56,8 +53,7 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
     } catch(e){}
   }, [])
 
-  const roleName = role === 'dmo' ? 'DMO Command Dashboard' : 'ASHA Worker Dashboard'
->>>>>>> 9259c22db611453226ef34e90e324e0dc0797803
+  const roleName = role === 'tho' ? 'THO Command Dashboard' : 'ASHA Worker Dashboard'
 
   async function handleSubmit(e) {
     e.preventDefault()

@@ -67,13 +67,8 @@ const Calendar = ({ triageRecords, selectedDate, setSelectedDate, g, isDark }) =
   )
 }
 
-<<<<<<< HEAD:swasth-scaler/frontend/src/pages/tho/THODashboardPage.jsx
 export default function THODashboardPage() {
   const { logout } = useAuth()
-=======
-export default function DMODashboardPage() {
-  const { user, logout } = useAuth()
->>>>>>> 9259c22db611453226ef34e90e324e0dc0797803:swasth-scaler/frontend/src/pages/dmo/DMODashboardPage.jsx
   const navigate = useNavigate()
   const { isDark, toggleTheme } = useTheme()
   const [isHovered, setIsHovered] = useState(false)
@@ -298,7 +293,6 @@ export default function DMODashboardPage() {
           </div>
         </div>
 
-<<<<<<< HEAD:swasth-scaler/frontend/src/pages/tho/THODashboardPage.jsx
         {/* Review Section */}
         <div style={{ padding: '0 2.5rem 2.5rem' }}>
           <ReviewSection role="tho" isDark={isDark} />
@@ -318,24 +312,6 @@ export default function DMODashboardPage() {
               Sign Out
             </button>
           </div>
-=======
-        {/* Logout Section */}
-        <div style={{ padding: '0 2.5rem 2.5rem', textAlign: 'center', opacity: 0.6 }}>
-          <button
-            onClick={() => setShowReviewModal(true)}
-            style={{
-              padding: '0.625rem 1.75rem', borderRadius: 99,
-              border: '1.5px solid rgba(239,68,68,0.3)',
-              background: 'transparent', color: '#ef4444',
-              fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
-              transition: 'all 0.18s', fontFamily: "'Inter', sans-serif",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-          >
-            Sign Out
-          </button>
->>>>>>> 9259c22db611453226ef34e90e324e0dc0797803:swasth-scaler/frontend/src/pages/dmo/DMODashboardPage.jsx
         </div>
       </main>
 

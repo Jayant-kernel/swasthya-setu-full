@@ -3,7 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 import loginImg2 from '../../images/login/asha_worker.avif';
-import loginImg3 from '../../images/login/THO_Worker.png';
+import loginImg3 from '../../images/login/DMO_Worker.png';
 
 const ROLES = [
   {

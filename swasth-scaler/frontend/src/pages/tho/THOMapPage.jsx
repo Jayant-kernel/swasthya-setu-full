@@ -4,12 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import THOSidebar from '../../components/tho/THOSidebar'
 import { SunIcon, MoonIcon } from '../admin/AdminIcons'
-<<<<<<< HEAD:swasth-scaler/frontend/src/pages/tho/THOMapPage.jsx
 import { API, DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints } from './THOShared'
-=======
-import { API, DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints } from './DMOShared'
-import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
->>>>>>> 9259c22db611453226ef34e90e324e0dc0797803:swasth-scaler/frontend/src/pages/dmo/DMOMapPage.jsx
 
 const DistrictHeatmap = lazy(() => import('../../components/common/DistrictHeatmap'))
 
