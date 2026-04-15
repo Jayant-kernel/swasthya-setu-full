@@ -156,6 +156,7 @@ export default function ASHADashboardPage() {
   const [sortOrder, setSortOrder] = useState('desc')
   const debounceRef = useRef(null)
   const [showReviewModal, setShowReviewModal] = useState(false)
+  const [showSearchSuggestions, setShowSearchSuggestions] = useState(false)
 
   const [patientResults, setPatientResults] = useState([])
   const [loading, setLoading] = useState(false)
@@ -169,6 +170,15 @@ export default function ASHADashboardPage() {
     patientResults.forEach(p => { if (p.latestSeverity && c[p.latestSeverity] !== undefined) c[p.latestSeverity]++ })
     setSummaryCounts(c)
   }, [patientResults])
+
+  // Get unique patient names for suggestions
+  const uniqueNames = useMemo(() => {
+    const names = new Set(patientResults.map(p => p.name).filter(Boolean))
+    return Array.from(names)
+      .filter(name => name.toLowerCase().includes(query.trim().toLowerCase()) && query.trim().length > 0)
+      .sort()
+      .slice(0, 8) // Limit to 8 suggestions
+  }, [patientResults, query])
 
   const fetchRecords = useCallback(async () => {
     setLoading(true)
@@ -308,26 +318,63 @@ export default function ASHADashboardPage() {
   const topbar = (
     <>
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
-        <div style={{ position: 'relative', width: '100%', maxWidth: 340 }}>
+        <div style={{ position: 'relative', width: '100%', maxWidth: 360 }}>
           <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: g.muted, pointerEvents: 'none' }}>
             <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
             </svg>
           </span>
-          <input 
-            placeholder="Search patients…" 
-            style={{ ...glassInput, width: '100%', height: 36, paddingLeft: '2.1rem', paddingRight: '2.75rem', borderRadius: 10, fontSize: '0.845rem' }} 
-            value={query} 
-            onChange={e => setQuery(e.target.value)} 
+          <input
+            placeholder="Search by name (e.g., Mishra, Ashwati, Abdullahi)…"
+            style={{ ...glassInput, width: '100%', height: 36, paddingLeft: '2.1rem', paddingRight: '2.75rem', borderRadius: 10, fontSize: '0.845rem' }}
+            value={query}
+            onChange={e => {
+              setQuery(e.target.value)
+              setShowSearchSuggestions(e.target.value.trim().length > 0)
+            }}
+            onFocus={() => setShowSearchSuggestions(query.trim().length > 0)}
+            onBlur={() => setTimeout(() => setShowSearchSuggestions(false), 150)}
           />
           {query && (
-            <button onClick={() => setQuery('')} style={{ position: 'absolute', right: 34, top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'transparent', color: g.muted, cursor: 'pointer' }}>
+            <button onClick={() => { setQuery(''); setShowSearchSuggestions(false) }} style={{ position: 'absolute', right: 34, top: '50%', transform: 'translateY(-50%)', border: 'none', background: 'transparent', color: g.muted, cursor: 'pointer' }}>
               <svg width={15} height={15} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
           )}
           <span style={{ position: 'absolute', right: 9, top: '50%', transform: 'translateY(-50%)', fontSize: '0.6rem', fontWeight: 700, color: g.muted, background: g.btn, border: `1px solid ${g.btnBdr}`, padding: '2px 5px', borderRadius: 5, pointerEvents: 'none' }}>⌘K</span>
+
+          {/* Search suggestions dropdown */}
+          {showSearchSuggestions && uniqueNames.length > 0 && (
+            <div style={{
+              position: 'absolute', top: '100%', left: 0, right: 0, marginTop: '0.5rem',
+              background: g.cardBg, border: `1px solid ${g.cardBdr}`, borderRadius: 10,
+              boxShadow: g.cardShd, backdropFilter: g.blur, WebkitBackdropFilter: g.blur,
+              zIndex: 1000, overflow: 'hidden'
+            }}>
+              {uniqueNames.map((name, idx) => (
+                <button
+                  key={name}
+                  onClick={() => {
+                    setQuery(name)
+                    setShowSearchSuggestions(false)
+                  }}
+                  style={{
+                    width: '100%', padding: '0.75rem 1rem', border: 'none',
+                    background: idx > 0 ? 'transparent' : g.hover,
+                    color: g.text, textAlign: 'left', cursor: 'pointer',
+                    borderBottom: idx < uniqueNames.length - 1 ? `1px solid ${g.divider}` : 'none',
+                    fontSize: '0.875rem', fontWeight: 500,
+                    transition: 'background .12s'
+                  }}
+                  onMouseEnter={e => e.target.style.background = g.hover}
+                  onMouseLeave={e => e.target.style.background = idx > 0 ? 'transparent' : g.hover}
+                >
+                  🔍 {name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
