@@ -856,7 +856,6 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
               precautionData={precautionData}
               precautionLoading={precautionLoading}
             />
-            <HFSuggestionCard hfResult={hfResult} />
             <AIMedicalAdviceCard
               symptoms={result.symptoms}
               severity={result.severity}
