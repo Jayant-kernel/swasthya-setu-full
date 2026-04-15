@@ -18,8 +18,9 @@ export function AuthProvider({ children }) {
     const savedUser = localStorage.getItem('user')
     const ashaBypass = localStorage.getItem('asha_bypass') === 'true'
     const thoBypass = localStorage.getItem('tho_bypass') === 'true'
+    const dmoBypass = localStorage.getItem('dmo_bypass') === 'true' // legacy key
 
-    if (token || ashaBypass || thoBypass) {
+    if (token || ashaBypass || thoBypass || dmoBypass) {
       setSession({ access_token: token })
       setUserRole(savedRole)
       try {

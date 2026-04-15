@@ -179,7 +179,7 @@ export default function THODashboardPage() {
         .panel-header { background: ${isDark ? 'linear-gradient(180deg, rgba(59,130,246,0.12), rgba(59,130,246,0.02))' : 'linear-gradient(180deg, rgba(59,130,246,0.08), rgba(59,130,246,0.01))'}; }
       `}</style>
 
-      <THOSidebar isHovered={isHovered} setIsHovered={setIsHovered} onLogout={() => {logout(); navigate('/')}} onAdminNav={() => navigate('/dashboard/admin')} />
+      <THOSidebar isHovered={isHovered} setIsHovered={setIsHovered} onLogout={() => {logout(); navigate('/')}} />
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
         <header style={{ height: 72, background: g.cardBg, borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0, backdropFilter: g.blur }}>

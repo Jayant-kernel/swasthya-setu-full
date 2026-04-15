@@ -16,9 +16,6 @@ import THODashboardPage from './pages/tho/THODashboardPage.jsx'
 import THOMapPage from './pages/tho/THOMapPage.jsx'
 import THOLoginPage from './pages/tho/THOLoginPage.jsx'
 
-import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx'
-import AdminMapPage from './pages/admin/AdminMapPage.jsx'
-
 import LandingPage from './pages/landing/LandingPage.jsx'
 import RoleSelectionPage from './pages/landing/RoleSelectionPage.jsx'
 import UnderConstructionPage from './pages/landing/UnderConstructionPage.jsx'
@@ -44,15 +41,10 @@ export default function App() {
               <Route path="/chat" element={<ProtectedRoute role="asha"><ChatPage /></ProtectedRoute>} />
               <Route path="/childbirth" element={<ProtectedRoute role="asha"><ChildbirthPage /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute role="asha"><ProfilePage /></ProtectedRoute>} />
-              
+
               {/* THO Portal */}
               <Route path="/dashboard/tho" element={<ProtectedRoute role="tho"><THODashboardPage /></ProtectedRoute>} />
               <Route path="/dashboard/tho/map" element={<ProtectedRoute role="tho"><THOMapPage /></ProtectedRoute>} />
-              
-              {/* Admin Portal */}
-              <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
-              <Route path="/dashboard/admin/analytics" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
-              <Route path="/dashboard/admin/map" element={<ProtectedRoute><AdminMapPage /></ProtectedRoute>} />
             </Routes>
           </PatientProvider>
         </ThemeProvider>
