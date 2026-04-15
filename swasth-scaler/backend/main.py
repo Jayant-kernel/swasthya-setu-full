@@ -63,17 +63,17 @@ async def startup():
     #         logger.info("Database empty! Seeding default user accounts...")
     #         session.add_all([
     #             User(employee_id="ASHA001", role="asha", password_hash=get_password_hash("password"), full_name="Kalyani Dash", location="Village Alpha", district="Pune"),
-    #             User(employee_id="DMO001", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Pradhan", location="District HQ", district="Pune"),
-    #             User(employee_id="DMO002", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Sharma", location="District HQ", district="Mumbai"),
-    #             User(employee_id="DMO003", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Kulkarni", location="District HQ", district="Nagpur"),
-    #             User(employee_id="DMO004", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Deshmukh", location="District HQ", district="Nashik"),
-    #             User(employee_id="DMO005", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Patil", location="District HQ", district="Ahmednagar"),
-    #             User(employee_id="DMO006", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Jadhav", location="District HQ", district="Aurangabad"),
-    #             User(employee_id="DMO007", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. More", location="District HQ", district="Solapur"),
-    #             User(employee_id="DMO008", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Shinde", location="District HQ", district="Kolhapur"),
-    #             User(employee_id="DMO009", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Bhosale", location="District HQ", district="Thane"),
-    #             User(employee_id="DMO010", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Pawar", location="District HQ", district="Satara"),
-    #             User(employee_id="DMO011", role="dmo", password_hash=get_password_hash("password"), full_name="Dr. Chavan", location="District HQ", district="Sangli"),
+    #             User(employee_id="THO001", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Pradhan", location="District HQ", district="Pune"),
+    #             User(employee_id="THO002", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Sharma", location="District HQ", district="Mumbai"),
+    #             User(employee_id="THO003", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Kulkarni", location="District HQ", district="Nagpur"),
+    #             User(employee_id="THO004", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Deshmukh", location="District HQ", district="Nashik"),
+    #             User(employee_id="THO005", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Patil", location="District HQ", district="Ahmednagar"),
+    #             User(employee_id="THO006", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Jadhav", location="District HQ", district="Aurangabad"),
+    #             User(employee_id="THO007", role="tho", password_hash=get_password_hash("password"), full_name="Dr. More", location="District HQ", district="Solapur"),
+    #             User(employee_id="THO008", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Shinde", location="District HQ", district="Kolhapur"),
+    #             User(employee_id="THO009", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Bhosale", location="District HQ", district="Thane"),
+    #             User(employee_id="THO010", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Pawar", location="District HQ", district="Satara"),
+    #             User(employee_id="THO011", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Chavan", location="District HQ", district="Sangli"),
     #             User(employee_id="ADMIN001", role="admin", password_hash=get_password_hash("password"), full_name="System Admin", location="State HQ", district="All")
     #         ])
     #         await session.commit()
@@ -128,26 +128,26 @@ async def health():
     return {"status": "ok", "service": "swasthya-setu-backend"}
 
 
-MAHARASHTRA_DMOS = [
-    ("DMO001", "Dr. Pradhan",  "Pune"),
-    ("DMO002", "Dr. Sharma",   "Mumbai"),
-    ("DMO003", "Dr. Kulkarni", "Nagpur"),
-    ("DMO004", "Dr. Deshmukh", "Nashik"),
-    ("DMO005", "Dr. Patil",    "Ahmednagar"),
-    ("DMO006", "Dr. Jadhav",   "Aurangabad"),
-    ("DMO007", "Dr. More",     "Solapur"),
-    ("DMO008", "Dr. Shinde",   "Kolhapur"),
-    ("DMO009", "Dr. Bhosale",  "Thane"),
-    ("DMO010", "Dr. Pawar",    "Satara"),
-    ("DMO011", "Dr. Chavan",   "Sangli"),
+MAHARASHTRA_THOS = [
+    ("THO001", "Dr. Pradhan",  "Pune"),
+    ("THO002", "Dr. Sharma",   "Mumbai"),
+    ("THO003", "Dr. Kulkarni", "Nagpur"),
+    ("THO004", "Dr. Deshmukh", "Nashik"),
+    ("THO005", "Dr. Patil",    "Ahmednagar"),
+    ("THO006", "Dr. Jadhav",   "Aurangabad"),
+    ("THO007", "Dr. More",     "Solapur"),
+    ("THO008", "Dr. Shinde",   "Kolhapur"),
+    ("THO009", "Dr. Bhosale",  "Thane"),
+    ("THO010", "Dr. Pawar",    "Satara"),
+    ("THO011", "Dr. Chavan",   "Sangli"),
 ]
 
-@app.post("/api/v1/migrate-maharashtra-dmos")
-async def migrate_maharashtra_dmos():
-    """One-time migration: upsert Maharashtra DMO accounts."""
+@app.post("/api/v1/migrate-maharashtra-thos")
+async def migrate_maharashtra_thos():
+    """One-time migration: upsert Maharashtra THO accounts."""
     async with AsyncSessionLocal() as session:
         created, updated = [], []
-        for emp_id, name, district in MAHARASHTRA_DMOS:
+        for emp_id, name, district in MAHARASHTRA_THOS:
             result = await session.execute(select(User).where(User.employee_id == emp_id))
             existing = result.scalar_one_or_none()
             if existing:
@@ -157,7 +157,7 @@ async def migrate_maharashtra_dmos():
                 updated.append(emp_id)
             else:
                 session.add(User(
-                    employee_id=emp_id, role="dmo",
+                    employee_id=emp_id, role="tho",
                     password_hash=get_password_hash("password"),
                     full_name=name, location="District HQ", district=district
                 ))

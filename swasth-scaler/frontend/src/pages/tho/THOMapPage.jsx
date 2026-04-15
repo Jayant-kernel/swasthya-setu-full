@@ -2,13 +2,13 @@ import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
-import DMOSidebar from '../../components/dmo/DMOSidebar'
+import THOSidebar from '../../components/tho/THOSidebar'
 import { SunIcon, MoonIcon } from '../admin/AdminIcons'
-import { API, DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints } from './DMOShared'
+import { API, DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints } from './THOShared'
 
 const DistrictHeatmap = lazy(() => import('../../components/common/DistrictHeatmap'))
 
-export default function DMOMapPage() {
+export default function THOMapPage() {
   const { logout } = useAuth()
   const navigate = useNavigate()
   const { isDark, toggleTheme } = useTheme()
@@ -20,9 +20,9 @@ export default function DMOMapPage() {
   const _savedUser = useMemo(() => {
     try { return JSON.parse(localStorage.getItem('user') || '{}') } catch { return {} }
   }, [])
-  const dmoDistrict = _savedUser.district || 'Pune'
-  const center = DISTRICT_CENTERS[dmoDistrict] || [18.5204, 73.8567]
-  const bounds = DISTRICT_BOUNDS[dmoDistrict] || null
+  const thoDistrict = _savedUser.district || 'Pune'
+  const center = DISTRICT_CENTERS[thoDistrict] || [18.5204, 73.8567]
+  const bounds = DISTRICT_BOUNDS[thoDistrict] || null
 
   const g = useMemo(() => ({
     text: 'var(--g-text)', muted: 'var(--g-muted)', accent: 'var(--g-accent)',
@@ -47,15 +47,15 @@ export default function DMOMapPage() {
   useEffect(() => { fetchData() }, [fetchData])
 
   const mapPoints = useMemo(() => buildMapPoints(triageRecords, center), [triageRecords, center])
-  const districtOutbreaks = useMemo(() => outbreaks.filter(o => o.district?.toLowerCase() === dmoDistrict.toLowerCase()), [outbreaks, dmoDistrict])
+  const districtOutbreaks = useMemo(() => outbreaks.filter(o => o.district?.toLowerCase() === thoDistrict.toLowerCase()), [outbreaks, thoDistrict])
 
   return (
     <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', fontFamily: "'Inter', sans-serif" }}>
-      <DMOSidebar isHovered={isHovered} setIsHovered={setIsHovered} onLogout={() => {logout(); navigate('/')}} onAdminNav={() => navigate('/dashboard/admin')} />
+      <THOSidebar isHovered={isHovered} setIsHovered={setIsHovered} onLogout={() => {logout(); navigate('/')}} onAdminNav={() => navigate('/dashboard/admin')} />
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
         <header style={{ height: 72, background: g.cardBg, borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0, backdropFilter: g.blur }}>
           <div>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: g.text }}>District Map — {dmoDistrict}</h2>
+            <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: g.text }}>District Map — {thoDistrict}</h2>
             <div style={{ fontSize: '0.75rem', color: g.muted, marginTop: 2 }}>{loading ? 'Syncing data...' : `${mapPoints.length} clusters · ${districtOutbreaks.length} outbreaks`}</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -68,7 +68,7 @@ export default function DMOMapPage() {
 
         <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
           <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center', color: g.muted }}>Loading Heatmap...</div>}>
-            <DistrictHeatmap district={dmoDistrict} points={mapPoints} center={center} bounds={bounds} outbreaks={districtOutbreaks} height="100%" />
+            <DistrictHeatmap district={thoDistrict} points={mapPoints} center={center} bounds={bounds} outbreaks={districtOutbreaks} height="100%" />
           </Suspense>
 
           <div style={{ position: 'absolute', bottom: 24, right: 24, background: g.cardBg, borderRadius: 12, padding: '1rem 1.25rem', boxShadow: g.cardShd, zIndex: 1000, fontSize: '0.75rem', border: `1px solid ${g.cardBdr}`, backdropFilter: g.blur }}>

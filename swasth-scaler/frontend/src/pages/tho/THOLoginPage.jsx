@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 
-export default function DMOLoginPage() {
+export default function THOLoginPage() {
   const navigate = useNavigate()
   const { login, loginAsGuest } = useAuth()
   const [email, setEmail] = useState('')
@@ -15,8 +15,8 @@ export default function DMOLoginPage() {
     setLoading(true)
     setError('')
     try {
-      await login(email, password, 'dmo')
-      navigate('/dashboard/dmo')
+      await login(email, password, 'tho')
+      navigate('/dashboard/tho')
     } catch (err) {
       setError('Login failed. Please check your credentials.')
     } finally {
@@ -28,8 +28,8 @@ export default function DMOLoginPage() {
     setLoading(true)
     setError('')
     try {
-      await loginAsGuest('dmo')
-      navigate('/dashboard/dmo')
+      await loginAsGuest('tho')
+      navigate('/dashboard/tho')
     } catch (err) {
       setError('Guest sign in failed. Please try again.')
     } finally {
@@ -49,10 +49,10 @@ export default function DMOLoginPage() {
         }}>
           <div style={{ fontSize: '2.5rem', marginBottom: '0.5rem' }}>🏛️</div>
           <h1 style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>
-            District Medical Officer Login
+            Taluka Health Officer Login
           </h1>
           <div style={{ fontWeight: 600, opacity: 0.9 }}>
-            जिल्हा वैद्यकीय अधिकारी लॉगिन
+            तालुका आरोग्य अधिकारी लॉगिन
           </div>
         </div>
 
@@ -67,7 +67,7 @@ export default function DMOLoginPage() {
             <input
               type="email"
               className="form-input"
-              placeholder="Demo: dmo.demo@health.maha.gov.in"
+              placeholder="Demo: tho.demo@health.maha.gov.in"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -100,7 +100,7 @@ export default function DMOLoginPage() {
             className="btn"
             style={{ marginTop: '0.875rem', width: '100%', border: '1.5px solid var(--color-primary)', color: 'var(--color-primary)', background: 'transparent', fontWeight: 700 }}
           >
-            👤 Continue as Guest (DMO Demo)
+            👤 Continue as Guest (THO Demo)
           </button>
         </form>
 

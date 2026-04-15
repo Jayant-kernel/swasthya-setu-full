@@ -35,7 +35,7 @@ async def login(user_login: UserLogin, db: AsyncSession = Depends(get_db)):
             detail="Invalid Employee ID or password",
         )
 
-    # 3. Prevent cross-role login (e.g. ASHA trying DMO layout)
+    # 3. Prevent cross-role login (e.g. ASHA trying THO layout)
     if user.role != user_login.role:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

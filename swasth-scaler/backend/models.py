@@ -11,7 +11,7 @@ class User(Base):
 
     id = Column(String, primary_key=True, default=generate_uuid)
     employee_id = Column(String, unique=True, index=True, nullable=False)
-    role = Column(String, nullable=False) # 'asha', 'dmo', 'admin'
+    role = Column(String, nullable=False) # 'asha', 'tho', 'admin'
     password_hash = Column(String, nullable=False)
     full_name = Column(String)
     location = Column(String)

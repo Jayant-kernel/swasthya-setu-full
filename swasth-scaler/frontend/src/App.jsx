@@ -12,9 +12,9 @@ import ISLPage from './pages/asha/ISLPage.jsx'
 import ProfilePage from './pages/asha/ProfilePage.jsx'
 import ChildbirthPage from './pages/asha/ChildbirthPage.jsx'
 
-import DMODashboardPage from './pages/dmo/DMODashboardPage.jsx'
-import DMOMapPage from './pages/dmo/DMOMapPage.jsx'
-import DMOLoginPage from './pages/dmo/DMOLoginPage.jsx'
+import THODashboardPage from './pages/tho/THODashboardPage.jsx'
+import THOMapPage from './pages/tho/THOMapPage.jsx'
+import THOLoginPage from './pages/tho/THOLoginPage.jsx'
 
 import AdminDashboardPage from './pages/admin/AdminDashboardPage.jsx'
 import AdminMapPage from './pages/admin/AdminMapPage.jsx'
@@ -35,7 +35,7 @@ export default function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/roles" element={<RoleSelectionPage />} />
               <Route path="/under-construction" element={<UnderConstructionPage />} />
-              <Route path="/login/dmo" element={<DMOLoginPage />} />
+              <Route path="/login/tho" element={<THOLoginPage />} />
 
               {/* ASHA Portal */}
               <Route path="/home" element={<ProtectedRoute role="asha"><ASHADashboardPage /></ProtectedRoute>} />
@@ -45,9 +45,9 @@ export default function App() {
               <Route path="/childbirth" element={<ProtectedRoute role="asha"><ChildbirthPage /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute role="asha"><ProfilePage /></ProtectedRoute>} />
               
-              {/* DMO Portal */}
-              <Route path="/dashboard/dmo" element={<ProtectedRoute role="dmo"><DMODashboardPage /></ProtectedRoute>} />
-              <Route path="/dashboard/dmo/map" element={<ProtectedRoute role="dmo"><DMOMapPage /></ProtectedRoute>} />
+              {/* THO Portal */}
+              <Route path="/dashboard/tho" element={<ProtectedRoute role="tho"><THODashboardPage /></ProtectedRoute>} />
+              <Route path="/dashboard/tho/map" element={<ProtectedRoute role="tho"><THOMapPage /></ProtectedRoute>} />
               
               {/* Admin Portal */}
               <Route path="/dashboard/admin" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />

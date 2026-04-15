@@ -7,7 +7,7 @@ const API_BASE_URL = 'https://swasthya-setu-full.onrender.com/api/v1'
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(null) // holds the JWT
-  const [userRole, setUserRole] = useState(null) // 'asha' | 'dmo'
+  const [userRole, setUserRole] = useState(null) // 'asha' | 'tho'
   const [user, setUser] = useState(null) // holds user info
   const [loading, setLoading] = useState(true)
 
@@ -17,9 +17,9 @@ export function AuthProvider({ children }) {
     const savedRole = localStorage.getItem('userRole')
     const savedUser = localStorage.getItem('user')
     const ashaBypass = localStorage.getItem('asha_bypass') === 'true'
-    const dmoBypass = localStorage.getItem('dmo_bypass') === 'true'
+    const thoBypass = localStorage.getItem('tho_bypass') === 'true'
 
-    if (token || ashaBypass || dmoBypass) {
+    if (token || ashaBypass || thoBypass) {
       setSession({ access_token: token })
       setUserRole(savedRole)
       try {
@@ -57,13 +57,13 @@ export function AuthProvider({ children }) {
   }
 
   const loginAsGuest = (role) => {
-    const guestUser = role === 'dmo'
+    const guestUser = role === 'tho'
       ? {
-          id: 'guest-dmo-001',
-          employee_id: 'DMO-DEMO-001',
+          id: 'guest-tho-001',
+          employee_id: 'THO-DEMO-001',
           name: 'Dr. Ramesh Patil',
-          role: 'dmo',
-          designation: 'District Medical Officer',
+          role: 'tho',
+          designation: 'Taluka Health Officer',
           district: 'Pune',
           state: 'Maharashtra',
           email: 'ramesh.patil@health.maha.gov.in',
@@ -90,7 +90,7 @@ export function AuthProvider({ children }) {
     localStorage.setItem('userRole', role)
     localStorage.setItem('user', JSON.stringify(guestUser))
     localStorage.setItem('asha_bypass', role === 'asha' ? 'true' : 'false')
-    localStorage.setItem('dmo_bypass', role === 'dmo' ? 'true' : 'false')
+    localStorage.setItem('tho_bypass', role === 'tho' ? 'true' : 'false')
 
     setSession({ access_token: null })
     setUserRole(role)
@@ -104,7 +104,7 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('userRole')
     localStorage.removeItem('user')
     localStorage.removeItem('asha_bypass')
-    localStorage.removeItem('dmo_bypass')
+    localStorage.removeItem('tho_bypass')
 
     setSession(null)
     setUserRole(null)

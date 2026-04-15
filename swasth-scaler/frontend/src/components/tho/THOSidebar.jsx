@@ -3,13 +3,13 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import { HomeIcon, MapIcon, LogoutIcon } from '../../pages/admin/AdminIcons'
 
-export default function DMOSidebar({ isHovered, setIsHovered, onLogout, onAdminNav }) {
+export default function THOSidebar({ isHovered, setIsHovered, onLogout, onAdminNav }) {
   const navigate = useNavigate()
   const location = useLocation()
   const currentPath = location.pathname
   const { isDark } = useTheme()
 
-  const isHome = currentPath === '/dashboard/dmo'
+  const isHome = currentPath === '/dashboard/tho'
   const isMap = currentPath.includes('/map')
 
   const g = useMemo(() => ({
@@ -44,10 +44,10 @@ export default function DMOSidebar({ isHovered, setIsHovered, onLogout, onAdminN
       </div>
 
       <nav style={{ flex: 1, padding: '0 0.75rem', width: 240 }}>
-        <div onClick={() => navigate('/dashboard/dmo')} className={`nav-link ${isHome ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 4 }}>
+        <div onClick={() => navigate('/dashboard/tho')} className={`nav-link ${isHome ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 4 }}>
           <HomeIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Home</span>
         </div>
-        <div onClick={() => navigate('/dashboard/dmo/map')} className={`nav-link ${isMap ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 4 }}>
+        <div onClick={() => navigate('/dashboard/tho/map')} className={`nav-link ${isMap ? 'active' : ''}`} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '0.875rem 1rem', borderRadius: 12, fontSize: '0.9375rem', color: g.muted, cursor: 'pointer', marginBottom: 4 }}>
           <MapIcon /> <span style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>Districts Map</span>
         </div>
       </nav>

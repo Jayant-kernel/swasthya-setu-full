@@ -42,7 +42,7 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
   const [comment, setComment] = useState('')
   const [submitted, setSubmitted] = useState(false)
 
-  const roleName = role === 'dmo' ? 'DMO Command Dashboard' : 'ASHA Worker Dashboard'
+  const roleName = role === 'tho' ? 'THO Command Dashboard' : 'ASHA Worker Dashboard'
 
   function handleSubmit(e) {
     e.preventDefault()

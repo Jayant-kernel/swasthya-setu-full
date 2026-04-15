@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mv pages/dmo/DMOShared.js pages/dmo/THOShared.js)",
+      "Bash(mv pages/dmo/DMODashboardPage.jsx pages/dmo/THODashboardPage.jsx)",
+      "Bash(mv pages/dmo/DMOLoginPage.jsx pages/dmo/THOLoginPage.jsx)",
+      "Bash(mv pages/dmo/DMOMapPage.jsx pages/dmo/THOMapPage.jsx)",
+      "Bash(mv pages/dmo components/dmo/DMOSidebar.jsx components/dmo/THOSidebar.jsx)",
+      "Bash(mv components/dmo/DMOSidebar.jsx components/dmo/THOSidebar.jsx)",
+      "Bash(mv components/dmo components/tho)",
+      "Bash(mv pages/dmo pages/tho)"
+    ]
+  }
+}

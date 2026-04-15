@@ -1,7 +1,7 @@
 /**
  * Guest Demo Data
  * Used when a user logs in as guest (no access_token).
- * Provides realistic triage records for both ASHA and DMO dashboards.
+ * Provides realistic triage records for both ASHA and THO dashboards.
  */
 
 const now = new Date()

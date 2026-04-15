@@ -2,10 +2,10 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
-import DMOSidebar from '../../components/dmo/DMOSidebar'
+import THOSidebar from '../../components/tho/THOSidebar'
 import PatientRecordModal from '../../components/shared/PatientRecordModal'
 import { SunIcon, MoonIcon, SearchIcon, ActivityIcon } from '../admin/AdminIcons'
-import { API, DISTRICT_CENTERS, buildMapPoints } from './DMOShared'
+import { API, DISTRICT_CENTERS, buildMapPoints } from './THOShared'
 import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
 import { ReviewModal, ReviewSection } from '../../components/common/ReviewModal'
 
@@ -67,7 +67,7 @@ const Calendar = ({ triageRecords, selectedDate, setSelectedDate, g, isDark }) =
   )
 }
 
-export default function DMODashboardPage() {
+export default function THODashboardPage() {
   const { logout } = useAuth()
   const navigate = useNavigate()
   const { isDark, toggleTheme } = useTheme()
@@ -179,11 +179,11 @@ export default function DMODashboardPage() {
         .panel-header { background: ${isDark ? 'linear-gradient(180deg, rgba(59,130,246,0.12), rgba(59,130,246,0.02))' : 'linear-gradient(180deg, rgba(59,130,246,0.08), rgba(59,130,246,0.01))'}; }
       `}</style>
 
-      <DMOSidebar isHovered={isHovered} setIsHovered={setIsHovered} onLogout={() => {logout(); navigate('/')}} onAdminNav={() => navigate('/dashboard/admin')} />
+      <THOSidebar isHovered={isHovered} setIsHovered={setIsHovered} onLogout={() => {logout(); navigate('/')}} onAdminNav={() => navigate('/dashboard/admin')} />
 
       <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
         <header style={{ height: 72, background: g.cardBg, borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0, backdropFilter: g.blur }}>
-          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: g.text }}>DMO Command Dashboard</h2>
+          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: g.text }}>THO Command Dashboard</h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <button onClick={toggleTheme} style={{ width: 40, height: 40, borderRadius: 12, border: `1px solid ${g.divider}`, background: g.cardBg, color: g.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {isDark ? <SunIcon /> : <MoonIcon />}
@@ -280,7 +280,7 @@ export default function DMODashboardPage() {
 
         {/* Review Section */}
         <div style={{ padding: '0 2.5rem 2.5rem' }}>
-          <ReviewSection role="dmo" isDark={isDark} />
+          <ReviewSection role="tho" isDark={isDark} />
           <div style={{ textAlign: 'center', marginTop: '1.5rem' }}>
             <button
               onClick={() => setShowReviewModal(true)}
@@ -305,7 +305,7 @@ export default function DMODashboardPage() {
       {/* Review Modal on logout */}
       {showReviewModal && (
         <ReviewModal
-          role="dmo"
+          role="tho"
           onSkip={() => { setShowReviewModal(false); logout(); navigate('/') }}
           onSubmit={() => { setShowReviewModal(false); logout(); navigate('/') }}
         />

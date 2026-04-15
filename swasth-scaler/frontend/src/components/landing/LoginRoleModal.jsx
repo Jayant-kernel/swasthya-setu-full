@@ -3,7 +3,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 
 import loginImg2 from '../../images/login/asha_worker.avif';
-import loginImg3 from '../../images/login/DMO_Worker.png';
+import loginImg3 from '../../images/login/THO_Worker.png';
 
 const ROLES = [
   {
@@ -18,13 +18,13 @@ const ROLES = [
     accent: '#6EE7B7',
   },
   {
-    id: 'dmo',
-    title: 'District Officer',
-    titleOdia: 'जिल्हा अधिकारी',
+    id: 'tho',
+    title: 'Taluka Health Officer',
+    titleOdia: 'तालुका आरोग्य अधिकारी',
     icon: '🏛️',
     image: loginImg3,
     description: 'Oversee district health metrics and coordinate response logistics.',
-    path: '/dashboard/dmo',
+    path: '/dashboard/tho',
     color: '#0a5040',
     accent: '#34D399',
   },
@@ -109,7 +109,7 @@ function FloatingBadge({ top, left, icon, delay }) {
 
 const GUEST_CREDENTIALS = {
   asha: { id: 'ASHA-DEMO-001', password: 'guest1234' },
-  dmo:  { id: 'DMO-DEMO-001',  password: 'guest1234' },
+  tho:  { id: 'THO-DEMO-001',  password: 'guest1234' },
 };
 
 export default function LoginRoleModal({ onClose }) {
@@ -164,7 +164,7 @@ export default function LoginRoleModal({ onClose }) {
     setShowGuestPicker(false);
     try {
       await auth.loginAsGuest(roleId);
-      const path = rolePath || (roleId === 'dmo' ? '/dashboard/dmo' : '/home');
+      const path = rolePath || (roleId === 'tho' ? '/dashboard/tho' : '/home');
       navigate(path);
     } catch (err) {
       setAuthError(err.message || 'Guest sign-in failed.');

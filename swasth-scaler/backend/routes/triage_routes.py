@@ -39,8 +39,8 @@ async def create_triage_record(record: TriageCreate, current_user: dict = Depend
 
 @router.patch("/{record_id}/reviewed")
 async def mark_triage_reviewed(record_id: str, current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
-    if current_user["role"] != "dmo":
-        raise HTTPException(status_code=403, detail="Only DMO can review records")
+    if current_user["role"] != "tho":
+        raise HTTPException(status_code=403, detail="Only THO can review records")
         
     query = select(TriageRecord).where(TriageRecord.id == record_id)
     result = await db.execute(query)
