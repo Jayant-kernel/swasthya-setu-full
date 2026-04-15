@@ -5,6 +5,7 @@ import { useTriage } from '../../hooks/useTriage'
 import { translateToEnglish, openai } from '../../lib/openai'
 import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
 import SignLanguageModal from '../../components/asha/SignLanguageModal.jsx'
+import AIMedicalAdviceCard from '../../components/asha/AIMedicalAdviceCard.jsx'
 import { apiFetch } from '../../lib/api'
 
 // ─── Duplicate-patient modal ──────────────────────────────────────────────────
@@ -856,6 +857,12 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
               precautionLoading={precautionLoading}
             />
             <HFSuggestionCard hfResult={hfResult} />
+            <AIMedicalAdviceCard
+              symptoms={result.symptoms}
+              severity={result.severity}
+              patientGender={form.gender}
+              patientAge={parseInt(form.age, 10) || 0}
+            />
 
             {result.severity === 'red' && result.sickle_cell_risk && (
               <div style={{ marginTop: '1rem', background: '#FFF7ED', border: '2px solid #F97316', borderRadius: 12, padding: '1rem' }}>
