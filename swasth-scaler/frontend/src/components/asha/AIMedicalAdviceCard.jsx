@@ -8,9 +8,7 @@ export default function AIMedicalAdviceCard({
   patientAge = 0
 }) {
   const [loading, setLoading] = useState(false)
-  const [suggestion, setSuggestion] = useState(null)
   const [error, setError] = useState(null)
-  const [expanded, setExpanded] = useState(false)
 
   async function fetchAISuggestion() {
     if (loading) return
@@ -39,9 +37,8 @@ export default function AIMedicalAdviceCard({
         throw new Error(err.detail || 'Failed to get AI suggestion')
       }
 
-      const data = await response.json()
-      setSuggestion(data.suggestion)
-      setExpanded(true)
+      // Suggestion received successfully
+      await response.json()
     } catch (err) {
       setError(err.message || 'Error getting AI suggestion')
       console.error('AI suggestion error:', err)
@@ -107,15 +104,6 @@ export default function AIMedicalAdviceCard({
             }}
           >
             AI Medical Assistant
-          </div>
-          <div
-            style={{
-              fontSize: '0.6875rem',
-              color: 'rgba(255,255,255,0.6)',
-              marginTop: 1,
-            }}
-          >
-            Hugging Face · LLAMA3-3B-Medical-COT
           </div>
         </div>
         <span
@@ -259,52 +247,6 @@ export default function AIMedicalAdviceCard({
           </div>
         )}
 
-        {/* AI Suggestion Result */}
-        {suggestion && expanded && (
-          <div
-            style={{
-              marginTop: '0.875rem',
-              background: 'rgba(255,255,255,0.7)',
-              border: `1.5px solid ${config.border}`,
-              borderRadius: 10,
-              padding: '1rem',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '0.6875rem',
-                fontWeight: 700,
-                color: config.color,
-                textTransform: 'uppercase',
-                letterSpacing: '0.07em',
-                marginBottom: '0.625rem',
-              }}
-            >
-              AI Recommendation (4-5 Key Points)
-            </div>
-            <div
-              style={{
-                fontSize: '0.875rem',
-                color: '#374151',
-                lineHeight: 1.6,
-                whiteSpace: 'pre-wrap',
-                wordWrap: 'break-word',
-              }}
-            >
-              {suggestion}
-            </div>
-            <div
-              style={{
-                fontSize: '0.6875rem',
-                color: '#9CA3AF',
-                marginTop: '0.75rem',
-                fontStyle: 'italic',
-              }}
-            >
-              ⚠ Disclaimer: This is AI-generated medical information only. Not a substitute for professional medical advice. Always consult a qualified healthcare provider for diagnosis and treatment.
-            </div>
-          </div>
-        )}
       </div>
 
       <style>{`
