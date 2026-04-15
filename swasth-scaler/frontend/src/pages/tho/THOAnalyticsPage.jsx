@@ -139,7 +139,15 @@ export default function THOAnalyticsPage() {
           box-shadow: 0 18px 40px rgba(15,23,42,${isDark ? '0.38' : '0.10'}), 0 2px 10px rgba(59,130,246,${isDark ? '0.14' : '0.08'});
           background-image: linear-gradient(180deg, ${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.78)'}, transparent 58%);
         }
-        .analyt-main-grid { display: grid; grid-template-columns: 320px 1fr; gap: 2rem; max-width: 1600px; margin: 0 auto; height: calc(100vh - 120px); }
+        .analyt-main-grid { 
+          display: grid; 
+          grid-template-columns: 320px 1fr; 
+          gap: 2rem; 
+          max-width: 1600px; 
+          margin: 0 auto; 
+          height: calc(100vh - 160px); 
+          overflow: hidden;
+        }
         .analyt-list { overflow-y: auto; padding-right: 8px; }
         .analyt-item { padding: 1.25rem 1rem; border-bottom: 1px solid ${g.divider}; cursor: pointer; transition: all 0.2s; border-radius: 12px; margin-bottom: 4px; border: 1px solid transparent; }
         .analyt-item:hover { background: ${g.insetBg}; }
@@ -242,22 +250,6 @@ export default function THOAnalyticsPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', overflowY: 'auto', paddingRight: '8px' }}>
             {/* Graph Panel */}
             <div className="elevated-panel" style={{ background: '#0a0a0a', borderRadius: 20, border: `1px solid #262626`, overflow: 'hidden' }}>
-              <div style={{ padding: '2rem', display: 'flex', gap: '3rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                <div>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#a3a3a3', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem' }}>
-                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg> Monthly
-                   </div>
-                   <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', lineHeight: 1 }}>{activeStats ? (activeStats.totalSick * 4 + 18) : 0}</div>
-                   <div style={{ fontSize: '0.8rem', color: '#22c55e', fontWeight: 800, marginTop: '4px' }}>↑ 19.6% <span style={{ color: '#525252', fontWeight: 600 }}>vs last month</span></div>
-                </div>
-                <div>
-                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: '#a3a3a3', fontSize: '0.85rem', fontWeight: 600, marginBottom: '0.25rem' }}>
-                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#eab308" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Yearly
-                   </div>
-                   <div style={{ fontSize: '2.5rem', fontWeight: 800, color: '#fff', lineHeight: 1 }}>{activeStats ? (activeStats.totalSick * 42 + 115) : 0}</div>
-                   <div style={{ fontSize: '0.8rem', color: '#22c55e', fontWeight: 800, marginTop: '4px' }}>↑ 2.5% <span style={{ color: '#525252', fontWeight: 600 }}>vs last year</span></div>
-                </div>
-              </div>
 
               {weeklyData.length > 0 && (
                 <div style={{ padding: '0 0 2rem' }}>
