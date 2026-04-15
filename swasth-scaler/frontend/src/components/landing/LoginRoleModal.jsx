@@ -420,9 +420,41 @@ export default function LoginRoleModal({ onClose }) {
         }
 
         @media (max-width: 600px) {
-          .lrm-card { flex-direction: column; min-height: auto; border-radius: 1.25rem; max-width: 100%; }
-          .lrm-left-panel { min-height: 200px; flex: 0 0 auto; }
-          .lrm-right-panel { padding: 2rem 1.5rem 2.5rem; }
+          .lrm-backdrop {
+            align-items: flex-end;
+            padding: 0;
+          }
+          .lrm-card {
+            flex-direction: column;
+            min-height: auto;
+            border-radius: 1.5rem 1.5rem 0 0;
+            max-width: 100%;
+            max-height: 92dvh;
+            overflow-y: auto;
+          }
+          .lrm-left-panel { display: none; }
+          .lrm-right-panel {
+            padding: 1.5rem 1.25rem 2rem;
+          }
+          .lrm-chip {
+            min-width: 0;
+            flex: 1;
+            padding: 0.75rem 0.5rem;
+          }
+          .lrm-role-chips {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
+          }
+          .lrm-input {
+            font-size: 1rem;
+            min-height: 52px;
+          }
+          .lrm-submit-btn, .lrm-guest-btn {
+            min-height: 52px;
+            font-size: 1rem;
+          }
         }
       `}</style>
 
@@ -623,7 +655,7 @@ export default function LoginRoleModal({ onClose }) {
             background: 'rgba(0,0,0,0.7)',
             backdropFilter: 'blur(16px)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '1rem',
+            padding: 'clamp(0px, 4vw, 1rem)',
             animation: 'lrm-fadein 0.22s ease',
           }}
           onClick={() => setShowGuestPicker(false)}
@@ -633,9 +665,11 @@ export default function LoginRoleModal({ onClose }) {
             style={{
               background: '#fff',
               borderRadius: '1.5rem',
-              padding: '2.5rem 2rem',
+              padding: 'clamp(1.25rem, 5vw, 2.5rem) clamp(1rem, 5vw, 2rem)',
               maxWidth: 420,
               width: '100%',
+              maxHeight: '90dvh',
+              overflowY: 'auto',
               boxShadow: '0 40px 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.08)',
               fontFamily: 'Inter, sans-serif',
               position: 'relative',
