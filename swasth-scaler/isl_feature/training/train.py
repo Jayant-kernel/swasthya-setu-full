@@ -58,12 +58,12 @@ TRAINABLE_SIGNS = set(LABELS[:9])  # 9 real signs
 NO_SIGN_IDX     = LABEL_TO_IDX["NO_SIGN"]
 
 # ── Config ────────────────────────────────────────────────────────────────────
-FRAME_STRIDE   = 2       # sample every Nth frame (videos are short)
+FRAME_STRIDE   = 1       # sample every frame (not every 2nd) — extract more CHAKKAR samples
 NOISE_SIGMA    = 0.005
-AUG_PER_SAMPLE = 2       # flip + noise
+AUG_PER_SAMPLE = 4       # increased from 2: more augmentation for better CHAKKAR learning
 NO_SIGN_RATIO  = 0.10    # 10% synthetic idle samples
 BATCH_SIZE     = 64
-EPOCHS         = 80
+EPOCHS         = 120     # increased from 80: more training epochs for convergence
 VAL_SPLIT      = 0.15
 RANDOM_SEED    = 42
 

@@ -117,14 +117,14 @@ _BASE_THRESHOLDS: dict[str, float] = {
     "ULTI":          0.84,
     "SANS-TAKLEEF":  0.85,
     "SEENE-DARD":    0.86,
-    "CHAKKAR":       0.87,  # raised: open-palm false positives at 0.79
+    "CHAKKAR":       0.80,  # lowered from 0.87: better detection of CHAKKAR gesture (index finger to forehead)
     "KAMZORI":       0.75,
 }
 
 # Signs that also require a minimum confidence margin over the 2nd-best class.
 # Prevents "slightly more than something else" from firing.
 _MARGIN_REQUIRED: dict[str, float] = {
-    "CHAKKAR": 0.08,   # must beat 2nd-best by at least 0.08
+    "CHAKKAR": 0.05,   # lowered from 0.08: must beat 2nd-best by at least 0.05
 }
 
 # ── Demographic threshold adjustments (§3A–D) ─────────────────────────────────
