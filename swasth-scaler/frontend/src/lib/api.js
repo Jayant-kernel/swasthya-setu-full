@@ -14,18 +14,30 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms))
  */
 export async function apiFetch(path, options = {}) {
   const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`
+  const MAX_RETRIES = 9
+  const RETRY_DELAY = 5000 // 5 seconds between attempts
 
-  try {
-    const res = await fetch(url, options)
-    // Render returns 502/503/504 while waking up — retry after delay
-    if (res.status === 502 || res.status === 503 || res.status === 504) {
-      await sleep(4000)
-      return fetch(url, options)
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    try {
+      const res = await fetch(url, options)
+
+      // Render returns 502/503/504 while waking up
+      if (res.status === 502 || res.status === 503 || res.status === 504) {
+        if (attempt < MAX_RETRIES - 1) {
+          console.log(`[apiFetch] Server waking up (status ${res.status}), retrying in ${RETRY_DELAY}ms... (Attempt ${attempt + 1}/${MAX_RETRIES})`)
+          await sleep(RETRY_DELAY)
+          continue
+        }
+      }
+      return res
+    } catch (err) {
+      // Network error (server still waking or DNS resolving)
+      if (attempt < MAX_RETRIES - 1) {
+        console.log(`[apiFetch] Network error or server starting, retrying in ${RETRY_DELAY}ms... (Attempt ${attempt + 1}/${MAX_RETRIES})`)
+        await sleep(RETRY_DELAY)
+        continue
+      }
+      throw err // Re-throw if all retries fail
     }
-    return res
-  } catch {
-    // Network error (server still waking) — wait then retry once
-    await sleep(4000)
-    return fetch(url, options)
   }
 }

@@ -135,17 +135,29 @@ export default function LoginRoleModal({ onClose }) {
     setTimeout(onClose, 280);
   };
 
+  const [isWakingUp, setIsWakingUp] = useState(false);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setAuthError('');
     setAuthLoading(true);
+    setIsWakingUp(false);
+
+    // After 6 seconds, if still loading, suggest server is waking up
+    const wakeUpTimer = setTimeout(() => {
+      setIsWakingUp(true);
+    }, 6000);
+
     try {
       await auth.login(authEmployeeId, authPassword, selected.id);
+      clearTimeout(wakeUpTimer);
       navigate(selected.path);
     } catch (err) {
+      clearTimeout(wakeUpTimer);
       setAuthError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setAuthLoading(false);
+      setIsWakingUp(false);
     }
   };
 
@@ -610,7 +622,7 @@ export default function LoginRoleModal({ onClose }) {
                 {authLoading ? (
                   <>
                     <span style={{ width: 16, height: 16, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'lrm-spin 0.7s linear infinite' }} />
-                    Signing in…
+                    {isWakingUp ? 'Wait, server is waking up...' : 'Signing in…'}
                   </>
                 ) : (
                   <>
