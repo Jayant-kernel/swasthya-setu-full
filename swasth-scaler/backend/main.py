@@ -59,6 +59,7 @@ from routes import review_routes
 app.include_router(review_routes.router, prefix="/api/v1/reviews", tags=["Reviews"])
 
 from sqlalchemy.future import select
+from sqlalchemy import text
 from models import User
 from auth import get_password_hash
 
@@ -67,6 +68,27 @@ async def startup():
     logger.info("Backend startup - initializing database metadata")
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        
+        # Simple manual migration for 'tehsil' columns
+        # Wrap in try/except because 'ADD COLUMN' will fail if it already exists
+        logger.info("Checking for database migrations...")
+        try:
+            await conn.execute(text("ALTER TABLE patients ADD COLUMN tehsil VARCHAR"))
+            logger.info("Added 'tehsil' column to patients table")
+        except Exception as e:
+            if "duplicate column name" in str(e).lower() or "already exists" in str(e).lower():
+                logger.info("Column 'tehsil' already exists in patients table")
+            else:
+                logger.warning(f"Note: patients table migration check: {e}")
+
+        try:
+            await conn.execute(text("ALTER TABLE triage_records ADD COLUMN tehsil VARCHAR"))
+            logger.info("Added 'tehsil' column to triage_records table")
+        except Exception as e:
+            if "duplicate column name" in str(e).lower() or "already exists" in str(e).lower():
+                logger.info("Column 'tehsil' already exists in triage_records table")
+            else:
+                logger.warning(f"Note: triage_records table migration check: {e}")
     #
     # async with AsyncSessionLocal() as session:
     #     result = await session.execute(select(User).limit(1))
