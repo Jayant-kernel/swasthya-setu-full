@@ -44,3 +44,30 @@ async def update_my_profile(profile_data: dict, current_user: dict = Depends(get
     
     await db.commit()
     return {"message": "Profile updated successfully"}
+
+@router.get("/asha")
+async def get_asha_workers(current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    if current_user["role"] != "tho":
+        raise HTTPException(status_code=403, detail="Only THO can access ASHA worker list")
+        
+    # We will get all ASHA workers for now, or match on district if THO is assigned to one
+    query = select(User).where(User.role == "asha")
+    
+    if current_user.get("district"):
+        # Match the district if THO covers a specific district
+        query = query.where(User.district == current_user["district"])
+        
+    result = await db.execute(query)
+    users = result.scalars().all()
+    
+    return [
+        {
+            "id": u.id,
+            "employee_id": u.employee_id,
+            "full_name": u.full_name,
+            "location": u.location,
+            "district": u.district,
+            "avatar_b64": u.avatar_b64
+        }
+        for u in users
+    ]

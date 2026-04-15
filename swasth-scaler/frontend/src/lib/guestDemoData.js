@@ -310,3 +310,16 @@ export function buildAshaPatients(records) {
     return p
   })
 }
+
+export const GUEST_ASHA_WORKERS = [
+  { id: 'user-001', employee_id: 'ASHA-001', full_name: 'Priya Sharma', location: 'Miraj', district: 'Sangli' },
+  { id: 'user-002', employee_id: 'ASHA-002', full_name: 'Anita Kamble', location: 'Kavathe Mahankal', district: 'Sangli' },
+  { id: 'user-003', employee_id: 'ASHA-003', full_name: 'Sunita Bhosale', location: 'Jat', district: 'Sangli' },
+  { id: 'user-004', employee_id: 'ASHA-004', full_name: 'Rekha Patil', location: 'Atpadi', district: 'Sangli' },
+  { id: 'user-005', employee_id: 'ASHA-005', full_name: 'Maya Deshmukh', location: 'Khanapur (Vita)', district: 'Sangli' },
+  { id: 'user-006', employee_id: 'ASHA-006', full_name: 'Sushma More', location: 'Kadegaon', district: 'Sangli' },
+  { id: 'user-007', employee_id: 'ASHA-007', full_name: 'Pooja Jadhav', location: 'Palus', district: 'Sangli' },
+  { id: 'user-008', employee_id: 'ASHA-008', full_name: 'Kavita Chavan', location: 'Tasgaon', district: 'Sangli' },
+  { id: 'user-009', employee_id: 'ASHA-009', full_name: 'Anjali Shinde', location: 'Walwa (Islampur)', district: 'Sangli' },
+  { id: 'user-010', employee_id: 'ASHA-010', full_name: 'Lata Kadam', location: 'Shirala', district: 'Sangli' }
+]
