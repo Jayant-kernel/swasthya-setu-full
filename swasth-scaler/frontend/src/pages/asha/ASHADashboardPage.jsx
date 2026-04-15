@@ -24,9 +24,7 @@ function timeAgo(iso) {
 }
 
 const TEHSIL_GROUPS = [
-  { label: 'Haveli', color: '#818cf8' },
-  { label: 'Mulshi', color: '#fbbf24' },
-  { label: 'Maval', color: '#34d399' },
+  { label: 'Sangli', color: '#818cf8' },
 ]
 
 /* ─── Icons ──────────────────────────────────────────────── */
