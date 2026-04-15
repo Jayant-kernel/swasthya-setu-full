@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, lazy, Suspense } from
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
-import THOSidebar from '../../components/tho/THOSidebar'
-import { SunIcon, MoonIcon } from '../admin/AdminIcons'
+import THOLayout from '../../components/tho/THOSidebar'
 import { API, DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints } from './THOShared'
 import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
 
@@ -12,8 +11,7 @@ const DistrictHeatmap = lazy(() => import('../../components/common/DistrictHeatm
 export default function THOMapPage() {
   const { logout } = useAuth()
   const navigate = useNavigate()
-  const { isDark, toggleTheme } = useTheme()
-  const [isHovered, setIsHovered] = useState(false)
+  const { isDark } = useTheme()
   const [triageRecords, setTriageRecords] = useState([])
   const [outbreaks, setOutbreaks] = useState([])
   const [loading, setLoading] = useState(true)
@@ -32,14 +30,11 @@ export default function THOMapPage() {
   const fetchData = useCallback(async () => {
     try {
       const token = localStorage.getItem('access_token')
-      
-      // -- Guest mode: inject demo data --
       if (!token) {
         setTriageRecords(GUEST_TRIAGE_RECORDS)
         setLoading(false)
         return
       }
-
       const headers = { 'Authorization': `Bearer ${token}` }
       const [triRes, outRes] = await Promise.allSettled([
         fetch(`${API}/triage_records/`, { headers }),
@@ -57,43 +52,38 @@ export default function THOMapPage() {
   const districtOutbreaks = useMemo(() => outbreaks.filter(o => o.district?.toLowerCase() === thoDistrict.toLowerCase()), [outbreaks, thoDistrict])
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', fontFamily: "'Inter', sans-serif" }}>
-      <THOSidebar isHovered={isHovered} setIsHovered={setIsHovered} onLogout={() => {logout(); navigate('/')}} />
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
-        <header style={{ height: 72, background: g.cardBg, borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0, backdropFilter: g.blur }}>
-          <div>
-            <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: g.text }}>District Map — {thoDistrict}</h2>
-            <div style={{ fontSize: '0.75rem', color: g.muted, marginTop: 2 }}>{loading ? 'Syncing data...' : `${mapPoints.length} clusters · ${districtOutbreaks.length} outbreaks`}</div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button onClick={toggleTheme} style={{ width: 40, height: 40, borderRadius: 12, border: `1px solid ${g.divider}`, background: g.cardBg, color: g.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {isDark ? <SunIcon /> : <MoonIcon />}
-            </button>
-            <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>M</div>
-          </div>
-        </header>
-
-        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-          <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center', color: g.muted }}>Loading Heatmap...</div>}>
-            <DistrictHeatmap district={thoDistrict} points={mapPoints} center={center} bounds={bounds} outbreaks={districtOutbreaks} height="100%" />
-          </Suspense>
-
-          <div style={{ position: 'absolute', bottom: 24, right: 24, background: g.cardBg, borderRadius: 12, padding: '1rem 1.25rem', boxShadow: g.cardShd, zIndex: 1000, fontSize: '0.75rem', border: `1px solid ${g.cardBdr}`, backdropFilter: g.blur }}>
-            <div style={{ fontWeight: 800, color: g.text, marginBottom: 8 }}>Heatmap Legend</div>
-            {[
-              { color: '#ef4444', label: 'Critical' },
-              { color: '#f59e0b', label: 'Moderate' },
-              { color: '#22c55e', label: 'Stable' },
-              { color: '#8b5cf6', label: 'Outbreak', dashed: true },
-            ].map(({ color, label, dashed }) => (
-              <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <div style={{ width: 12, height: 12, borderRadius: '50%', background: color, border: dashed ? `2px dashed ${color}` : 'none' }} />
-                <span style={{ color: g.muted }}>{label}</span>
-              </div>
-            ))}
+    <THOLayout
+      onLogout={() => { logout(); navigate('/') }}
+      topbarContent={
+        <div>
+          <div style={{ fontWeight: 800, fontSize: '1rem', color: g.text }}>District Map — {thoDistrict}</div>
+          <div style={{ fontSize: '0.7rem', color: g.muted, marginTop: 1 }}>
+            {loading ? 'Syncing data...' : `${mapPoints.length} clusters · ${districtOutbreaks.length} outbreaks`}
           </div>
         </div>
-      </main>
-    </div>
+      }
+      contentStyle={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}
+    >
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden', height: '100%' }}>
+        <Suspense fallback={<div style={{ padding: '4rem', textAlign: 'center', color: g.muted }}>Loading Heatmap...</div>}>
+          <DistrictHeatmap district={thoDistrict} points={mapPoints} center={center} bounds={bounds} outbreaks={districtOutbreaks} height="100%" />
+        </Suspense>
+
+        <div style={{ position: 'absolute', bottom: 24, right: 24, background: g.cardBg, borderRadius: 12, padding: '1rem 1.25rem', boxShadow: g.cardShd, zIndex: 1000, fontSize: '0.75rem', border: `1px solid ${g.cardBdr}`, backdropFilter: g.blur }}>
+          <div style={{ fontWeight: 800, color: g.text, marginBottom: 8 }}>Heatmap Legend</div>
+          {[
+            { color: '#ef4444', label: 'Critical' },
+            { color: '#f59e0b', label: 'Moderate' },
+            { color: '#22c55e', label: 'Stable' },
+            { color: '#8b5cf6', label: 'Outbreak', dashed: true },
+          ].map(({ color, label, dashed }) => (
+            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+              <div style={{ width: 12, height: 12, borderRadius: '50%', background: color, border: dashed ? `2px dashed ${color}` : 'none' }} />
+              <span style={{ color: g.muted }}>{label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </THOLayout>
   )
 }

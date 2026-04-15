@@ -2,9 +2,9 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
-import THOSidebar from '../../components/tho/THOSidebar'
+import THOLayout from '../../components/tho/THOSidebar'
 import PatientRecordModal from '../../components/shared/PatientRecordModal'
-import { SunIcon, MoonIcon, SearchIcon, ActivityIcon } from '../admin/AdminIcons'
+import { SearchIcon, ActivityIcon } from '../admin/AdminIcons'
 import { API, DISTRICT_CENTERS, buildMapPoints } from './THOShared'
 import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
 import { ReviewModal, ReviewSection } from '../../components/common/ReviewModal'
@@ -70,8 +70,7 @@ const Calendar = ({ triageRecords, selectedDate, setSelectedDate, g, isDark }) =
 export default function THODashboardPage() {
   const { logout, user } = useAuth()
   const navigate = useNavigate()
-  const { isDark, toggleTheme } = useTheme()
-  const [isHovered, setIsHovered] = useState(false)
+  const { isDark } = useTheme()
   const [triageRecords, setTriageRecords] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedDate, setSelectedDate] = useState(null)
@@ -160,52 +159,26 @@ export default function THODashboardPage() {
   }, [triageRecords, sortConfig, selectedDate])
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', fontFamily: "'Inter', sans-serif" }}>
+    <THOLayout
+      onLogout={() => { logout(); navigate('/') }}
+      topbarContent={<h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: g.text }}>THO Command Dashboard</h2>}
+    >
       <style>{`
-        * { box-sizing: border-box; }
-        .nav-link:hover { background: ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}; color: ${g.accent}; }
-        .nav-link.active { background: ${isDark ? 'rgba(59,130,246,0.15)' : '#ebf5ff'}; color: #3b82f6; font-weight: 700; border-left: 3px solid #3b82f6; }
-        .table-row:hover { background: ${g.insetBg}; cursor: pointer; }
         .elevated-panel {
-          box-shadow: 0 18px 40px rgba(15, 23, 42, ${isDark ? '0.38' : '0.10'}), 0 2px 10px rgba(59, 130, 246, ${isDark ? '0.14' : '0.08'});
+          box-shadow: 0 18px 40px rgba(15,23,42,${isDark ? '0.38' : '0.10'}), 0 2px 10px rgba(59,130,246,${isDark ? '0.14' : '0.08'});
           background-image: linear-gradient(180deg, ${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.78)'}, transparent 58%);
         }
         .stat-card { position: relative; top: 0; transition: top 0.2s ease, box-shadow 0.2s ease; }
         .stat-card:hover { top: -4px; box-shadow: 0 22px 40px rgba(15,23,42,${isDark ? '0.42' : '0.14'}), 0 6px 18px rgba(59,130,246,0.18); }
+        .table-row:hover { background: ${g.insetBg}; cursor: pointer; }
         .patient-row td { transition: background 0.2s ease, box-shadow 0.2s ease; }
         .patient-row:hover td { background: ${isDark ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.06)'}; box-shadow: inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
         .patient-row:hover td:first-child { box-shadow: inset 1px 0 0 #22c55e, inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
         .patient-row:hover td:last-child { box-shadow: inset -1px 0 0 #22c55e, inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
-        .panel-header { background: ${isDark ? 'linear-gradient(180deg, rgba(59,130,246,0.12), rgba(59,130,246,0.02))' : 'linear-gradient(180deg, rgba(59,130,246,0.08), rgba(59,130,246,0.01))'}; }
+        .panel-header { background: ${isDark ? 'linear-gradient(180deg,rgba(59,130,246,0.12),rgba(59,130,246,0.02))' : 'linear-gradient(180deg,rgba(59,130,246,0.08),rgba(59,130,246,0.01))'}; }
       `}</style>
 
-      <THOSidebar isHovered={isHovered} setIsHovered={setIsHovered} onLogout={() => {logout(); navigate('/')}} />
-
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
-        <header style={{ height: 72, background: g.cardBg, borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0, backdropFilter: g.blur }}>
-          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: g.text }}>THO Command Dashboard</h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <button onClick={toggleTheme} style={{ width: 40, height: 40, borderRadius: 12, border: `1px solid ${g.divider}`, background: g.cardBg, color: g.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {isDark ? <SunIcon /> : <MoonIcon />}
-            </button>
-            <div 
-              onClick={() => navigate('/dashboard/dmo/profile')}
-              style={{ 
-                width: 40, height: 40, borderRadius: '50%', 
-                background: 'linear-gradient(135deg, #4f46e5, #3b82f6)', 
-                display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                color: '#fff', fontWeight: 800, cursor: 'pointer',
-                transition: 'transform 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              {(user?.full_name || user?.name || 'D')[0].toUpperCase()}
-            </div>
-          </div>
-        </header>
-
-        <div style={{ flex: 1, overflowY: 'auto', padding: '2.5rem' }}>
+      <div style={{ padding: '2rem' }}>
           <ReviewSection role="dmo" isDark={isDark} />
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', maxWidth: 1600, margin: '0 auto' }}>
@@ -309,11 +282,10 @@ export default function THODashboardPage() {
             Sign Out
           </button>
         </div>
-      </main>
+      </div>
 
       <PatientRecordModal record={selectedRecord} isOpen={Boolean(selectedRecord)} onClose={() => setSelectedRecord(null)} g={g} />
 
-      {/* Review Modal on logout */}
       {showReviewModal && (
         <ReviewModal
           role="tho"
@@ -321,7 +293,7 @@ export default function THODashboardPage() {
           onSubmit={() => { setShowReviewModal(false); logout(); navigate('/') }}
         />
       )}
-    </div>
+    </THOLayout>
   )
 }
 
