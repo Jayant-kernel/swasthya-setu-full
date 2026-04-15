@@ -5,6 +5,7 @@ import { useTheme } from '../../context/ThemeContext.jsx'
 import THOSidebar from '../../components/tho/THOSidebar'
 import { SunIcon, MoonIcon } from '../admin/AdminIcons'
 import { API, DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints } from './THOShared'
+import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
 
 const DistrictHeatmap = lazy(() => import('../../components/common/DistrictHeatmap'))
 
