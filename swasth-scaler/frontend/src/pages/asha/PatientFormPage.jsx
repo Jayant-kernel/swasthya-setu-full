@@ -5,6 +5,7 @@ import { useTriage } from '../../hooks/useTriage'
 import { translateToEnglish, openai } from '../../lib/openai'
 import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
 import SignLanguageModal from '../../components/asha/SignLanguageModal.jsx'
+import { apiFetch } from '../../lib/api'
 
 // ─── Duplicate-patient modal ──────────────────────────────────────────────────
 const SEV_STYLE = {

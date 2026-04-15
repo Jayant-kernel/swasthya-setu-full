@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
 import { ReviewModal } from '../../components/common/ReviewModal'
+import { apiFetch } from '../../lib/api'
 
 /* ─── Icons ─────────────────────────────────────────────── */
 const GridIcon = ({ active }) => (

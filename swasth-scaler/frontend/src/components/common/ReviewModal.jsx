@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useAuth } from '../../hooks/useAuth'
+import { apiFetch } from '../../lib/api'
 
 const STARS = [1, 2, 3, 4, 5]
 

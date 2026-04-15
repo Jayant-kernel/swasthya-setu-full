@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { ReviewModal } from '../common/ReviewModal'
+import { apiFetch } from '../../lib/api'
 
 export default function ProfileOverlay({ onClose }) {
   const navigate = useNavigate()

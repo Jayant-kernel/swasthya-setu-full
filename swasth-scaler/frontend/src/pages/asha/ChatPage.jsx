@@ -6,6 +6,7 @@ import { usePatient } from '../../context/PatientContext.jsx'
 import ChatBubble from '../../components/asha/ChatBubble.jsx'
 import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
 import { useTheme } from '../../context/ThemeContext.jsx'
+import { apiFetch } from '../../lib/api'
 
 const SEVERITY_BADGE = {
   green:  { label: 'Stable / स्थिर', cls: 'badge-green' },

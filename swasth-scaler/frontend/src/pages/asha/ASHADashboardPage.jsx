@@ -5,6 +5,7 @@ import { useTheme } from '../../context/ThemeContext.jsx'
 import DashboardLayout from '../../components/asha/DashboardLayout'
 import { GUEST_TRIAGE_RECORDS, buildAshaPatients } from '../../lib/guestDemoData'
 import { ReviewModal, ReviewSection } from '../../components/common/ReviewModal'
+import { apiFetch } from '../../lib/api'
 
 /* ─── Constants ──────────────────────────────────────────── */
 const ALL_DISTRICTS = [
