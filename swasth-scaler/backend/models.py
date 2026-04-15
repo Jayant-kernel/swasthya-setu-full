@@ -16,6 +16,7 @@ class User(Base):
     full_name = Column(String)
     location = Column(String)
     district = Column(String)
+    email = Column(String, unique=True, index=True)
     avatar_b64 = Column(String)
     banner_b64 = Column(String)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
@@ -72,4 +73,18 @@ class DiseaseOutbreak(Base):
     # # Optional map fields
     latitude = Column(Float, nullable=True)
     longitude = Column(Float, nullable=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+
+class Review(Base):
+    __tablename__ = "reviews"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    role = Column(String, nullable=False) # 'asha' or 'dmo'
+    overall = Column(Integer, nullable=False)
+    categories = Column(JSON, default=dict)
+    comment = Column(String)
+    userName = Column(String)
+    designation = Column(String)
+    location = Column(String)
+    source = Column(String) # 'modal' or 'inline'
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
@@ -67,8 +67,13 @@ const Calendar = ({ triageRecords, selectedDate, setSelectedDate, g, isDark }) =
   )
 }
 
+<<<<<<< HEAD:swasth-scaler/frontend/src/pages/tho/THODashboardPage.jsx
 export default function THODashboardPage() {
   const { logout } = useAuth()
+=======
+export default function DMODashboardPage() {
+  const { user, logout } = useAuth()
+>>>>>>> 9259c22db611453226ef34e90e324e0dc0797803:swasth-scaler/frontend/src/pages/dmo/DMODashboardPage.jsx
   const navigate = useNavigate()
   const { isDark, toggleTheme } = useTheme()
   const [isHovered, setIsHovered] = useState(false)
@@ -188,11 +193,26 @@ export default function THODashboardPage() {
             <button onClick={toggleTheme} style={{ width: 40, height: 40, borderRadius: 12, border: `1px solid ${g.divider}`, background: g.cardBg, color: g.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {isDark ? <SunIcon /> : <MoonIcon />}
             </button>
-            <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'linear-gradient(135deg, #4f46e5, #3b82f6)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 800 }}>D</div>
+            <div 
+              onClick={() => navigate('/dashboard/dmo/profile')}
+              style={{ 
+                width: 40, height: 40, borderRadius: '50%', 
+                background: 'linear-gradient(135deg, #4f46e5, #3b82f6)', 
+                display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                color: '#fff', fontWeight: 800, cursor: 'pointer',
+                transition: 'transform 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+            >
+              {(user?.full_name || user?.name || 'D')[0].toUpperCase()}
+            </div>
           </div>
         </header>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '2.5rem' }}>
+          <ReviewSection role="dmo" isDark={isDark} />
+          
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', maxWidth: 1600, margin: '0 auto' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
               <div style={{ display: 'flex', gap: '1.5rem' }}>
@@ -278,6 +298,7 @@ export default function THODashboardPage() {
           </div>
         </div>
 
+<<<<<<< HEAD:swasth-scaler/frontend/src/pages/tho/THODashboardPage.jsx
         {/* Review Section */}
         <div style={{ padding: '0 2.5rem 2.5rem' }}>
           <ReviewSection role="tho" isDark={isDark} />
@@ -297,6 +318,24 @@ export default function THODashboardPage() {
               Sign Out
             </button>
           </div>
+=======
+        {/* Logout Section */}
+        <div style={{ padding: '0 2.5rem 2.5rem', textAlign: 'center', opacity: 0.6 }}>
+          <button
+            onClick={() => setShowReviewModal(true)}
+            style={{
+              padding: '0.625rem 1.75rem', borderRadius: 99,
+              border: '1.5px solid rgba(239,68,68,0.3)',
+              background: 'transparent', color: '#ef4444',
+              fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
+              transition: 'all 0.18s', fontFamily: "'Inter', sans-serif",
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+          >
+            Sign Out
+          </button>
+>>>>>>> 9259c22db611453226ef34e90e324e0dc0797803:swasth-scaler/frontend/src/pages/dmo/DMODashboardPage.jsx
         </div>
       </main>
 

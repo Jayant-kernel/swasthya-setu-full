@@ -4,7 +4,12 @@ import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import THOSidebar from '../../components/tho/THOSidebar'
 import { SunIcon, MoonIcon } from '../admin/AdminIcons'
+<<<<<<< HEAD:swasth-scaler/frontend/src/pages/tho/THOMapPage.jsx
 import { API, DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints } from './THOShared'
+=======
+import { API, DISTRICT_CENTERS, DISTRICT_BOUNDS, buildMapPoints } from './DMOShared'
+import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
+>>>>>>> 9259c22db611453226ef34e90e324e0dc0797803:swasth-scaler/frontend/src/pages/dmo/DMOMapPage.jsx
 
 const DistrictHeatmap = lazy(() => import('../../components/common/DistrictHeatmap'))
 
@@ -33,6 +38,14 @@ export default function THOMapPage() {
   const fetchData = useCallback(async () => {
     try {
       const token = localStorage.getItem('access_token')
+      
+      // -- Guest mode: inject demo data --
+      if (!token) {
+        setTriageRecords(GUEST_TRIAGE_RECORDS)
+        setLoading(false)
+        return
+      }
+
       const headers = { 'Authorization': `Bearer ${token}` }
       const [triRes, outRes] = await Promise.allSettled([
         fetch(`${API}/triage_records/`, { headers }),

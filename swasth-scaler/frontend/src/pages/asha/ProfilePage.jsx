@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import DashboardLayout from '../../components/asha/DashboardLayout.jsx'
+import { ReviewModal } from '../../components/common/ReviewModal'
 
 /* ─── Icons ─────────────────────────────────────────────── */
 const GridIcon = ({ active }) => (
@@ -50,6 +51,7 @@ export default function ProfilePage() {
   const [fullName, setFullName] = useState('')
   const [location2, setLocation2] = useState('')
   const [saveLoading, setSaveLoading] = useState(false)
+  const [showReviewModal, setShowReviewModal] = useState(false)
 
   useEffect(() => {
     async function loadProfile() {
@@ -90,7 +92,18 @@ export default function ProfilePage() {
     finally { setSaveLoading(false) }
   }
 
-  async function handleLogout() { await logout(); navigate('/') }
+  const handleLogout = () => {
+    if (authUser?.guest) {
+      setShowReviewModal(true)
+    } else {
+      logout()
+      navigate('/')
+    }
+  }
+
+  async function finalLogout() {
+    await logout(); navigate('/') 
+  }
 
   async function handleDeleteAccount() {
     if (!window.confirm('Delete your account? All patient history will be permanently erased. This cannot be undone.')) return
@@ -305,20 +318,39 @@ export default function ProfilePage() {
                 </div>
               </div>
 
-              {!forceOnboard && (
-                <div style={{ ...card, padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem' }}>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: g.text, marginBottom: 2 }}>Account Actions</div>
-                    <div style={{ fontSize: '0.8125rem', color: g.muted }}>Manage your session and account data</div>
-                  </div>
+              {/* Account Actions - Always visible if loaded */}
+              <div style={{ ...card, padding: '1.25rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', marginTop: '1rem' }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: '0.9375rem', color: g.text, marginBottom: 2 }}>Account Actions</div>
+                  <div style={{ fontSize: '0.8125rem', color: g.muted }}>Manage your session and account data</div>
+                </div>
                   <div style={{ display: 'flex', gap: '0.875rem' }}>
                     <button
                       onClick={handleLogout}
-                      style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '0.6rem 1.25rem', borderRadius: 10, background: g.btn, border: `1px solid ${g.btnBdr}`, color: g.text, fontWeight: 600, fontSize: '0.875rem', cursor: 'pointer', transition: 'all .18s', backdropFilter: 'blur(12px)' }}
-                      onMouseEnter={e => { e.currentTarget.style.background = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.85)'; e.currentTarget.style.color = isDark ? '#fff' : '#0c2a1d' }}
-                      onMouseLeave={e => { e.currentTarget.style.background = g.btn; e.currentTarget.style.color = g.text }}
+                      style={{ 
+                        display: 'flex', alignItems: 'center', gap: 10, padding: '0.875rem 1.875rem', 
+                        borderRadius: 99, background: 'linear-gradient(135deg, #ef4444 0%, #b91c1c 100%)', 
+                        border: 'none', color: '#fff', fontWeight: 800, fontSize: '1rem', 
+                        cursor: 'pointer', transition: 'all .25s', backdropFilter: 'blur(12px)',
+                        boxShadow: '0 10px 25px rgba(239, 68, 68, 0.3)'
+                      }}
+                      onMouseEnter={e => { 
+                        e.currentTarget.style.transform = 'translateY(-2px)';
+                        e.currentTarget.style.boxShadow = '0 15px 35px rgba(239, 68, 68, 0.4)';
+                      }}
+                      onMouseLeave={e => { 
+                        e.currentTarget.style.transform = 'none';
+                        e.currentTarget.style.boxShadow = '0 10px 25px rgba(239, 68, 68, 0.3)';
+                      }}
                     >
                       <LogoutIcon /> Sign Out
+                      {authUser?.guest && (
+                        <span style={{ 
+                          marginLeft: '4px', background: '#fff', color: '#ef4444', 
+                          padding: '2px 8px', borderRadius: 99, fontSize: '0.65rem', 
+                          fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em' 
+                        }}>DEMO</span>
+                      )}
                     </button>
                     <button
                       onClick={handleDeleteAccount}
@@ -330,10 +362,17 @@ export default function ProfilePage() {
                     </button>
                   </div>
                 </div>
-              )}
-            </>
-          )}
-        </div>
+              </>
+            )}
+          </div>
+
+      {showReviewModal && (
+        <ReviewModal 
+          role="asha"
+          onSkip={finalLogout}
+          onSubmit={finalLogout}
+        />
+      )}
     </DashboardLayout>
   )
 }

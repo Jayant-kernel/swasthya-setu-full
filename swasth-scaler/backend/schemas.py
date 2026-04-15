@@ -21,6 +21,17 @@ class UserUpdateProfile(BaseModel):
     avatar_b64: Optional[str] = None
     banner_b64: Optional[str] = None
 
+class UserOut(BaseModel):
+    id: str
+    employee_id: str
+    full_name: Optional[str] = None
+    role: str
+    location: Optional[str] = None
+    district: Optional[str] = None
+    email: Optional[str] = None
+    avatar_b64: Optional[str] = None
+    banner_b64: Optional[str] = None
+
 class PatientCreate(BaseModel):
     name: str
     age: Optional[int] = None
@@ -40,3 +51,13 @@ class TriageCreate(BaseModel):
     district: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+
+class ReviewCreate(BaseModel):
+    role: str
+    overall: int
+    categories: Optional[dict] = None
+    comment: Optional[str] = None
+    userName: Optional[str] = None
+    designation: Optional[str] = None
+    location: Optional[str] = None
+    source: Optional[str] = None
