@@ -221,7 +221,7 @@ export default function ASHADashboardPage() {
       setDashError(err?.message || 'Unknown error')
       setPatientResults([]); setTotalCount(0)
     } finally { setLoading(false) }
-  }, [activeTab, query, districtFilter])
+  }, [activeTab, query, tehsilFilter])
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
