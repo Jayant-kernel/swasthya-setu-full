@@ -8,7 +8,8 @@
       "Bash(mv pages/dmo components/dmo/DMOSidebar.jsx components/dmo/THOSidebar.jsx)",
       "Bash(mv components/dmo/DMOSidebar.jsx components/dmo/THOSidebar.jsx)",
       "Bash(mv components/dmo components/tho)",
-      "Bash(mv pages/dmo pages/tho)"
+      "Bash(mv pages/dmo pages/tho)",
+      "Bash(npm run *)"
     ]
   }
 }

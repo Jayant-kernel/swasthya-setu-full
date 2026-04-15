@@ -12,15 +12,15 @@ import { ReviewSection } from '../../components/common/ReviewModal'
 
 const StatCard = ({ label, value, subtext, icon: Icon, color = '#3b82f6', g }) => (
   <div className="stat-card elevated-panel" style={{ background: g.cardBg, borderRadius: 16, padding: '1.5rem', boxShadow: g.cardShd, border: `1px solid ${g.cardBdr}`, flex: 1, backdropFilter: g.blur }}>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-      <div style={{ width: 44, height: 44, borderRadius: 12, background: `${color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
+    <div className="stat-top" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+      <div className="stat-icon" style={{ width: 44, height: 44, borderRadius: 12, background: `${color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
         <Icon />
       </div>
-      <div style={{ color: '#6366f1', background: 'rgba(99,102,241,0.1)', padding: '2px 8px', borderRadius: 6, fontSize: '0.7rem', fontWeight: 800 }}>DISTRICT</div>
+      <div className="stat-badge" style={{ color: '#6366f1', background: 'rgba(99,102,241,0.1)', padding: '2px 8px', borderRadius: 6, fontSize: '0.7rem', fontWeight: 800 }}>DISTRICT</div>
     </div>
-    <div style={{ fontSize: '0.8125rem', color: g.muted, fontWeight: 600, marginBottom: '0.25rem' }}>{label}</div>
-    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: g.text }}>{value}</div>
-    <div style={{ fontSize: '0.75rem', color: g.label, marginTop: 4 }}>{subtext}</div>
+    <div className="stat-label" style={{ fontSize: '0.8125rem', color: g.muted, fontWeight: 600, marginBottom: '0.25rem' }}>{label}</div>
+    <div className="stat-value" style={{ fontSize: '1.5rem', fontWeight: 800, color: g.text }}>{value}</div>
+    <div className="stat-sub" style={{ fontSize: '0.75rem', color: g.label, marginTop: 4 }}>{subtext}</div>
   </div>
 )
 
@@ -176,14 +176,31 @@ export default function THODashboardPage() {
         .patient-row:hover td:first-child { box-shadow: inset 1px 0 0 #22c55e, inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
         .patient-row:hover td:last-child { box-shadow: inset -1px 0 0 #22c55e, inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
         .panel-header { background: ${isDark ? 'linear-gradient(180deg,rgba(59,130,246,0.12),rgba(59,130,246,0.02))' : 'linear-gradient(180deg,rgba(59,130,246,0.08),rgba(59,130,246,0.01))'}; }
+        .tho-main-grid { display: grid; grid-template-columns: 1fr 300px; gap: 2rem; max-width: 1600px; margin: 0 auto; }
+        .tho-calendar-col { order: 2; }
+        .tho-content-col { order: 1; display: flex; flex-direction: column; gap: 2rem; }
+        .tho-stat-cards { display: flex; gap: 1.5rem; }
+        @media (max-width: 700px) {
+          .tho-main-grid { grid-template-columns: 1fr; gap: 1rem; }
+          .tho-calendar-col { order: 1; }
+          .tho-content-col { order: 2; }
+          .tho-stat-cards { gap: 0.625rem; }
+          .stat-card { padding: 0.75rem !important; border-radius: 12px !important; }
+          .stat-card .stat-icon { width: 32px !important; height: 32px !important; border-radius: 8px !important; }
+          .stat-card .stat-label { font-size: 0.68rem !important; }
+          .stat-card .stat-value { font-size: 1.15rem !important; }
+          .stat-card .stat-sub { font-size: 0.62rem !important; }
+          .stat-card .stat-badge { display: none !important; }
+          .stat-card .stat-top { margin-bottom: 0.5rem !important; }
+        }
       `}</style>
 
       <div style={{ padding: '2rem' }}>
           <ReviewSection role="dmo" isDark={isDark} />
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', maxWidth: 1600, margin: '0 auto' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              <div style={{ display: 'flex', gap: '1.5rem' }}>
+          <div className="tho-main-grid">
+            <div className="tho-content-col">
+              <div className="tho-stat-cards">
                 <StatCard label="Pending Review" value={stats.unreviewed} subtext="Action required" icon={ActivityIcon} color="#f59e0b" g={g} />
                 <StatCard label="Critical Cases" value={stats.critical} subtext="Severe escalations" icon={ActivityIcon} color="#ef4444" g={g} />
                 <StatCard label="Sickle Cell Risk" value={stats.sickle} subtext="Screening results" icon={ActivityIcon} color="#8b5cf6" g={g} />
@@ -248,7 +265,7 @@ export default function THODashboardPage() {
                             </span>
                           </td>
                           <td style={{ padding: '1.25rem 1.5rem' }}>
-                            <span style={{ fontSize: '0.75rem', padding: '4px 10px', borderRadius: 20, background: r.reviewed ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: r.reviewed ? '#10b981' : '#ef4444', fontWeight: 700 }}>
+                            <span style={{ fontSize: '0.72rem', padding: '5px 12px', borderRadius: 20, background: r.reviewed ? 'rgba(16,185,129,0.18)' : 'rgba(239,68,68,0.18)', color: r.reviewed ? '#059669' : '#dc2626', fontWeight: 800, border: `1px solid ${r.reviewed ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, display: 'inline-block', whiteSpace: 'nowrap' }}>
                               {r.reviewed ? 'REVIEWED' : 'PENDING'}
                             </span>
                           </td>
@@ -260,7 +277,7 @@ export default function THODashboardPage() {
               </div>
             </div>
 
-            <div>
+            <div className="tho-calendar-col">
               <Calendar triageRecords={triageRecords} selectedDate={selectedDate} setSelectedDate={setSelectedDate} g={g} isDark={isDark} />
             </div>
           </div>
