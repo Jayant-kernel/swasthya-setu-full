@@ -18,12 +18,10 @@ export default function THOMapPage() {
   const [outbreaks, setOutbreaks] = useState([])
   const [loading, setLoading] = useState(true)
 
-  const _savedUser = useMemo(() => {
-    try { return JSON.parse(localStorage.getItem('user') || '{}') } catch { return {} }
-  }, [])
-  const thoDistrict = _savedUser.district || 'Pune'
-  const center = DISTRICT_CENTERS[thoDistrict] || [18.5204, 73.8567]
-  const bounds = DISTRICT_BOUNDS[thoDistrict] || null
+  // Map is always locked to Sangli district for the demo
+  const thoDistrict = 'Sangli'
+  const center = DISTRICT_CENTERS['Sangli']
+  const bounds = DISTRICT_BOUNDS['Sangli']
 
   const g = useMemo(() => ({
     text: 'var(--g-text)', muted: 'var(--g-muted)', accent: 'var(--g-accent)',

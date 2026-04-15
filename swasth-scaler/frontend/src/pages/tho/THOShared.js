@@ -1,6 +1,7 @@
 export const API = 'https://swasthya-setu-full.onrender.com/api/v1'
 
 export const DISTRICT_CENTERS = {
+  'Sangli': [17.0000, 74.5800],
   'Pune': [18.5204, 73.8567],
   'Mumbai': [19.0760, 72.8777],
   'Nagpur': [21.1458, 79.0882],
@@ -15,6 +16,7 @@ export const DISTRICT_CENTERS = {
 }
 
 export const DISTRICT_BOUNDS = {
+  'Sangli': [[16.60, 73.90], [17.55, 75.40]],
   'Pune': [[17.85, 73.20], [19.20, 74.70]],
   'Mumbai': [[18.85, 72.70], [19.35, 73.10]],
   'Nagpur': [[20.60, 78.40], [21.70, 79.80]],
@@ -31,7 +33,7 @@ export function buildMapPoints(records, center) {
   const withoutGps = records.filter(r => !r.latitude || !r.longitude)
 
   const gpsPoints = withGps.map(r => ({
-    village: r.patient_name || 'Patient',
+    village: r.village || r.patient_name || 'Patient',
     total: 1,
     critical: r.severity === 'red' || Number(r.severity) >= 7 ? 1 : 0,
     moderate: r.severity === 'yellow' || (Number(r.severity) >= 4 && Number(r.severity) <= 6) ? 1 : 0,
