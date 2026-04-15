@@ -92,6 +92,7 @@ export default function PatientFormPage() {
     age: prefill?.age || '',
     gender: prefill?.gender || '',
     district: prefill?.district || '',
+    tehsil: prefill?.tehsil || '',
     symptomText: prefill?.symptomText || '',
     latitude: null,
     longitude: null,
@@ -280,6 +281,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
         name: patientObj.name,
         age: patientObj.age,
         gender: patientObj.gender,
+        tehsil: patientObj.tehsil,
         district: patientObj.district
       })
     })
@@ -297,6 +299,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
       const payload = {
         patient_id:       patientId,
         patient_name:     patientObj.name,
+        tehsil:           patientObj.tehsil,
         district:         patientObj.district,
         severity:         triaged.severity,
         symptoms:         triaged.symptoms,
@@ -336,6 +339,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
       age: parseInt(form.age, 10),
       gender: form.gender,
       district: form.district,
+      tehsil: form.tehsil,
       symptomText: form.symptomText.trim(),
       latitude: form.latitude,
       longitude: form.longitude,
@@ -512,6 +516,22 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                 <option value="Other">Other / इतर</option>
               </select>
             </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="tehsil">
+              Tehsil / Taluka
+              <span className="odia-label">तालुका</span>
+            </label>
+            <input
+              id="tehsil"
+              name="tehsil"
+              type="text"
+              className="form-input"
+              placeholder="e.g. Haveli, Mulshi, etc."
+              value={form.tehsil}
+              onChange={handleChange}
+            />
           </div>
 
           <div className="form-group">

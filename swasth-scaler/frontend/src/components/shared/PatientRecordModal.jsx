@@ -26,7 +26,7 @@ export default function PatientRecordModal({ record, isOpen, onClose, g }) {
           <div>
             <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: g.text }}>{record.patient_name || 'Anonymous Patient'}</h2>
             <div style={{ marginTop: 6, fontSize: '0.85rem', color: g.muted }}>
-              {[record.age ? `${record.age} yrs` : null, record.gender || null, record.district || 'General'].filter(Boolean).join(' · ')}
+              {[record.age ? `${record.age} yrs` : null, record.gender || null, record.tehsil || record.district || 'General'].filter(Boolean).join(' · ')}
             </div>
           </div>
           <button onClick={onClose} style={{ width: 38, height: 38, borderRadius: '50%', border: 'none', background: g.insetBg, color: g.text, cursor: 'pointer', fontSize: '1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>

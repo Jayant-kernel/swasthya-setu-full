@@ -37,6 +37,7 @@ class PatientCreate(BaseModel):
     age: Optional[int] = None
     gender: Optional[str] = None
     village: Optional[str] = None
+    tehsil: Optional[str] = None
     district: Optional[str] = None
     pregnant: Optional[bool] = False
     abha_id: Optional[str] = None
@@ -48,6 +49,7 @@ class TriageCreate(BaseModel):
     severity: str
     sickle_cell_risk: bool
     brief: str
+    tehsil: Optional[str] = None
     district: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None

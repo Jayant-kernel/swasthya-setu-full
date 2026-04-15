@@ -26,6 +26,7 @@ async def create_triage_record(record: TriageCreate, current_user: dict = Depend
         severity=record.severity,
         sickle_cell_risk=record.sickle_cell_risk,
         brief=record.brief,
+        tehsil=record.tehsil,
         district=record.district,
         latitude=record.latitude,
         longitude=record.longitude,

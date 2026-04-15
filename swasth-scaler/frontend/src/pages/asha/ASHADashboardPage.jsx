@@ -22,10 +22,10 @@ function timeAgo(iso) {
   return `${Math.floor(h / 24)}d ago`
 }
 
-const DISTRICT_GROUPS = [
-  { label: 'Khordha', color: '#818cf8' },
-  { label: 'Cuttack', color: '#fbbf24' },
-  { label: 'Ganjam', color: '#34d399' },
+const TEHSIL_GROUPS = [
+  { label: 'Haveli', color: '#818cf8' },
+  { label: 'Mulshi', color: '#fbbf24' },
+  { label: 'Maval', color: '#34d399' },
 ]
 
 /* ─── Icons ──────────────────────────────────────────────── */
@@ -156,7 +156,7 @@ export default function ASHADashboardPage() {
   const [activeTab, setActiveTab] = useState('ALL')
   const [viewTab, setViewTab] = useState('Table')
   const [query, setQuery] = useState('')
-  const [districtFilter, setDistrictFilter] = useState('')
+  const [tehsilFilter, setTehsilFilter] = useState('')
   const [sortField, setSortField] = useState('date')
   const [sortOrder, setSortOrder] = useState('desc')
   const debounceRef = useRef(null)
@@ -185,7 +185,7 @@ export default function ASHADashboardPage() {
         let rows = [...GUEST_TRIAGE_RECORDS]
         if (activeTab !== 'ALL') rows = rows.filter(r => r.severity === activeTab.toLowerCase())
         if (query.trim().length >= 2) rows = rows.filter(r => r.patient_name?.toLowerCase().includes(query.trim().toLowerCase()))
-        if (districtFilter) rows = rows.filter(r => r.district === districtFilter)
+        if (tehsilFilter) rows = rows.filter(r => r.tehsil === tehsilFilter)
         const patients = buildAshaPatients(rows)
         setPatientResults(patients)
         setTotalCount(patients.length)
@@ -200,12 +200,12 @@ export default function ASHADashboardPage() {
 
       if (activeTab !== 'ALL') rows = rows.filter(r => r.severity === activeTab.toLowerCase())
       if (query.trim().length >= 2) rows = rows.filter(r => r.patient_name?.toLowerCase().includes(query.trim().toLowerCase()))
-      if (districtFilter) rows = rows.filter(r => r.district === districtFilter)
+      if (tehsilFilter) rows = rows.filter(r => r.tehsil === tehsilFilter)
 
       const grouped = new Map()
       for (const r of rows) {
-        const k = `${(r.patient_name || '').toLowerCase()}_${r.age}_${r.district}`
-        if (!grouped.has(k)) grouped.set(k, { id: r.patient_id || k, name: r.patient_name, age: r.age, gender: r.gender, district: r.district, triage_records: [] })
+        const k = `${(r.patient_name || '').toLowerCase()}_${r.age}_${r.tehsil || r.district}`
+        if (!grouped.has(k)) grouped.set(k, { id: r.patient_id || k, name: r.name || r.patient_name, age: r.age, gender: r.gender, district: r.district, tehsil: r.tehsil, triage_records: [] })
         grouped.get(k).triage_records.push({ id: r.id, severity: r.severity, brief: r.brief, created_at: r.created_at })
       }
       const patients = Array.from(grouped.values()).map(p => {
@@ -227,9 +227,9 @@ export default function ASHADashboardPage() {
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(fetchRecords, query ? 400 : 0)
     return () => clearTimeout(debounceRef.current)
-  }, [activeTab, query, districtFilter, fetchRecords])
+  }, [activeTab, query, tehsilFilter, fetchRecords])
 
-  const handlePatientClick = p => navigate('/patient', { state: { prefill: { name: p.name, age: p.age, gender: p.gender, district: p.district }, patientId: p.id } })
+  const handlePatientClick = p => navigate('/patient', { state: { prefill: { name: p.name, age: p.age, gender: p.gender, district: p.district, tehsil: p.tehsil }, patientId: p.id } })
   const handleDelete = (e, id) => {
     e.stopPropagation()
     if (!window.confirm('Delete ALL records for this patient?')) return
@@ -244,7 +244,7 @@ export default function ASHADashboardPage() {
     let valA, valB
     if (sortField === 'name') { valA = a.name?.toLowerCase(); valB = b.name?.toLowerCase() }
     else if (sortField === 'date') { valA = new Date(a.triage_records?.[0]?.created_at || 0); valB = new Date(b.triage_records?.[0]?.created_at || 0) }
-    else if (sortField === 'district') { valA = a.district?.toLowerCase(); valB = b.district?.toLowerCase() }
+    else if (sortField === 'tehsil') { valA = a.tehsil?.toLowerCase(); valB = b.tehsil?.toLowerCase() }
     else if (sortField === 'severity') { valA = SEV_ORDER_IDX[a.latestSeverity] ?? 3; valB = SEV_ORDER_IDX[b.latestSeverity] ?? 3 }
     
     if (valA < valB) return sortOrder === 'asc' ? -1 : 1
@@ -314,13 +314,13 @@ export default function ASHADashboardPage() {
   const districtsExtra = (
     <>
       <div style={{ fontSize: '0.6rem', fontWeight: 700, color: g.label, letterSpacing: '0.1em', textTransform: 'uppercase', padding: '0 0.5rem', marginBottom: '0.375rem', marginTop: '1.125rem' }}>
-        Districts <span style={{ opacity: 0.6 }}>/ जिल्हे</span>
+        Tehsils <span style={{ opacity: 0.6 }}>/ तालुके</span>
       </div>
-      {DISTRICT_GROUPS.map(d => {
-        const on = districtFilter === d.label
+      {TEHSIL_GROUPS.map(d => {
+        const on = tehsilFilter === d.label
         return (
           <button key={d.label} className="hp-nav"
-            onClick={() => setDistrictFilter(on ? '' : d.label)}
+            onClick={() => setTehsilFilter(on ? '' : d.label)}
             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '0.625rem', padding: '0.4rem 0.625rem', borderRadius: 10, marginBottom: 3, background: on ? `${d.color}18` : 'transparent', boxShadow: on ? `inset 3px 0 0 ${d.color}` : 'none', border: '1px solid transparent', color: on ? d.color : g.text, fontWeight: on ? 700 : 500, fontSize: '0.875rem', cursor: 'pointer', textAlign: 'left', transition: 'all .18s' }}
             onMouseEnter={e => { if (!on) e.currentTarget.style.background = g.hover }}
             onMouseLeave={e => { if (!on) e.currentTarget.style.background = 'transparent' }}
@@ -488,7 +488,7 @@ export default function ASHADashboardPage() {
                 {[
                   { label: 'Name', field: 'name', mobile: true },
                   { label: 'Last Visit', field: 'date', mobile: true },
-                  { label: 'District', field: 'district', mobile: false },
+                  { label: 'Tehsil', field: 'tehsil', mobile: false },
                   { label: 'Priority', field: 'severity', mobile: true },
                   { label: 'Status', field: 'severity', mobile: false },
                   { label: '', field: null, mobile: true }
@@ -521,7 +521,7 @@ export default function ASHADashboardPage() {
                       </span>
                     </div>
                     <div className="hp-cell-content" style={{ fontSize: '0.8rem', color: g.text, fontWeight: 500 }}>{last ? timeAgo(last.created_at) : '—'}</div>
-                    <div className="hp-cell-content hp-hide-mobile" style={{ fontSize: '0.8rem', color: g.text, fontWeight: 500 }}>{p.district || '—'}</div>
+                    <div className="hp-cell-content hp-hide-mobile" style={{ fontSize: '0.8rem', color: g.text, fontWeight: 500 }}>{p.tehsil || '—'}</div>
                     <div className="hp-cell-content"><PriorityBadge severity={p.latestSeverity} /></div>
                     <div className="hp-cell-content hp-hide-mobile"><SeverityPill severity={p.latestSeverity} /></div>
                     <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -550,7 +550,7 @@ export default function ASHADashboardPage() {
                       return (
                         <div key={p.id} className="hp-row" onClick={() => handlePatientClick(p)} style={{ padding: '0.75rem', borderRadius: 10, border: `1px solid ${g.divider}`, background: isDark ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.22)', backdropFilter: 'blur(8px)', transition: 'all .15s' }}>
                           <div className="hp-name" style={{ marginBottom: 3 }}>{p.name}</div>
-                          <div className="hp-details" style={{ marginBottom: 8 }}>{[p.age && `${p.age} yrs`, p.gender, p.district].filter(Boolean).join(' · ')}</div>
+                          <div className="hp-details" style={{ marginBottom: 8 }}>{[p.age && `${p.age} yrs`, p.gender, p.tehsil].filter(Boolean).join(' · ')}</div>
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                             <SeverityPill severity={p.latestSeverity} />
                             <span className="hp-details">{last ? timeAgo(last.created_at) : ''}</span>

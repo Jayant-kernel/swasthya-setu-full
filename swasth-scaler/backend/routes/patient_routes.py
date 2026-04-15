@@ -27,6 +27,7 @@ async def create_patient(patient: PatientCreate, current_user: dict = Depends(ge
         age=patient.age,
         gender=patient.gender,
         village=patient.village,
+        tehsil=patient.tehsil,
         district=patient.district,
         pregnant=patient.pregnant,
         abha_id=patient.abha_id,

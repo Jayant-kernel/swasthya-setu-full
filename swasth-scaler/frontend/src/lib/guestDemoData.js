@@ -16,6 +16,7 @@ export const GUEST_TRIAGE_RECORDS = [
     age: 28,
     gender: 'Female',
     district: 'Pune',
+    tehsil: 'Haveli',
     severity: 'red',
     health_condition: 'High fever, convulsions',
     brief: 'High fever 104°F with convulsions since morning',
@@ -32,6 +33,7 @@ export const GUEST_TRIAGE_RECORDS = [
     age: 45,
     gender: 'Male',
     district: 'Pune',
+    tehsil: 'Haveli',
     severity: 'red',
     health_condition: 'Chest pain, breathlessness',
     brief: 'Severe chest pain radiating to left arm, sweating',
@@ -48,6 +50,7 @@ export const GUEST_TRIAGE_RECORDS = [
     age: 32,
     gender: 'Female',
     district: 'Pune',
+    tehsil: 'Mulshi',
     severity: 'yellow',
     health_condition: 'Anaemia, fatigue',
     brief: 'Pale skin, tired, Hb 7.2 — possible sickle cell',
@@ -64,6 +67,7 @@ export const GUEST_TRIAGE_RECORDS = [
     age: 24,
     gender: 'Female',
     district: 'Pune',
+    tehsil: 'Maval',
     severity: 'yellow',
     health_condition: 'Ante-natal care visit',
     brief: '7 months pregnant, BP 145/95, mild oedema',
@@ -80,6 +84,7 @@ export const GUEST_TRIAGE_RECORDS = [
     age: 58,
     gender: 'Male',
     district: 'Pune',
+    tehsil: 'Haveli',
     severity: 'yellow',
     health_condition: 'Diabetes, foot ulcer',
     brief: 'Poorly controlled diabetes, infected ulcer on left foot',
@@ -96,6 +101,7 @@ export const GUEST_TRIAGE_RECORDS = [
     age: 9,
     gender: 'Female',
     district: 'Khordha',
+    tehsil: 'Bhubaneswar',
     severity: 'red',
     health_condition: 'Acute diarrhoea, dehydration',
     brief: 'Severe dehydration, sunken eyes, 8+ loose stools per day',
@@ -112,6 +118,7 @@ export const GUEST_TRIAGE_RECORDS = [
     age: 67,
     gender: 'Male',
     district: 'Cuttack',
+    tehsil: 'Cuttack Sadar',
     severity: 'green',
     health_condition: 'Hypertension follow-up',
     brief: 'BP 138/88 — stable on medication, monthly review',
@@ -128,6 +135,7 @@ export const GUEST_TRIAGE_RECORDS = [
     age: 19,
     gender: 'Female',
     district: 'Ganjam',
+    tehsil: 'Berhampur',
     severity: 'green',
     health_condition: 'Immunisation — DPT booster',
     brief: 'Routine immunisation, no adverse reactions',
@@ -144,6 +152,7 @@ export const GUEST_TRIAGE_RECORDS = [
     age: 41,
     gender: 'Male',
     district: 'Cuttack',
+    tehsil: 'Choudwar',
     severity: 'yellow',
     health_condition: 'TB follow-up',
     brief: 'DOTS day 45 — mild weight loss, cough persisting',
@@ -208,6 +217,7 @@ export const GUEST_TRIAGE_RECORDS = [
     age: 53,
     gender: 'Male',
     district: 'Pune',
+    tehsil: 'Maval',
     severity: 'yellow',
     health_condition: 'Malaria — P. vivax confirmed',
     brief: 'RDT positive for P.vivax, fever cycles every 48h',
@@ -320,6 +330,7 @@ export const GUEST_TRIAGE_RECORDS = [
     age: 33,
     gender: 'Female',
     district: 'Ganjam',
+    tehsil: 'Berhampur',
     severity: 'red',
     health_condition: 'Post-partum haemorrhage',
     brief: 'Excessive bleeding 4h after delivery, urgent hospital referral',
@@ -337,7 +348,7 @@ export const GUEST_TRIAGE_RECORDS = [
 export function buildAshaPatients(records) {
   const grouped = new Map()
   for (const r of records) {
-    const k = `${(r.patient_name || '').toLowerCase()}_${r.age}_${r.district}`
+    const k = `${(r.patient_name || '').toLowerCase()}_${r.age}_${r.tehsil || r.district}`
     if (!grouped.has(k)) {
       grouped.set(k, {
         id: r.patient_id || k,
@@ -345,6 +356,7 @@ export function buildAshaPatients(records) {
         age: r.age,
         gender: r.gender,
         district: r.district,
+        tehsil: r.tehsil,
         triage_records: [],
       })
     }

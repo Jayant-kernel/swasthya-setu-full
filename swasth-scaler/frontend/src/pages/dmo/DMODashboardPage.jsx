@@ -266,7 +266,7 @@ export default function DMODashboardPage() {
                             <div style={{ fontWeight: 700, color: '#2563eb' }}>
                               {r.patient_name || 'Anonymous'}
                             </div>
-                            <div style={{ fontSize: '0.7rem', color: g.muted }}>{r.district}</div>
+                            <div style={{ fontSize: '0.7rem', color: g.muted }}>{r.tehsil || r.district}</div>
                           </td>
                           <td style={{ padding: '1.25rem 1.5rem', color: g.text, fontSize: '0.85rem' }}>{r.health_condition || 'N/A'}</td>
                           <td style={{ padding: '1.25rem 1.5rem' }}>
