@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoginRoleModal from '../../components/landing/LoginRoleModal'
 
+import logoSrc from '../../images/logo/logo.jpg'
 import img1 from '../../images/landing/hero1.jpg'
 import img2 from '../../images/landing/hero2.jpg'
 
@@ -69,6 +70,7 @@ export default function LandingPage() {
           padding: '1.5rem 5%', maxWidth: 1600, margin: '0 auto', width: '100%',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', fontWeight: 800, fontSize: '1.65rem', color: '#ffffff', letterSpacing: '-0.02em' }}>
+            <img src={logoSrc} alt="Swasthya Setu" width={44} height={44} style={{ borderRadius: 11, objectFit: 'cover', display: 'block' }} />
             Swasthya Setu
           </div>
 

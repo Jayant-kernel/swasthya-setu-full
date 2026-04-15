@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
+import logoSrc from '../../images/logo/logo.jpg'
 
 /* ─── Icons ─────────────────────────────────────────────────────────────────── */
 const HomeIcon = () => (
@@ -136,13 +137,7 @@ export default function THOLayout({ children, onLogout, topbarContent, contentSt
           {/* Brand header */}
           <div style={{ padding: '1.125rem 1rem 0.875rem', borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-              <div style={{
-                width: 40, height: 40, borderRadius: 11, flexShrink: 0,
-                background: 'linear-gradient(135deg, #4f46e5, #3b82f6)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                filter: 'drop-shadow(0 0 10px rgba(59,130,246,0.4))',
-                color: '#fff', fontWeight: 900, fontSize: '1rem',
-              }}>T</div>
+              <img src={logoSrc} alt="Swasthya Setu" width={40} height={40} style={{ borderRadius: 11, objectFit: 'cover', flexShrink: 0, display: 'block' }} />
               <div style={{ opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
                 <div style={{ fontWeight: 800, fontSize: '0.9rem', color: g.text, letterSpacing: '-0.022em', lineHeight: 1.15 }}>Swasthya Setu</div>
                 <div style={{ fontSize: '0.58rem', fontWeight: 700, color: '#3b82f6', letterSpacing: '0.09em', textTransform: 'uppercase' }}>THO Dashboard</div>

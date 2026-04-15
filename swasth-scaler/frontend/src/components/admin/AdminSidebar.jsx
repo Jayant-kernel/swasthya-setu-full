@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
 import { HomeIcon, MapIcon, GlobeIcon, LogoutIcon, ActivityIcon } from '../../pages/admin/AdminIcons'
+import logoSrc from '../../images/logo/logo.jpg'
 
 export default function AdminSidebar({ isHovered, setIsHovered }) {
   const navigate = useNavigate()
@@ -38,6 +39,7 @@ export default function AdminSidebar({ isHovered, setIsHovered }) {
       }}
     >
       <div style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem', width: 260 }}>
+        <img src={logoSrc} alt="Swasthya Setu" width={40} height={40} style={{ borderRadius: 11, objectFit: 'cover', flexShrink: 0, display: 'block' }} />
         <div style={{ opacity: isHovered ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
           <div style={{ fontWeight: 800, fontSize: '1.1rem', color: g.text, letterSpacing: '-0.02em', lineHeight: 1 }}>Swasthya Setu</div>
           <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#6366f1', marginTop: 4, letterSpacing: '0.05em' }}>ADMIN PORTAL</div>
