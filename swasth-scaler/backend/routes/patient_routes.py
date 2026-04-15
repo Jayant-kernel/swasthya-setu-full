@@ -13,8 +13,8 @@ router = APIRouter()
 async def get_patients(current_user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
     query = select(Patient).order_by(Patient.created_at.desc())
     
-    # Filter patients by district for ASHA and DMO
-    if current_user["role"] in ["asha", "dmo"]:
+    # Filter patients by district for ASHA and THO
+    if current_user["role"] in ["asha", "tho"]:
         query = query.where(Patient.district == current_user["district"])
         
     result = await db.execute(query)

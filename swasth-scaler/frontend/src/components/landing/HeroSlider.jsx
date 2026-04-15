@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import ashaWorkerImg from '../../images/login/asha_worker.avif';
-import dmoWorkerImg from '../../images/login/DMO_Worker.png';
+import thoWorkerImg from '../../images/login/DMO_Worker.png';
 
 const slides = [
   {
@@ -20,14 +20,14 @@ const slides = [
     badge: '🏥',
   },
   {
-    id: 'dmo',
-    role: 'District Officer',
-    roleOdia: 'जिल्हा वैद्यकीय अधिकारी',
+    id: 'tho',
+    role: 'Taluka Health Officer',
+    roleOdia: 'तालुका आरोग्य अधिकारी',
     tagline: 'District-Wide Health Command',
     description: 'Monitor district health metrics, approve escalations, and coordinate multi-village response logistics.',
-    cta: 'Sign in as District Officer',
-    path: '/login/dmo',
-    image: dmoWorkerImg,
+    cta: 'Sign in as Taluka Health Officer',
+    path: '/login/tho',
+    image: thoWorkerImg,
     gradient: 'linear-gradient(135deg, #075a5a 0%, #0e8f8f 50%, #17b5b5 100%)',
     overlay: 'linear-gradient(to right, rgba(4,50,50,0.96) 0%, rgba(4,50,50,0.78) 50%, rgba(4,50,50,0.18) 100%)',
     accent: '#99f6e4',

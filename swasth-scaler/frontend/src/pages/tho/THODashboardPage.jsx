@@ -2,25 +2,26 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
-import DMOSidebar from '../../components/dmo/DMOSidebar'
+import THOLayout from '../../components/tho/THOSidebar'
 import PatientRecordModal from '../../components/shared/PatientRecordModal'
-import { SunIcon, MoonIcon, SearchIcon, ActivityIcon } from '../admin/AdminIcons'
-import { API, DISTRICT_CENTERS, buildMapPoints } from './DMOShared'
+const SearchIcon   = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+const ActivityIcon = () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+import { apiFetch, API, DISTRICT_CENTERS, buildMapPoints } from './THOShared'
 import { GUEST_TRIAGE_RECORDS } from '../../lib/guestDemoData'
-import { ReviewModal, ReviewSection } from '../../components/common/ReviewModal'
+import { ReviewSection } from '../../components/common/ReviewModal'
 
 
 const StatCard = ({ label, value, subtext, icon: Icon, color = '#3b82f6', g }) => (
   <div className="stat-card elevated-panel" style={{ background: g.cardBg, borderRadius: 16, padding: '1.5rem', boxShadow: g.cardShd, border: `1px solid ${g.cardBdr}`, flex: 1, backdropFilter: g.blur }}>
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
-      <div style={{ width: 44, height: 44, borderRadius: 12, background: `${color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
+    <div className="stat-top" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+      <div className="stat-icon" style={{ width: 44, height: 44, borderRadius: 12, background: `${color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', color }}>
         <Icon />
       </div>
-      <div style={{ color: '#6366f1', background: 'rgba(99,102,241,0.1)', padding: '2px 8px', borderRadius: 6, fontSize: '0.7rem', fontWeight: 800 }}>DISTRICT</div>
+      <div className="stat-badge" style={{ color: '#6366f1', background: 'rgba(99,102,241,0.1)', padding: '2px 8px', borderRadius: 6, fontSize: '0.7rem', fontWeight: 800 }}>DISTRICT</div>
     </div>
-    <div style={{ fontSize: '0.8125rem', color: g.muted, fontWeight: 600, marginBottom: '0.25rem' }}>{label}</div>
-    <div style={{ fontSize: '1.5rem', fontWeight: 800, color: g.text }}>{value}</div>
-    <div style={{ fontSize: '0.75rem', color: g.label, marginTop: 4 }}>{subtext}</div>
+    <div className="stat-label" style={{ fontSize: '0.8125rem', color: g.muted, fontWeight: 600, marginBottom: '0.25rem' }}>{label}</div>
+    <div className="stat-value" style={{ fontSize: '1.5rem', fontWeight: 800, color: g.text }}>{value}</div>
+    <div className="stat-sub" style={{ fontSize: '0.75rem', color: g.label, marginTop: 4 }}>{subtext}</div>
   </div>
 )
 
@@ -67,17 +68,15 @@ const Calendar = ({ triageRecords, selectedDate, setSelectedDate, g, isDark }) =
   )
 }
 
-export default function DMODashboardPage() {
-  const { user, logout } = useAuth()
+export default function THODashboardPage() {
+  const { logout, user } = useAuth()
   const navigate = useNavigate()
-  const { isDark, toggleTheme } = useTheme()
-  const [isHovered, setIsHovered] = useState(false)
+  const { isDark } = useTheme()
   const [triageRecords, setTriageRecords] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedDate, setSelectedDate] = useState(null)
   const [sortConfig, setSortConfig] = useState({ key: null, direction: null })
   const [selectedRecord, setSelectedRecord] = useState(null)
-  const [showReviewModal, setShowReviewModal] = useState(false)
 
   const handleSort = useCallback((key) => {
     setSortConfig((prev) => {
@@ -111,7 +110,7 @@ export default function DMODashboardPage() {
       }
 
       const headers = { 'Authorization': `Bearer ${token}` }
-      const res = await fetch(`${API}/triage_records/`, { headers })
+      const res = await apiFetch(`${API}/triage_records/`, { headers })
       if (res.ok) setTriageRecords(await res.json())
     } catch (err) { console.error('Fetch error:', err) }
     finally { setLoading(false) }
@@ -160,57 +159,49 @@ export default function DMODashboardPage() {
   }, [triageRecords, sortConfig, selectedDate])
 
   return (
-    <div style={{ minHeight: '100dvh', background: 'var(--bg)', display: 'flex', fontFamily: "'Inter', sans-serif" }}>
+    <>
+    <THOLayout
+      onLogout={() => { logout(); navigate('/') }}
+      topbarContent={<h2 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 800, color: g.text }}>THO Command Dashboard</h2>}
+    >
       <style>{`
-        * { box-sizing: border-box; }
-        .nav-link:hover { background: ${isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'}; color: ${g.accent}; }
-        .nav-link.active { background: ${isDark ? 'rgba(59,130,246,0.15)' : '#ebf5ff'}; color: #3b82f6; font-weight: 700; border-left: 3px solid #3b82f6; }
-        .table-row:hover { background: ${g.insetBg}; cursor: pointer; }
         .elevated-panel {
-          box-shadow: 0 18px 40px rgba(15, 23, 42, ${isDark ? '0.38' : '0.10'}), 0 2px 10px rgba(59, 130, 246, ${isDark ? '0.14' : '0.08'});
+          box-shadow: 0 18px 40px rgba(15,23,42,${isDark ? '0.38' : '0.10'}), 0 2px 10px rgba(59,130,246,${isDark ? '0.14' : '0.08'});
           background-image: linear-gradient(180deg, ${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.78)'}, transparent 58%);
         }
         .stat-card { position: relative; top: 0; transition: top 0.2s ease, box-shadow 0.2s ease; }
         .stat-card:hover { top: -4px; box-shadow: 0 22px 40px rgba(15,23,42,${isDark ? '0.42' : '0.14'}), 0 6px 18px rgba(59,130,246,0.18); }
+        .table-row:hover { background: ${g.insetBg}; cursor: pointer; }
         .patient-row td { transition: background 0.2s ease, box-shadow 0.2s ease; }
         .patient-row:hover td { background: ${isDark ? 'rgba(34,197,94,0.08)' : 'rgba(34,197,94,0.06)'}; box-shadow: inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
         .patient-row:hover td:first-child { box-shadow: inset 1px 0 0 #22c55e, inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
         .patient-row:hover td:last-child { box-shadow: inset -1px 0 0 #22c55e, inset 0 1px 0 #22c55e, inset 0 -1px 0 #22c55e; }
-        .panel-header { background: ${isDark ? 'linear-gradient(180deg, rgba(59,130,246,0.12), rgba(59,130,246,0.02))' : 'linear-gradient(180deg, rgba(59,130,246,0.08), rgba(59,130,246,0.01))'}; }
+        .panel-header { background: ${isDark ? 'linear-gradient(180deg,rgba(59,130,246,0.12),rgba(59,130,246,0.02))' : 'linear-gradient(180deg,rgba(59,130,246,0.08),rgba(59,130,246,0.01))'}; }
+        .tho-main-grid { display: grid; grid-template-columns: 1fr 300px; gap: 2rem; max-width: 1600px; margin: 0 auto; }
+        .tho-calendar-col { order: 2; }
+        .tho-content-col { order: 1; display: flex; flex-direction: column; gap: 2rem; }
+        .tho-stat-cards { display: flex; gap: 1.5rem; }
+        @media (max-width: 700px) {
+          .tho-main-grid { grid-template-columns: 1fr; gap: 1rem; }
+          .tho-calendar-col { order: 1; }
+          .tho-content-col { order: 2; }
+          .tho-stat-cards { gap: 0.625rem; }
+          .stat-card { padding: 0.75rem !important; border-radius: 12px !important; }
+          .stat-card .stat-icon { width: 32px !important; height: 32px !important; border-radius: 8px !important; }
+          .stat-card .stat-label { font-size: 0.68rem !important; }
+          .stat-card .stat-value { font-size: 1.15rem !important; }
+          .stat-card .stat-sub { font-size: 0.62rem !important; }
+          .stat-card .stat-badge { display: none !important; }
+          .stat-card .stat-top { margin-bottom: 0.5rem !important; }
+        }
       `}</style>
 
-      <DMOSidebar isHovered={isHovered} setIsHovered={setIsHovered} onLogout={() => {logout(); navigate('/')}} onAdminNav={() => navigate('/dashboard/admin')} />
-
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100dvh', overflow: 'hidden' }}>
-        <header style={{ height: 72, background: g.cardBg, borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2.5rem', flexShrink: 0, backdropFilter: g.blur }}>
-          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: g.text }}>DMO Command Dashboard</h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-            <button onClick={toggleTheme} style={{ width: 40, height: 40, borderRadius: 12, border: `1px solid ${g.divider}`, background: g.cardBg, color: g.text, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              {isDark ? <SunIcon /> : <MoonIcon />}
-            </button>
-            <div 
-              onClick={() => navigate('/dashboard/dmo/profile')}
-              style={{ 
-                width: 40, height: 40, borderRadius: '50%', 
-                background: 'linear-gradient(135deg, #4f46e5, #3b82f6)', 
-                display: 'flex', alignItems: 'center', justifyContent: 'center', 
-                color: '#fff', fontWeight: 800, cursor: 'pointer',
-                transition: 'transform 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
-              onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-            >
-              {(user?.full_name || user?.name || 'D')[0].toUpperCase()}
-            </div>
-          </div>
-        </header>
-
-        <div style={{ flex: 1, overflowY: 'auto', padding: '2.5rem' }}>
+      <div style={{ padding: '2rem' }}>
           <ReviewSection role="dmo" isDark={isDark} />
           
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '2rem', maxWidth: 1600, margin: '0 auto' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              <div style={{ display: 'flex', gap: '1.5rem' }}>
+          <div className="tho-main-grid">
+            <div className="tho-content-col">
+              <div className="tho-stat-cards">
                 <StatCard label="Pending Review" value={stats.unreviewed} subtext="Action required" icon={ActivityIcon} color="#f59e0b" g={g} />
                 <StatCard label="Critical Cases" value={stats.critical} subtext="Severe escalations" icon={ActivityIcon} color="#ef4444" g={g} />
                 <StatCard label="Sickle Cell Risk" value={stats.sickle} subtext="Screening results" icon={ActivityIcon} color="#8b5cf6" g={g} />
@@ -275,7 +266,7 @@ export default function DMODashboardPage() {
                             </span>
                           </td>
                           <td style={{ padding: '1.25rem 1.5rem' }}>
-                            <span style={{ fontSize: '0.75rem', padding: '4px 10px', borderRadius: 20, background: r.reviewed ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', color: r.reviewed ? '#10b981' : '#ef4444', fontWeight: 700 }}>
+                            <span style={{ fontSize: '0.72rem', padding: '5px 12px', borderRadius: 20, background: r.reviewed ? 'rgba(16,185,129,0.18)' : 'rgba(239,68,68,0.18)', color: r.reviewed ? '#059669' : '#dc2626', fontWeight: 800, border: `1px solid ${r.reviewed ? 'rgba(16,185,129,0.3)' : 'rgba(239,68,68,0.3)'}`, display: 'inline-block', whiteSpace: 'nowrap' }}>
                               {r.reviewed ? 'REVIEWED' : 'PENDING'}
                             </span>
                           </td>
@@ -287,42 +278,16 @@ export default function DMODashboardPage() {
               </div>
             </div>
 
-            <div>
+            <div className="tho-calendar-col">
               <Calendar triageRecords={triageRecords} selectedDate={selectedDate} setSelectedDate={setSelectedDate} g={g} isDark={isDark} />
             </div>
           </div>
         </div>
 
-        {/* Logout Section */}
-        <div style={{ padding: '0 2.5rem 2.5rem', textAlign: 'center', opacity: 0.6 }}>
-          <button
-            onClick={() => setShowReviewModal(true)}
-            style={{
-              padding: '0.625rem 1.75rem', borderRadius: 99,
-              border: '1.5px solid rgba(239,68,68,0.3)',
-              background: 'transparent', color: '#ef4444',
-              fontWeight: 600, fontSize: '0.8rem', cursor: 'pointer',
-              transition: 'all 0.18s', fontFamily: "'Inter', sans-serif",
-            }}
-            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239,68,68,0.06)' }}
-            onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-          >
-            Sign Out
-          </button>
-        </div>
-      </main>
+      </THOLayout>
 
       <PatientRecordModal record={selectedRecord} isOpen={Boolean(selectedRecord)} onClose={() => setSelectedRecord(null)} g={g} />
-
-      {/* Review Modal on logout */}
-      {showReviewModal && (
-        <ReviewModal
-          role="dmo"
-          onSkip={() => { setShowReviewModal(false); logout(); navigate('/') }}
-          onSubmit={() => { setShowReviewModal(false); logout(); navigate('/') }}
-        />
-      )}
-    </div>
+    </>
   )
 }
 

@@ -14,8 +14,11 @@ export default function ProtectedRoute({ children, role }) {
     )
   }
 
-  // DMO uses bypass auth (no Supabase session required)
-  if (role === 'dmo' && localStorage.getItem('dmo_bypass') === 'true') {
+  // THO uses bypass auth (also accept old dmo_bypass key for existing sessions)
+  if (role === 'tho' && (
+    localStorage.getItem('tho_bypass') === 'true' ||
+    localStorage.getItem('dmo_bypass') === 'true'
+  )) {
     return children
   }
 
@@ -23,16 +26,13 @@ export default function ProtectedRoute({ children, role }) {
     return children
   }
 
-  // Admin uses bypass auth
-  if (role === 'admin' && localStorage.getItem('admin_bypass') === 'true') {
-    return children
-  }
   if (!session) {
     return <Navigate to="/" replace />
   }
 
-  if (role && userRole !== role) {
-    // If authenticated but wrong role, redirect to role-specific login or home
+  // Accept 'dmo' role from JWT as equivalent to 'tho'
+  const effectiveRole = userRole === 'dmo' ? 'tho' : userRole
+  if (role && effectiveRole !== role) {
     return <Navigate to="/" replace />
   }
 

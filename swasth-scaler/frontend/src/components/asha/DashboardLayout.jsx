@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useTheme } from '../../context/ThemeContext.jsx'
-// logo import removed
+import logoSrc from '../../images/logo/logo.jpg'
 
 /* ─── Icons ──────────────────────────────────────────────────── */
 const GridIcon = ({ active }) => (
@@ -144,15 +144,15 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
 
           <div style={{ padding: '1.125rem 1rem 0.875rem', borderBottom: `1px solid ${g.divider}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
-              <div style={{
-                width: 40, height: 40, borderRadius: 11, flexShrink: 0, overflow: 'hidden',
-                background: g.btn, border: `1px solid ${g.btnBdr}`,
-                backdropFilter: 'blur(8px)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                filter: 'drop-shadow(0 0 10px rgba(16,185,129,0.4))',
-              }}>
-                  {/* Logo removed */}
-              </div>
+              <img
+                src={logoSrc}
+                alt="Swasthya Setu"
+                style={{
+                  width: 40, height: 40, borderRadius: 11, flexShrink: 0,
+                  objectFit: 'cover', display: 'block',
+                  filter: 'drop-shadow(0 0 10px rgba(16,185,129,0.35))',
+                }}
+              />
               <div style={{ opacity: isExpanded ? 1 : 0, transition: 'opacity 0.2s', whiteSpace: 'nowrap' }}>
                 <div style={{ fontWeight: 800, fontSize: '0.9rem', color: g.text, letterSpacing: '-0.022em', lineHeight: 1.15 }}>Swasthya Setu</div>
                 <div style={{ fontSize: '0.58rem', fontWeight: 700, color: g.accent, letterSpacing: '0.09em', textTransform: 'uppercase' }}>ASHA Dashboard</div>

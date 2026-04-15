@@ -22,7 +22,7 @@ export default function RoleSelectionPage() {
     setGuestLoading(true)
     try {
       await auth.loginAsGuest(roleId)
-      navigate(roleId === 'dmo' ? '/dashboard/dmo' : '/home')
+      navigate(roleId === 'tho' ? '/dashboard/tho' : '/home')
     } catch (e) {
       console.error(e)
     } finally {
@@ -41,11 +41,11 @@ export default function RoleSelectionPage() {
       color: '#0F6E56'
     },
     {
-      id: 'dmo',
-      title: 'District Medical Officer',
-      titleOdia: 'जिल्हा वैद्यकीय अधिकारी',
+      id: 'tho',
+      title: 'Taluka Health Officer',
+      titleOdia: 'तालुका आरोग्य अधिकारी',
       icon: '🏛️',
-      path: '/login/dmo',
+      path: '/login/tho',
       color: '#0a5040'
     },
   ]

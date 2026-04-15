@@ -19,10 +19,10 @@ async def seed_users():
             district="Puri"
         )
         
-        # 2. Dummy District Officer (DMO)
-        dmo = User(
-            employee_id="DMO001",
-            role="dmo",
+        # 2. Dummy District Officer (THO)
+        tho = User(
+            employee_id="THO001",
+            role="tho",
             password_hash=get_password_hash("password"),
             full_name="Dr. Pradhan",
             location="District HQ",
@@ -40,12 +40,12 @@ async def seed_users():
         )
         
         session.add(asha)
-        session.add(dmo)
+        session.add(tho)
         session.add(admin)
         await session.commit()
         print("Successfully added dummy users:")
         print("1. ASHA Worker -> ID: ASHA001 | Pass: password")
-        print("2. District Officer -> ID: DMO001 | Pass: password")
+        print("2. District Officer -> ID: THO001 | Pass: password")
         print("3. Admin -> ID: ADMIN001 | Pass: password")
 
 if __name__ == "__main__":

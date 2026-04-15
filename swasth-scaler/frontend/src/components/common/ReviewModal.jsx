@@ -53,7 +53,7 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
     } catch(e){}
   }, [])
 
-  const roleName = role === 'dmo' ? 'DMO Command Dashboard' : 'ASHA Worker Dashboard'
+  const roleName = role === 'tho' ? 'THO Command Dashboard' : 'ASHA Worker Dashboard'
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -65,7 +65,7 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
     
     // Attempt database save
     try {
-      await fetch('https://swasthya-setu-full.onrender.com/api/v1/reviews/', {
+      await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/reviews/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(review)
@@ -88,22 +88,38 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
         @keyframes rm-in { from { opacity:0; transform:translateY(24px) scale(0.97); } to { opacity:1; transform:none; } }
         .rm-textarea { resize: vertical; font-family: inherit; }
         .rm-textarea:focus { outline: none; border-color: #0F6E56; box-shadow: 0 0 0 3px rgba(15,110,86,0.12); }
+        .rm-backdrop {
+          position: fixed; inset: 0; z-index: 500;
+          background: rgba(0,0,0,0.65);
+          backdrop-filter: blur(14px);
+          display: flex; align-items: center; justify-content: center;
+          padding: 1rem;
+          overflow-y: auto;
+        }
+        .rm-card {
+          background: #fff; border-radius: 1.5rem;
+          padding: 2.5rem 2rem; max-width: 460px; width: 100%;
+          box-shadow: 0 40px 80px rgba(0,0,0,0.35);
+          animation: rm-in 0.28s cubic-bezier(0.34,1.56,0.64,1);
+          font-family: 'Inter', sans-serif;
+          position: relative;
+        }
+        .rm-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem; }
+        .rm-cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1.25rem; }
+        @media (max-width: 480px) {
+          .rm-backdrop { align-items: flex-end; padding: 0; }
+          .rm-card {
+            border-radius: 1.5rem 1.5rem 0 0;
+            max-height: 92dvh;
+            overflow-y: auto;
+            padding: 1.5rem 1.25rem 2rem;
+          }
+          .rm-two-col { grid-template-columns: 1fr; }
+          .rm-cat-grid { grid-template-columns: 1fr 1fr; }
+        }
       `}</style>
-      <div style={{
-        position: 'fixed', inset: 0, zIndex: 500,
-        background: 'rgba(0,0,0,0.65)',
-        backdropFilter: 'blur(14px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        padding: '1rem',
-      }}>
-        <div style={{
-          background: '#fff', borderRadius: '1.5rem',
-          padding: '2.5rem 2rem', maxWidth: 460, width: '100%',
-          boxShadow: '0 40px 80px rgba(0,0,0,0.35)',
-          animation: 'rm-in 0.28s cubic-bezier(0.34,1.56,0.64,1)',
-          fontFamily: "'Inter', sans-serif",
-          position: 'relative',
-        }}>
+      <div className="rm-backdrop">
+        <div className="rm-card">
           {submitted ? (
             <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
               <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>🙏</div>
@@ -145,10 +161,10 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
+              <div className="rm-two-col">
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Designation</label>
-                  <input 
+                  <input
                     value={designation} onChange={e => setDesignation(e.target.value)}
                     placeholder="e.g. Cardiologist"
                     style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem 1rem', borderRadius: 12, border: '1.5px solid #e5e7eb', fontSize: '0.875rem', color: '#111827', background: '#f9fafb', outline: 'none', fontFamily: 'inherit' }}
@@ -156,7 +172,7 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   <label style={{ fontSize: '0.75rem', fontWeight: 800, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Location</label>
-                  <input 
+                  <input
                     value={location} onChange={e => setLocation(e.target.value)}
                     placeholder="e.g. Pune"
                     style={{ width: '100%', boxSizing: 'border-box', padding: '0.75rem 1rem', borderRadius: 12, border: '1.5px solid #e5e7eb', fontSize: '0.875rem', color: '#111827', background: '#f9fafb', outline: 'none', fontFamily: 'inherit' }}
@@ -171,7 +187,7 @@ export function ReviewModal({ role, onSkip, onSubmit }) {
               </div>
 
               {/* Category ratings */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1.25rem' }}>
+              <div className="rm-cat-grid">
                 {CATEGORIES.map(cat => (
                   <div key={cat.id} style={{
                     background: '#f9fafb', borderRadius: 12,
@@ -285,7 +301,7 @@ export function ReviewSection({ role, isDark }) {
     }
     
     try {
-      await fetch('https://swasthya-setu-full.onrender.com/api/v1/reviews/', {
+      await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/reviews/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(review)
@@ -329,6 +345,26 @@ export function ReviewSection({ role, isDark }) {
           border-color: rgba(16,185,129,0.4);
           box-shadow: ${isDark ? '0 25px 60px rgba(0,0,0,0.4), 0 0 30px rgba(16,185,129,0.15)' : '0 15px 40px rgba(15,110,86,0.12)'};
         }
+        .rs-grid {
+          display: grid;
+          grid-template-columns: minmax(240px, 1.2fr) 2fr 2fr;
+          gap: 2rem;
+          margin-bottom: 1.5rem;
+        }
+        .rs-cat-inner {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+        }
+        @media (max-width: 700px) {
+          .rs-grid {
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+          }
+          .rs-cat-inner {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
       `}</style>
 
       {submitted ? (
@@ -360,7 +396,7 @@ export function ReviewSection({ role, isDark }) {
 
           <form onSubmit={handleSubmit}>
             {/* Feedback fields area */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 1.2fr) 2fr 2fr', gap: '2rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+            <div className="rs-grid">
               
               {/* Column 1: Identity & Overall */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -418,15 +454,17 @@ export function ReviewSection({ role, isDark }) {
               </div>
 
               {/* Column 2: Detailed Categories */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)', padding: '1rem', borderRadius: 16, border: `1px solid ${inputBdr}` }}>
-                {CATEGORIES.map(cat => (
-                  <div key={cat.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <div style={{ fontSize: '0.65rem', fontWeight: 700, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span>{cat.emoji}</span> {cat.label}
+              <div style={{ background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)', padding: '1rem', borderRadius: 16, border: `1px solid ${inputBdr}` }}>
+                <div className="rs-cat-inner">
+                  {CATEGORIES.map(cat => (
+                    <div key={cat.id} style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                      <div style={{ fontSize: '0.65rem', fontWeight: 700, color: muteColor, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span>{cat.emoji}</span> {cat.label}
+                      </div>
+                      <StarRating value={cats[cat.id] || 0} onChange={v => setCats(p => ({ ...p, [cat.id]: v }))} size={15} />
                     </div>
-                    <StarRating value={cats[cat.id] || 0} onChange={v => setCats(p => ({ ...p, [cat.id]: v }))} size={15} />
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
 
               {/* Column 3: Comment */}

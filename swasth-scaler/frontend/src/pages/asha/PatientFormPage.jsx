@@ -105,6 +105,7 @@ export default function PatientFormPage() {
   const [interimText, setInterimText] = useState('')
   const [translating, setTranslating] = useState(false)
   const [voiceError, setVoiceError] = useState('')
+  const [pendingVoice, setPendingVoice] = useState(null) // { text, lang } — awaiting confirm
   const recognitionRef = useRef(null)
 
   const [islModalOpen, setIslModalOpen] = useState(false)
@@ -151,7 +152,7 @@ export default function PatientFormPage() {
       const lookupPatient = async () => {
         try {
           const token = localStorage.getItem('access_token')
-          const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
+          const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
             headers: { 'Authorization': `Bearer ${token}` }
           })
           if (res.ok) {
@@ -235,26 +236,15 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
         setVoiceError('Voice not detected. Please try again.')
       }
     }
-    rec.onresult = async (e) => {
+    rec.onresult = (e) => {
       const results = Array.from(e.results)
       const interim = results.filter(r => !r.isFinal).map(r => r[0].transcript).join('')
       const final = results.filter(r => r.isFinal).map(r => r[0].transcript).join(' ')
       setInterimText(interim)
       if (final) {
         setInterimText('')
-        if (voiceLang === 'mr-IN' || voiceLang === 'hi-IN') {
-          setTranslating(true)
-          try {
-            const english = await translateToEnglish(final)
-            setForm(prev => ({ ...prev, symptomText: prev.symptomText ? prev.symptomText + ' ' + english : english }))
-          } catch {
-            setForm(prev => ({ ...prev, symptomText: prev.symptomText ? prev.symptomText + ' ' + final : final }))
-          } finally {
-            setTranslating(false)
-          }
-        } else {
-          setForm(prev => ({ ...prev, symptomText: prev.symptomText ? prev.symptomText + ' ' + final : final }))
-        }
+        // Store transcribed text for user to review — translation happens on Confirm
+        setPendingVoice({ text: final, lang: voiceLang })
       }
     }
     recognitionRef.current = rec
@@ -267,6 +257,29 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
     setInterimText('')
   }
 
+  async function confirmVoice() {
+    if (!pendingVoice) return
+    const { text, lang } = pendingVoice
+    setPendingVoice(null)
+    if (lang === 'mr-IN' || lang === 'hi-IN') {
+      setTranslating(true)
+      try {
+        const english = await translateToEnglish(text)
+        setForm(prev => ({ ...prev, symptomText: prev.symptomText ? prev.symptomText + ' ' + english : english }))
+      } catch {
+        setForm(prev => ({ ...prev, symptomText: prev.symptomText ? prev.symptomText + ' ' + text : text }))
+      } finally {
+        setTranslating(false)
+      }
+    } else {
+      setForm(prev => ({ ...prev, symptomText: prev.symptomText ? prev.symptomText + ' ' + text : text }))
+    }
+  }
+
+  function discardVoice() {
+    setPendingVoice(null)
+  }
+
   function handleChange(e) {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
@@ -274,7 +287,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
 
   async function createNewPatient(patientObj) {
     const token = localStorage.getItem('access_token')
-    const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
+    const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
       body: JSON.stringify({
@@ -308,7 +321,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
         latitude:         patientObj.latitude || null,
         longitude:        patientObj.longitude || null,
       }
-      const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
+      const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(payload)
@@ -347,7 +360,7 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
 
     if (!resolvedPatientId) {
       const token = localStorage.getItem('access_token')
-      const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
+      const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/patients/', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
       let existing = []
@@ -713,10 +726,10 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                     {interimText}
                   </div>
                 )}
-                {!listening && !translating && (
+                {!listening && !translating && !pendingVoice && (
                   <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: 2 }}>
                     {voiceLang !== 'en-IN'
-                      ? 'Automatically translated to English for triage'
+                      ? 'Speak → confirm → translated to English'
                       : 'Click 🎤 to describe symptoms by voice'}
                   </div>
                 )}
@@ -727,6 +740,39 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                 )}
               </div>
             </div>
+
+            {/* ── Pending voice: show transcript, wait for confirm ────────── */}
+            {pendingVoice && (
+              <div style={{ marginTop: '0.75rem', background: 'rgba(15,110,86,0.06)', border: '1.5px solid #0F6E56', borderRadius: 10, padding: '0.75rem 1rem' }}>
+                <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#0F6E56', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>
+                  {voiceLang === 'mr-IN' ? 'ऐकलेले — पुष्टी करा' : voiceLang === 'hi-IN' ? 'सुना गया — पुष्टि करें' : 'Heard — confirm to add'}
+                </div>
+                <div style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-text)', marginBottom: '0.75rem', lineHeight: 1.5 }}>
+                  {pendingVoice.text}
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={confirmVoice}
+                    disabled={translating}
+                    style={{ flex: 1, minHeight: 38, background: '#0F6E56', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.875rem', cursor: translating ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: translating ? 0.7 : 1 }}
+                  >
+                    {translating ? (
+                      <><span style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} /> Translating…</>
+                    ) : (
+                      <>✓ {voiceLang !== 'en-IN' ? 'Confirm & Translate' : 'Confirm & Add'}</>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={discardVoice}
+                    style={{ minHeight: 38, padding: '0 1rem', background: 'transparent', color: '#e74c3c', border: '1.5px solid #e74c3c', borderRadius: 8, fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer' }}
+                  >
+                    ✕ Discard
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           {voiceError && (
             <div className="alert alert-error" style={{ marginBottom: '1rem' }}>⚠ {voiceError}</div>
@@ -807,8 +853,8 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
               result={result}
               precautionData={precautionData}
               precautionLoading={precautionLoading}
-              hfResult={hfResult}
             />
+            <HFSuggestionCard hfResult={hfResult} />
 
             {result.severity === 'red' && result.sickle_cell_risk && (
               <div style={{ marginTop: '1rem', background: '#FFF7ED', border: '2px solid #F97316', borderRadius: 12, padding: '1rem' }}>
@@ -866,14 +912,132 @@ const ODIA_MAP = {
   '⚠': 'सावध राहा आणि लक्ष ठेवा',
 }
 
-// ── Severity label helpers for HF/WHO suggestion badge ───────────────────────
+// ── Severity label helpers for HF/WHO suggestion card ────────────────────────
 const HF_SEV_STYLE = {
-  red:    { bg: '#fdf2f2', border: '#f5b7b1', color: '#c0392b', dot: '#e74c3c', label: 'Emergency' },
-  yellow: { bg: '#fef9e7', border: '#f8d7a0', color: '#b7770d', dot: '#f39c12', label: 'Moderate'  },
-  green:  { bg: '#eafaf1', border: '#a9dfbf', color: '#1e8449', dot: '#27ae60', label: 'Stable'    },
+  red:    { bg: '#fdf2f2', border: '#f5b7b1', color: '#c0392b', dot: '#e74c3c', label: 'Emergency', marathi: 'तातडीचे', barColor: '#e74c3c' },
+  yellow: { bg: '#fef9e7', border: '#f8d7a0', color: '#b7770d', dot: '#f39c12', label: 'Moderate',  marathi: 'मध्यम',   barColor: '#f39c12' },
+  green:  { bg: '#eafaf1', border: '#a9dfbf', color: '#1e8449', dot: '#27ae60', label: 'Stable',    marathi: 'स्थिर',   barColor: '#27ae60' },
 }
 
-function TriageResultCard({ result, precautionData, precautionLoading, hfResult }) {
+function HFSuggestionCard({ hfResult }) {
+  if (!hfResult) return null
+  const hc = HF_SEV_STYLE[hfResult.label] || HF_SEV_STYLE.green
+  const isHF = hfResult.source === 'HF'
+  const confidence = hfResult.confidence !== 'rule-based' ? parseFloat(hfResult.confidence) : null
+
+  return (
+    <div style={{
+      background: hc.bg,
+      border: `2px solid ${hc.border}`,
+      borderRadius: 14,
+      overflow: 'hidden',
+      marginTop: '1rem',
+    }}>
+      {/* Header strip */}
+      <div style={{
+        background: isHF
+          ? 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
+          : 'linear-gradient(135deg, #1a365d 0%, #2a4a7f 100%)',
+        padding: '0.75rem 1rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.625rem',
+      }}>
+        <span style={{ fontSize: '1.25rem' }}>{isHF ? '🤖' : '📋'}</span>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontWeight: 800, fontSize: '0.875rem', color: '#ffffff', letterSpacing: '-0.01em' }}>
+            {isHF ? 'ClinicalBERT / BART-MNLI' : 'WHO IMNCI Protocol'}
+          </div>
+          <div style={{ fontSize: '0.6875rem', color: 'rgba(255,255,255,0.6)', marginTop: 1 }}>
+            {isHF ? 'Hugging Face · facebook/bart-large-mnli' : 'Rule-based fallback · WHO guidelines'}
+          </div>
+        </div>
+        <span style={{
+          fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.08em',
+          background: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.8)',
+          padding: '2px 8px', borderRadius: 99, border: '1px solid rgba(255,255,255,0.15)',
+        }}>
+          {isHF ? 'ML MODEL' : 'RULE-BASED'}
+        </span>
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: '1rem' }}>
+
+        {/* Severity result */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.875rem' }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: '50%',
+            background: hc.barColor,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: '#fff', fontWeight: 900, fontSize: '1.125rem', flexShrink: 0,
+          }}>
+            {hfResult.label === 'red' ? '!' : hfResult.label === 'yellow' ? '⚠' : '✓'}
+          </div>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: '1.25rem', color: hc.color }}>{hc.label}</div>
+            <div style={{ fontSize: '0.9375rem', color: hc.color, opacity: 0.75, fontFamily: "'Noto Sans Devanagari', sans-serif" }}>
+              {hc.marathi}
+            </div>
+          </div>
+        </div>
+
+        {/* Confidence bar — only for HF ML results */}
+        {confidence !== null && (
+          <div style={{ marginBottom: '0.875rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
+              <span style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                Model Confidence
+              </span>
+              <span style={{ fontSize: '0.75rem', fontWeight: 800, color: hc.color }}>
+                {confidence}%
+              </span>
+            </div>
+            <div style={{ height: 6, background: '#e5e7eb', borderRadius: 99, overflow: 'hidden' }}>
+              <div style={{
+                height: '100%',
+                width: `${confidence}%`,
+                background: `linear-gradient(90deg, ${hc.barColor}88, ${hc.barColor})`,
+                borderRadius: 99,
+                transition: 'width 0.6s ease',
+              }} />
+            </div>
+          </div>
+        )}
+
+        {/* Info note */}
+        <div style={{
+          background: 'rgba(255,255,255,0.65)',
+          borderLeft: `3px solid ${hc.barColor}`,
+          borderRadius: 6,
+          padding: '0.5rem 0.75rem',
+        }}>
+          <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#6b7280', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '0.2rem' }}>
+            What this means
+          </div>
+          <div style={{ fontSize: '0.8125rem', color: '#374151', lineHeight: 1.5 }}>
+            {hfResult.label === 'red'
+              ? 'The ML model flagged danger signs consistent with emergency conditions. Refer immediately.'
+              : hfResult.label === 'yellow'
+              ? 'The ML model detected moderate-risk symptoms. Monitor closely and seek care within hours.'
+              : 'The ML model found no severe danger signs. Continue home monitoring and follow-up.'}
+          </div>
+          {!isHF && (
+            <div style={{ fontSize: '0.6875rem', color: '#9ca3af', marginTop: '0.25rem' }}>
+              HF model unavailable — WHO keyword rules applied as fallback.
+            </div>
+          )}
+        </div>
+
+        <p style={{ fontSize: '0.6875rem', color: '#9ca3af', margin: '0.625rem 0 0', lineHeight: 1.4 }}>
+          Secondary validation only — OpenAI GPT-4o clinical result above is the primary diagnosis.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function TriageResultCard({ result, precautionData, precautionLoading }) {
   const sev = result.severity?.toLowerCase()
   const cardBg    = sev === 'red' ? 'var(--error-bg)' : sev === 'yellow' ? '#FFFBEB' : '#F0FDF4'
   const cardBorder= sev === 'red' ? '#FCA5A5' : sev === 'yellow' ? '#FCD34D' : '#86EFAC'
@@ -957,34 +1121,7 @@ function TriageResultCard({ result, precautionData, precautionLoading, hfResult 
           })}
         </div>
 
-        {/* ── Secondary suggestion: HF ML model or WHO rules ─────────────────── */}
-        {hfResult && (() => {
-          const hc = HF_SEV_STYLE[hfResult.label] || HF_SEV_STYLE.green
-          return (
-            <div style={{ borderTop: `1px solid ${cardBorder}`, paddingTop: '0.875rem', marginTop: '0.25rem' }}>
-              <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#6b7280', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                {hfResult.source === 'HF' ? '🤖 ML Model Suggestion' : '📋 WHO Protocol Check'}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem', background: hc.bg, border: `1px solid ${hc.border}`, borderRadius: 8, padding: '0.5rem 0.75rem' }}>
-                <span style={{ width: 10, height: 10, borderRadius: '50%', background: hc.dot, flexShrink: 0, display: 'inline-block' }} />
-                <div style={{ flex: 1 }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.875rem', color: hc.color }}>{hc.label}</span>
-                  {hfResult.confidence !== 'rule-based' && (
-                    <span style={{ fontSize: '0.75rem', color: '#9ca3af', marginLeft: 6 }}>
-                      {hfResult.confidence}% confidence
-                    </span>
-                  )}
-                </div>
-                <span style={{ fontSize: '0.6875rem', color: '#9ca3af', fontWeight: 500, flexShrink: 0 }}>
-                  {hfResult.source === 'HF' ? 'bart-large-mnli' : 'WHO IMNCI rules'}
-                </span>
-              </div>
-              <p style={{ fontSize: '0.6875rem', color: '#9ca3af', margin: '0.375rem 0 0', lineHeight: 1.4 }}>
-                Secondary check only — OpenAI GPT-4o result above is primary.
-              </p>
-            </div>
-          )
-        })()}
+        {/* HF card moved outside — rendered as separate column below */}
       </div>
     </div>
   )
@@ -998,7 +1135,7 @@ function VisitHistory({ name, patientId }) {
     if (!name || name.trim().length < 3) return
     setLoading(true)
     const token = localStorage.getItem('access_token')
-    fetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
+    apiFetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
       headers: { 'Authorization': `Bearer ${token}` }
     })
       .then(res => res.json())

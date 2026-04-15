@@ -64,7 +64,7 @@ export default function ProfilePage() {
       if (!savedName || !savedLoc) { setForceOnboard(true); setIsEditing(true) }
       try {
         const token = localStorage.getItem('access_token')
-        const res = await fetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
+        const res = await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/triage_records/', {
           headers: { Authorization: `Bearer ${token}` }
         })
         if (res.ok) setHistory(await res.json())
@@ -79,7 +79,7 @@ export default function ProfilePage() {
     setSaveLoading(true)
     try {
       const token = localStorage.getItem('access_token')
-      await fetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
+      await apiFetch('https://swasthya-setu-full.onrender.com/api/v1/users/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ full_name: fullName.trim(), location: location2.trim() })
