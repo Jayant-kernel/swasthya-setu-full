@@ -104,6 +104,7 @@ export default function PatientFormPage() {
   const [interimText, setInterimText] = useState('')
   const [translating, setTranslating] = useState(false)
   const [voiceError, setVoiceError] = useState('')
+  const [pendingVoice, setPendingVoice] = useState(null) // { text, lang } — awaiting confirm
   const recognitionRef = useRef(null)
 
   const [islModalOpen, setIslModalOpen] = useState(false)
@@ -234,26 +235,15 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
         setVoiceError('Voice not detected. Please try again.')
       }
     }
-    rec.onresult = async (e) => {
+    rec.onresult = (e) => {
       const results = Array.from(e.results)
       const interim = results.filter(r => !r.isFinal).map(r => r[0].transcript).join('')
       const final = results.filter(r => r.isFinal).map(r => r[0].transcript).join(' ')
       setInterimText(interim)
       if (final) {
         setInterimText('')
-        if (voiceLang === 'mr-IN' || voiceLang === 'hi-IN') {
-          setTranslating(true)
-          try {
-            const english = await translateToEnglish(final)
-            setForm(prev => ({ ...prev, symptomText: prev.symptomText ? prev.symptomText + ' ' + english : english }))
-          } catch {
-            setForm(prev => ({ ...prev, symptomText: prev.symptomText ? prev.symptomText + ' ' + final : final }))
-          } finally {
-            setTranslating(false)
-          }
-        } else {
-          setForm(prev => ({ ...prev, symptomText: prev.symptomText ? prev.symptomText + ' ' + final : final }))
-        }
+        // Store transcribed text for user to review — translation happens on Confirm
+        setPendingVoice({ text: final, lang: voiceLang })
       }
     }
     recognitionRef.current = rec
@@ -264,6 +254,29 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
     recognitionRef.current?.stop()
     setListening(false)
     setInterimText('')
+  }
+
+  async function confirmVoice() {
+    if (!pendingVoice) return
+    const { text, lang } = pendingVoice
+    setPendingVoice(null)
+    if (lang === 'mr-IN' || lang === 'hi-IN') {
+      setTranslating(true)
+      try {
+        const english = await translateToEnglish(text)
+        setForm(prev => ({ ...prev, symptomText: prev.symptomText ? prev.symptomText + ' ' + english : english }))
+      } catch {
+        setForm(prev => ({ ...prev, symptomText: prev.symptomText ? prev.symptomText + ' ' + text : text }))
+      } finally {
+        setTranslating(false)
+      }
+    } else {
+      setForm(prev => ({ ...prev, symptomText: prev.symptomText ? prev.symptomText + ' ' + text : text }))
+    }
+  }
+
+  function discardVoice() {
+    setPendingVoice(null)
   }
 
   function handleChange(e) {
@@ -693,10 +706,10 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                     {interimText}
                   </div>
                 )}
-                {!listening && !translating && (
+                {!listening && !translating && !pendingVoice && (
                   <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: 2 }}>
                     {voiceLang !== 'en-IN'
-                      ? 'Automatically translated to English for triage'
+                      ? 'Speak → confirm → translated to English'
                       : 'Click 🎤 to describe symptoms by voice'}
                   </div>
                 )}
@@ -707,6 +720,39 @@ Return ONLY valid JSON: {"precautions":["precaution 1","precaution 2","precautio
                 )}
               </div>
             </div>
+
+            {/* ── Pending voice: show transcript, wait for confirm ────────── */}
+            {pendingVoice && (
+              <div style={{ marginTop: '0.75rem', background: 'rgba(15,110,86,0.06)', border: '1.5px solid #0F6E56', borderRadius: 10, padding: '0.75rem 1rem' }}>
+                <div style={{ fontSize: '0.6875rem', fontWeight: 700, color: '#0F6E56', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.375rem' }}>
+                  {voiceLang === 'mr-IN' ? 'ऐकलेले — पुष्टी करा' : voiceLang === 'hi-IN' ? 'सुना गया — पुष्टि करें' : 'Heard — confirm to add'}
+                </div>
+                <div style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--color-text)', marginBottom: '0.75rem', lineHeight: 1.5 }}>
+                  {pendingVoice.text}
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={confirmVoice}
+                    disabled={translating}
+                    style={{ flex: 1, minHeight: 38, background: '#0F6E56', color: '#fff', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: '0.875rem', cursor: translating ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: translating ? 0.7 : 1 }}
+                  >
+                    {translating ? (
+                      <><span style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: '#fff', borderRadius: '50%', display: 'inline-block', animation: 'spin 0.8s linear infinite' }} /> Translating…</>
+                    ) : (
+                      <>✓ {voiceLang !== 'en-IN' ? 'Confirm & Translate' : 'Confirm & Add'}</>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={discardVoice}
+                    style={{ minHeight: 38, padding: '0 1rem', background: 'transparent', color: '#e74c3c', border: '1.5px solid #e74c3c', borderRadius: 8, fontWeight: 700, fontSize: '0.875rem', cursor: 'pointer' }}
+                  >
+                    ✕ Discard
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           {voiceError && (
             <div className="alert alert-error" style={{ marginBottom: '1rem' }}>⚠ {voiceError}</div>
