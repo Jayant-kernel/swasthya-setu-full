@@ -8,7 +8,7 @@ export default function LogoIcon({ size = 52, style = {} }) {
       alt="Swasthya Setu"
       width={size}
       height={size}
-      style={{ borderRadius: 14, objectFit: 'cover', display: 'block', ...style }}
+      style={{ borderRadius: 18, objectFit: 'cover', display: 'block', ...style }}
     />
   )
 }

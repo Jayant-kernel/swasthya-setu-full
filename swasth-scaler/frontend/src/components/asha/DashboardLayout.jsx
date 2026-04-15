@@ -148,7 +148,7 @@ export default function DashboardLayout({ children, topbarContent, sidebarExtra,
                 src={logoSrc}
                 alt="Swasthya Setu"
                 style={{
-                  width: 40, height: 40, borderRadius: 11, flexShrink: 0,
+                  width: 40, height: 40, borderRadius: 16, flexShrink: 0,
                   objectFit: 'cover', display: 'block',
                   filter: 'drop-shadow(0 0 10px rgba(16,185,129,0.35))',
                 }}
