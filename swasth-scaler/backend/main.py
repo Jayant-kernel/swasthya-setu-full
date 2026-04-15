@@ -36,9 +36,12 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
+        "https://swasthsetu.in",
+        "https://www.swasthsetu.in",
         "https://swasthsethu.in",
         "https://www.swasthsethu.in",
         "https://swasthya-setu-full-git-main-nullpointer-cells-projects.vercel.app",
+        "https://swasthya-setu-full.onrender.com",
         "http://localhost:5173",
         "http://localhost:5174",
     ],
