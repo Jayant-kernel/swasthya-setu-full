@@ -89,6 +89,18 @@ async def startup():
                 logger.info("Column 'tehsil' already exists in triage_records table")
             else:
                 logger.warning(f"Note: triage_records table migration check: {e}")
+
+        # Reviews table migrations
+        try:
+            await conn.execute(text("ALTER TABLE reviews ADD COLUMN userName VARCHAR"))
+            await conn.execute(text("ALTER TABLE reviews ADD COLUMN designation VARCHAR"))
+            await conn.execute(text("ALTER TABLE reviews ADD COLUMN location VARCHAR"))
+            logger.info("Added missing columns to reviews table")
+        except Exception as e:
+            if "duplicate column name" in str(e).lower() or "already exists" in str(e).lower():
+                logger.info("Columns already exist in reviews table")
+            else:
+                logger.info(f"Reviews table migration check: {e}")
     #
     # async with AsyncSessionLocal() as session:
     #     result = await session.execute(select(User).limit(1))

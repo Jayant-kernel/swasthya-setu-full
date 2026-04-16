@@ -12,6 +12,11 @@ import vaibhavAvatar from '../../images/landing/vaibhav.png'
 
 const ArrowRight = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14m-7-7 7 7-7 7" /></svg>
 const PlayCircle = () => <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /><path strokeLinejoin="round" d="m10 8 6 4-6 4z" /></svg>
+const StarIcon = ({ filled }) => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill={filled ? "#fbbf24" : "none"} stroke={filled ? "#fbbf24" : "currentColor"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+  </svg>
+)
 
 export default function LandingPage() {
   const navigate = useNavigate()
@@ -19,6 +24,7 @@ export default function LandingPage() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [mounted, setMounted] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [reviews, setReviews] = useState([])
 
   const heroImages = [img1, img2]
 
@@ -27,6 +33,21 @@ export default function LandingPage() {
       setCurrentImageIndex(prev => (prev + 1) % heroImages.length)
     }, 22800)
     return () => clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await fetch('http://localhost:8000/api/v1/reviews/')
+        if (response.ok) {
+          const data = await response.json()
+          setReviews(data)
+        }
+      } catch (error) {
+        console.error("Failed to fetch reviews:", error)
+      }
+    }
+    fetchReviews()
   }, [])
 
   useEffect(() => {
@@ -77,6 +98,7 @@ export default function LandingPage() {
           <div style={{ display: 'flex', gap: '2.5rem', fontSize: '0.9375rem', fontWeight: 400, color: 'rgba(255,255,255,0.85)' }} className="hide-mobile">
             <a href="#about" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>About Us</a>
             <a href="#goal" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>Services</a>
+            <a href="#reviews" style={{ color: 'inherit', textDecoration: 'none', transition: 'color 0.2s' }} onMouseEnter={e => e.target.style.color = '#ffffff'} onMouseLeave={e => e.target.style.color = 'rgba(255,255,255,0.85)'}>Reviews</a>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -239,6 +261,87 @@ export default function LandingPage() {
         </div>
       </div>
 
+      <div id="reviews" style={{ padding: '8rem 4%', background: '#0b0914', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', top: '20%', left: '-10%', width: '40%', height: '60%', background: 'radial-gradient(circle, rgba(45,143,94,0.1) 0%, transparent 70%)', zIndex: 1 }} />
+        <div style={{ position: 'absolute', bottom: '10%', right: '-5%', width: '30%', height: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)', zIndex: 1 }} />
+
+        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative', zIndex: 2 }}>
+          <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 20px', borderRadius: 99, color: 'rgba(255,255,255,0.35)', fontSize: '11px', fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '2rem' }}>
+              <span style={{ color: 'var(--primary)' }}>★</span> Wall of Love
+            </span>
+            <h2 style={{ fontSize: 'clamp(2rem, 6vw, 3.5rem)', fontWeight: 700, color: '#fff', letterSpacing: '-0.03em' }}>Voices from the Field</h2>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '2rem' }}>
+            {reviews.length > 0 ? (
+              reviews.map((review, i) => (
+                <div
+                  key={review.id || i}
+                  className="observe-anim animate-fade-up"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    borderRadius: 24,
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    padding: '2.5rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '1.5rem',
+                    transition: 'all 0.3s ease',
+                    boxShadow: '0 10px 30px rgba(0,0,0,0.2)'
+                  }}
+                  onMouseEnter={e => {
+                    e.currentTarget.style.transform = 'translateY(-4px)'
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)'
+                  }}
+                  onMouseLeave={e => {
+                    e.currentTarget.style.transform = 'translateY(0)'
+                    e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)'
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.08)'
+                  }}
+                >
+                  <div style={{ display: 'flex', gap: 4 }}>
+                    {[...Array(5)].map((_, idx) => (
+                      <StarIcon key={idx} filled={idx < (review.overall || 5)} />
+                    ))}
+                  </div>
+
+                  <p style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '1.0625rem', lineHeight: 1.6, flex: 1, fontStyle: 'italic' }}>
+                    "{review.comment}"
+                  </p>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
+                    <div style={{
+                      width: 48, height: 48, borderRadius: '50%',
+                      background: 'linear-gradient(135deg, var(--primary) 0%, #6366f1 100%)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '1.25rem', fontWeight: 700, color: '#fff',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+                    }}>
+                      {(review.userName || 'U')[0]}
+                    </div>
+                    <div>
+                      <h4 style={{ color: '#fff', margin: 0, fontSize: '1.125rem', fontWeight: 600 }}>{review.userName || 'Anonymous'}</h4>
+                      <p style={{ color: 'rgba(255, 255, 255, 0.4)', margin: 0, fontSize: '0.875rem' }}>
+                        {review.designation || (review.role === 'asha' ? 'ASHA Worker' : 'Medical Officer')}
+                        {review.location ? ` • ${review.location}` : ''}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem', color: 'rgba(255,255,255,0.4)', border: '1px dashed rgba(255,255,255,0.1)', borderRadius: 24 }}>
+                No reviews yet. Be the first to share your experience!
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       <footer style={{ background: '#080c16', borderTop: '1px solid rgba(255,255,255,0.1)', padding: '60px 4% 40px', color: '#94a3b8' }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', flexWrap: 'wrap', gap: '4rem', marginBottom: '4rem' }}>
           <div style={{ flex: '2 1 300px' }}>
@@ -266,4 +369,5 @@ export default function LandingPage() {
       `}</style>
     </div>
   )
+}
 }
