@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoginRoleModal from '../../components/landing/LoginRoleModal'
+import { apiFetch } from '../../lib/api'
 
 import logoSrc from '../../images/logo/logo.jpg'
 import img1 from '../../images/landing/hero1.jpg'
@@ -38,7 +39,7 @@ export default function LandingPage() {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const response = await fetch('http://localhost:8000/api/v1/reviews/')
+        const response = await apiFetch('/reviews/')
         if (response.ok) {
           const data = await response.json()
           setReviews(data)

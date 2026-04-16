@@ -101,28 +101,38 @@ async def startup():
                 logger.info("Columns already exist in reviews table")
             else:
                 logger.info(f"Reviews table migration check: {e}")
-    #
-    # async with AsyncSessionLocal() as session:
-    #     result = await session.execute(select(User).limit(1))
-    #     if not result.scalar_one_or_none():
-    #         logger.info("Database empty! Seeding default user accounts...")
-    #         session.add_all([
-    #             User(employee_id="ASHA001", role="asha", password_hash=get_password_hash("password"), full_name="Kalyani Dash", location="Village Alpha", district="Pune"),
-    #             User(employee_id="THO001", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Pradhan", location="District HQ", district="Pune"),
-    #             User(employee_id="THO002", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Sharma", location="District HQ", district="Mumbai"),
-    #             User(employee_id="THO003", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Kulkarni", location="District HQ", district="Nagpur"),
-    #             User(employee_id="THO004", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Deshmukh", location="District HQ", district="Nashik"),
-    #             User(employee_id="THO005", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Patil", location="District HQ", district="Ahmednagar"),
-    #             User(employee_id="THO006", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Jadhav", location="District HQ", district="Aurangabad"),
-    #             User(employee_id="THO007", role="tho", password_hash=get_password_hash("password"), full_name="Dr. More", location="District HQ", district="Solapur"),
-    #             User(employee_id="THO008", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Shinde", location="District HQ", district="Kolhapur"),
-    #             User(employee_id="THO009", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Bhosale", location="District HQ", district="Thane"),
-    #             User(employee_id="THO010", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Pawar", location="District HQ", district="Satara"),
-    #             User(employee_id="THO011", role="tho", password_hash=get_password_hash("password"), full_name="Dr. Chavan", location="District HQ", district="Sangli"),
-    #             User(employee_id="ADMIN001", role="admin", password_hash=get_password_hash("password"), full_name="System Admin", location="State HQ", district="All")
-    #         ])
-    #         await session.commit()
-    #         logger.info("Seed complete.")
+
+    async with AsyncSessionLocal() as session:
+        # Check if reviews table is empty
+        try:
+            from models import Review
+            result = await session.execute(select(Review).limit(1))
+            if not result.scalar_one_or_none():
+                logger.info("Reviews table empty! Seeding initial reviews...")
+                session.add_all([
+                    Review(
+                        userName="Kalyani Dash", role="asha", designation="ASHA Worker",
+                        location="Village Alpha, Odisha", overall=5,
+                        comment="Swasthya Setu has made my daily home visits so much more organized. The offline mode is a lifesaver in our village.",
+                        source="seed"
+                    ),
+                    Review(
+                        userName="Dr. Ramesh Pradhan", role="tho", designation="Block Medical Officer",
+                        location="Bhubaneswar", overall=5,
+                        comment="The real-time tracking of disease outbreaks in my block allows us to deploy resources much faster than before. Truly a game changer.",
+                        source="seed"
+                    ),
+                    Review(
+                        userName="Meena Kumari", role="asha", designation="ASHA Worker",
+                        location="Village Beta, Odisha", overall=4,
+                        comment="The voice triage feature helps me record symptoms quickly even when I am busy with patients. Highly recommended!",
+                        source="seed"
+                    )
+                ])
+                await session.commit()
+                logger.info("Reviews seeded.")
+        except Exception as e:
+            logger.error(f"Failed to seed reviews: {e}")
 
 # Initialize clients with error handling
 try:
