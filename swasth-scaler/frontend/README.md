@@ -2,7 +2,7 @@
 
 **Healthcare Bridge for Rural Odisha** — An intelligent healthcare triage system for ASHA workers and District Medical Officers using MediaPipe ISL hand sign detection and GPT-4o clinical analysis.
 
-## 🎯 Features
+## 🎯 Feature
 
 ### For ASHA Workers (Patient-Facing)
 
