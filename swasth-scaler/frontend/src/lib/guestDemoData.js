@@ -323,3 +323,33 @@ export const GUEST_ASHA_WORKERS = [
   { id: 'user-009', employee_id: 'ASHA-009', full_name: 'Anjali Shinde', location: 'Walwa (Islampur)', district: 'Sangli' },
   { id: 'user-010', employee_id: 'ASHA-010', full_name: 'Lata Kadam', location: 'Shirala', district: 'Sangli' }
 ]
+
+export const GUEST_REVIEWS = [
+  {
+    id: 'guest-rev-1',
+    userName: 'Kalyani Dash',
+    role: 'asha',
+    designation: 'ASHA Worker',
+    location: 'Village Alpha, Odisha',
+    overall: 5,
+    comment: "Swasthya Setu has made my daily home visits so much more organized. The offline mode is a lifesaver in our village where network is patchy.",
+  },
+  {
+    id: 'guest-rev-2',
+    userName: 'Dr. Ramesh Pradhan',
+    role: 'tho',
+    designation: 'Block Medical Officer',
+    location: 'Bhubaneswar',
+    overall: 5,
+    comment: "The real-time tracking of disease outbreaks in my block allows us to deploy resources much faster than before. Truly a game changer for public health.",
+  },
+  {
+    id: 'guest-rev-3',
+    userName: 'Meena Kumari',
+    role: 'asha',
+    designation: 'ASHA Worker',
+    location: 'Village Beta, Odisha',
+    overall: 4,
+    comment: "The voice triage feature helps me record symptoms quickly even when I am busy with patients. It makes documentation so much easier!",
+  }
+]

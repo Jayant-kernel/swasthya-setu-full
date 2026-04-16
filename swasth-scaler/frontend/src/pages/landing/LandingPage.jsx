@@ -26,6 +26,7 @@ export default function LandingPage() {
   const [mounted, setMounted] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [reviews, setReviews] = useState([])
+  const [reviewsLoading, setReviewsLoading] = useState(true)
 
   const heroImages = [img1, img2]
 
@@ -39,13 +40,26 @@ export default function LandingPage() {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
+        console.log("[LandingPage] Fetching reviews from API...")
         const response = await apiFetch('/reviews/')
         if (response.ok) {
           const data = await response.json()
-          setReviews(data)
+          console.log(`[LandingPage] Successfully fetched ${data.length} reviews.`)
+          if (data && data.length > 0) {
+            setReviews(data)
+          } else {
+            console.log("[LandingPage] API returned empty reviews. Using fallback.")
+            setReviews(GUEST_REVIEWS)
+          }
+        } else {
+          console.warn(`[LandingPage] API failed with status ${response.status}. Using fallback.`)
+          setReviews(GUEST_REVIEWS)
         }
       } catch (error) {
-        console.error("Failed to fetch reviews:", error)
+        console.error("[LandingPage] Failed to fetch reviews:", error)
+        setReviews(GUEST_REVIEWS)
+      } finally {
+        setReviewsLoading(false)
       }
     }
     fetchReviews()
@@ -275,7 +289,15 @@ export default function LandingPage() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(320px, 100%), 1fr))', gap: '2rem' }}>
-            {reviews.length > 0 ? (
+            {reviewsLoading ? (
+               <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '4rem' }}>
+                 <div className="spinner" style={{ width: 40, height: 40, border: '3px solid rgba(255,255,255,0.1)', borderTopColor: 'var(--primary)', borderRadius: '50%', margin: '0 auto', animation: 'spin 1s linear infinite' }} />
+                 <p style={{ marginTop: '1rem', color: 'rgba(255,255,255,0.4)', fontSize: '0.9rem' }}>Fetching newest reviews...</p>
+                 <style>{`
+                   @keyframes spin { to { transform: rotate(360deg); } }
+                 `}</style>
+               </div>
+            ) : reviews.length > 0 ? (
               reviews.map((review, i) => (
                 <div
                   key={review.id || i}
@@ -310,7 +332,7 @@ export default function LandingPage() {
                     ))}
                   </div>
 
-                  <p style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '1.0625rem', lineHeight: 1.6, flex: 1, fontStyle: 'italic' }}>
+                  <p style={{ color: '#ffffff', fontSize: '1.0625rem', lineHeight: 1.6, flex: 1, fontStyle: 'italic' }}>
                     "{review.comment}"
                   </p>
 
