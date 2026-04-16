@@ -75,8 +75,12 @@ export default function LandingPage() {
       })
     }, { threshold: 0.15 })
 
-    document.querySelectorAll('.observe-anim').forEach(el => observer.observe(el))
+    document.querySelectorAll('.observe-anim:not(.is-visible)').forEach(el => observer.observe(el))
 
+    return () => observer.disconnect()
+  }, [reviews, mounted])
+
+  useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 80)
     }
@@ -84,7 +88,6 @@ export default function LandingPage() {
 
     setMounted(true)
     return () => {
-      observer.disconnect()
       window.removeEventListener('scroll', handleScroll)
     }
   }, [])
