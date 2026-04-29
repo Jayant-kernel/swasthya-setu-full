@@ -151,23 +151,47 @@ Suggestions:"""
         openai_api_key = os.getenv("OPENAI_KEY")
 
         if hf_token:
-            # Use Hugging Face via OpenAI compatible API with default routing
+            # Use Hugging Face via direct Inference API to bypass strict Chat Model validations
+            import httpx
             hf_model = os.getenv("HF_MODEL", "HuggingFaceH4/zephyr-7b-beta")
-            client = OpenAI(
-                base_url="https://router.huggingface.co/v1/",
-                api_key=hf_token
-            )
-            response = client.chat.completions.create(
-                model=hf_model,
-                messages=[
-                    {"role": "system", "content": "You are a medical assistant for rural healthcare workers in India. Provide 4-5 key medical suggestions based on the provided information. Provide practical home care suggestions, consider gender-specific symptoms, include red flags, be conservative, and format as bullet points. Do NOT provide definitive diagnosis."},
-                    {"role": "user", "content": f"{demographic_context}\nSymptoms: {symptoms_text}\nSeverity: {severity}"}
-                ],
-                max_tokens=300,
-                temperature=0.7
-            )
-            suggestion = response.choices[0].message.content.strip()
-            provider_name = f"Hugging Face ({hf_model})"
+            
+            # Format prompt manually since we are bypassing the chat/completions wrapper
+            prompt = f"System: You are a medical assistant for rural healthcare workers in India. Provide 4-5 key medical suggestions based on the provided information. Provide practical home care suggestions, consider gender-specific symptoms, include red flags, be conservative, and format as bullet points. Do NOT provide definitive diagnosis.\n\nUser: {demographic_context}\nSymptoms: {symptoms_text}\nSeverity: {severity}\n\nAssistant:"
+
+            try:
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    response = await client.post(
+                        f"https://api-inference.huggingface.co/models/{hf_model}",
+                        headers={"Authorization": f"Bearer {hf_token}"},
+                        json={
+                            "inputs": prompt,
+                            "parameters": {
+                                "max_new_tokens": 300,
+                                "temperature": 0.7,
+                                "top_p": 0.9,
+                                "do_sample": True,
+                                "return_full_text": False
+                            }
+                        }
+                    )
+
+                    if response.status_code != 200:
+                        logger.error(f"HF API error: {response.text}")
+                        raise HTTPException(status_code=500, detail=f"Hugging Face API error ({response.status_code}): {response.text}")
+
+                    result = response.json()
+                    if isinstance(result, list) and len(result) > 0:
+                        suggestion = result[0].get("generated_text", "Unable to extract text.")
+                    else:
+                        suggestion = "Unable to generate suggestions."
+                    
+                    provider_name = f"Hugging Face ({hf_model})"
+            except httpx.RequestError as e:
+                logger.error(f"HF API Request Error: {e}")
+                raise HTTPException(status_code=504, detail="Hugging Face API connection failed or timed out.")
+            except httpx.TimeoutException:
+                logger.error("HF API Timeout")
+                raise HTTPException(status_code=504, detail="Hugging Face API timed out.")
         elif openai_api_key:
             # Fallback to OpenAI GPT-4o
             client = OpenAI(api_key=openai_api_key)
