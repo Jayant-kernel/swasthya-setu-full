@@ -151,10 +151,10 @@ Suggestions:"""
         openai_api_key = os.getenv("OPENAI_KEY")
 
         if hf_token:
-            # Use Hugging Face via OpenAI compatible API with 'auto' routing
+            # Use Hugging Face via OpenAI compatible API with default routing
             hf_model = os.getenv("HF_MODEL", "HuggingFaceH4/zephyr-7b-beta")
             client = OpenAI(
-                base_url="https://router.huggingface.co/auto/v1/",
+                base_url="https://router.huggingface.co/v1/",
                 api_key=hf_token
             )
             response = client.chat.completions.create(
