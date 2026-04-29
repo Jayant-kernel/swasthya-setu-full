@@ -147,54 +147,33 @@ Important:
 
 Suggestions:"""
 
-        hf_token = os.getenv("HF_TOKEN")
-        if not hf_token:
-            logger.error("HF_TOKEN not configured")
+        openai_api_key = os.getenv("OPENAI_KEY")
+        if not openai_api_key:
+            logger.error("OPENAI_KEY not configured")
             raise HTTPException(status_code=500, detail="AI service not configured")
 
-        # Call Hugging Face Inference API
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(
-                "https://api-inference.huggingface.co/models/alpha-ai/LLAMA3-3B-Medical-COT",
-                headers={"Authorization": f"Bearer {hf_token}"},
-                json={
-                    "inputs": prompt,
-                    "parameters": {
-                        "max_new_tokens": 300,
-                        "temperature": 0.7,
-                        "top_p": 0.9,
-                        "do_sample": True
-                    }
-                }
-            )
+        client = OpenAI(api_key=openai_api_key)
+        
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {"role": "system", "content": "You are a medical assistant for rural healthcare workers in India. Provide 4-5 key medical suggestions based on the provided information. Provide practical home care suggestions, consider gender-specific symptoms, include red flags, be conservative, and format as bullet points. Do NOT provide definitive diagnosis."},
+                {"role": "user", "content": f"{demographic_context}\nSymptoms: {symptoms_text}\nSeverity: {severity}"}
+            ]
+        )
+        
+        suggestion = response.choices[0].message.content.strip()
 
-            if response.status_code != 200:
-                logger.error(f"HF API error: {response.text}")
-                raise HTTPException(status_code=500, detail="AI service error")
-
-            result = response.json()
-
-            # Extract generated text from response
-            if isinstance(result, list) and len(result) > 0:
-                generated_text = result[0].get("generated_text", "")
-                # Extract only the new suggestion part (after the prompt)
-                if prompt in generated_text:
-                    suggestion = generated_text.split(prompt)[-1].strip()
-                else:
-                    suggestion = generated_text
-            else:
-                suggestion = "Unable to generate suggestions"
-
-            return {
-                "success": True,
-                "suggestion": suggestion,
-                "symptoms": symptoms,
-                "severity": severity,
-                "demographic": {
-                    "age": patient_age,
-                    "gender": patient_gender
-                }
+        return {
+            "success": True,
+            "suggestion": suggestion,
+            "symptoms": symptoms,
+            "severity": severity,
+            "demographic": {
+                "age": patient_age,
+                "gender": patient_gender
             }
+        }
 
     except httpx.TimeoutError:
         logger.error("HF API timeout")
