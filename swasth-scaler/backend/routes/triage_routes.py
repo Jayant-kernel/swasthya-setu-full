@@ -154,7 +154,7 @@ Suggestions:"""
             # Use Hugging Face via OpenAI compatible API
             hf_model = os.getenv("HF_MODEL", "HuggingFaceH4/zephyr-7b-beta")
             client = OpenAI(
-                base_url="https://api-inference.huggingface.co/v1/",
+                base_url="https://router.huggingface.co/hf-inference/v1/",
                 api_key=hf_token
             )
             response = client.chat.completions.create(
