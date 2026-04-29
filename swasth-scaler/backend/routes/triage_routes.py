@@ -151,35 +151,23 @@ Suggestions:"""
         openai_api_key = os.getenv("OPENAI_KEY")
 
         if hf_token:
-            # Use Hugging Face if token is provided
-            # Note: Clinical BERT is NOT a text-generation model. We must use a generation model like Zephyr or Llama.
+            # Use Hugging Face via OpenAI compatible API
             hf_model = os.getenv("HF_MODEL", "HuggingFaceH4/zephyr-7b-beta")
-            async with httpx.AsyncClient(timeout=30.0) as client:
-                response = await client.post(
-                    f"https://api-inference.huggingface.co/models/{hf_model}",
-                    headers={"Authorization": f"Bearer {hf_token}"},
-                    json={
-                        "inputs": prompt,
-                        "parameters": {
-                            "max_new_tokens": 300,
-                            "temperature": 0.7,
-                            "top_p": 0.9,
-                            "do_sample": True
-                        }
-                    }
-                )
-
-                if response.status_code != 200:
-                    logger.error(f"HF API error: {response.text}")
-                    raise HTTPException(status_code=500, detail="Hugging Face API error. Check if your token is valid or if the model is loading.")
-
-                result = response.json()
-                if isinstance(result, list) and len(result) > 0:
-                    generated_text = result[0].get("generated_text", "")
-                    suggestion = generated_text.split(prompt)[-1].strip() if prompt in generated_text else generated_text
-                else:
-                    suggestion = "Unable to generate suggestions"
-                provider_name = f"Hugging Face ({hf_model})"
+            client = OpenAI(
+                base_url="https://api-inference.huggingface.co/v1/",
+                api_key=hf_token
+            )
+            response = client.chat.completions.create(
+                model=hf_model,
+                messages=[
+                    {"role": "system", "content": "You are a medical assistant for rural healthcare workers in India. Provide 4-5 key medical suggestions based on the provided information. Provide practical home care suggestions, consider gender-specific symptoms, include red flags, be conservative, and format as bullet points. Do NOT provide definitive diagnosis."},
+                    {"role": "user", "content": f"{demographic_context}\nSymptoms: {symptoms_text}\nSeverity: {severity}"}
+                ],
+                max_tokens=300,
+                temperature=0.7
+            )
+            suggestion = response.choices[0].message.content.strip()
+            provider_name = f"Hugging Face ({hf_model})"
         elif openai_api_key:
             # Fallback to OpenAI GPT-4o
             client = OpenAI(api_key=openai_api_key)
@@ -207,12 +195,11 @@ Suggestions:"""
             }
         }
 
-    except httpx.TimeoutError:
-        logger.error("HF API timeout")
-        raise HTTPException(status_code=504, detail="AI service timeout")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"AI suggestion error: {e}")
-        raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"AI Suggestion failed: {str(e)}")
 
 
 @router.post("/voice-triage")
