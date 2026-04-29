@@ -179,6 +179,7 @@ Suggestions:"""
                     suggestion = generated_text.split(prompt)[-1].strip() if prompt in generated_text else generated_text
                 else:
                     suggestion = "Unable to generate suggestions"
+                provider_name = f"Hugging Face ({hf_model})"
         elif openai_api_key:
             # Fallback to OpenAI GPT-4o
             client = OpenAI(api_key=openai_api_key)
@@ -190,12 +191,14 @@ Suggestions:"""
                 ]
             )
             suggestion = response.choices[0].message.content.strip()
+            provider_name = "OpenAI (GPT-4o)"
         else:
             raise HTTPException(status_code=500, detail="Neither HF_TOKEN nor OPENAI_KEY is configured")
 
         return {
             "success": True,
             "suggestion": suggestion,
+            "provider": provider_name,
             "symptoms": symptoms,
             "severity": severity,
             "demographic": {
