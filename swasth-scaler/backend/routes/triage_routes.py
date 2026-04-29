@@ -152,8 +152,8 @@ Suggestions:"""
 
         if hf_token:
             # Hugging Face completely deprecated old direct API. We MUST use the router.
-            # Using Qwen2.5 as it is guaranteed to bypass the "not a chat model" error on the free tier.
-            hf_model = os.getenv("HF_MODEL", "Qwen/Qwen2.5-72B-Instruct")
+            # Using Qwen2.5-7B as it is significantly faster (sub-2 seconds) than the 72B version.
+            hf_model = os.getenv("HF_MODEL", "Qwen/Qwen2.5-7B-Instruct")
             client = OpenAI(
                 base_url="https://router.huggingface.co/v1/",
                 api_key=hf_token
