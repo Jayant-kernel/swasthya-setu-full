@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -55,7 +56,7 @@ async def get_asha_workers(current_user: dict = Depends(get_current_user), db: A
     
     if current_user.get("district"):
         # Match the district if THO covers a specific district
-        query = query.where(User.district == current_user["district"])
+        query = query.where(func.lower(User.district) == func.lower(current_user["district"]))
         
     result = await db.execute(query)
     users = result.scalars().all()

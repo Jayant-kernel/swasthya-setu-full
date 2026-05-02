@@ -89,3 +89,15 @@ class Review(Base):
     location = Column(String)
     source = Column(String) # 'modal' or 'inline'
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None))
+
+
+class PatientProgress(Base):
+    __tablename__ = "patient_progress"
+
+    id = Column(String, primary_key=True, default=generate_uuid)
+    patient_id = Column(String, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False, index=True)
+    status = Column(String, nullable=False)
+    symptoms = Column(JSON, nullable=False, default=list)
+    notes = Column(String, nullable=True)
+    referred = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None), index=True)

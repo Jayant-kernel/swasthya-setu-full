@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 from typing import Optional, List
 from datetime import datetime
 
@@ -63,3 +63,31 @@ class ReviewCreate(BaseModel):
     designation: Optional[str] = None
     location: Optional[str] = None
     source: Optional[str] = None
+
+
+class PatientProgressCreate(BaseModel):
+    patient_id: str
+    status: str
+    symptoms: List[str]
+    notes: Optional[str] = None
+    referred: Optional[bool] = False
+
+    @validator("status")
+    def validate_status(cls, value: str) -> str:
+        allowed = {"improving", "stable", "worsening"}
+        if value not in allowed:
+            raise ValueError("status must be one of improving|stable|worsening")
+        return value
+
+
+class PatientProgressOut(BaseModel):
+    id: str
+    patient_id: str
+    status: str
+    symptoms: List[str]
+    notes: Optional[str] = None
+    referred: bool
+    created_at: datetime
+
+    class Config:
+        orm_mode = True

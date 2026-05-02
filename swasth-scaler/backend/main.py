@@ -27,7 +27,7 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"))
 
 from database import engine, Base, AsyncSessionLocal
 from models import TriageRecord
-from routes import auth_routes, patient_routes, triage_routes, user_routes, outbreak_routes
+from routes import auth_routes, patient_routes, triage_routes, user_routes, outbreak_routes, patient_progress_routes
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -55,6 +55,7 @@ app.include_router(user_routes.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(patient_routes.router, prefix="/api/v1/patients", tags=["Patients"])
 app.include_router(triage_routes.router, prefix="/api/v1/triage_records", tags=["Triage Records"])
 app.include_router(outbreak_routes.router, prefix="/api/v1/outbreaks", tags=["Outbreaks"])
+app.include_router(patient_progress_routes.router, prefix="/api/v1/patient_progress", tags=["Patient Progress"])
 from routes import review_routes
 app.include_router(review_routes.router, prefix="/api/v1/reviews", tags=["Reviews"])
 

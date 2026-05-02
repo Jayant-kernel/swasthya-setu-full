@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 import os
@@ -56,7 +57,7 @@ async def get_triage_records(current_user: dict = Depends(get_current_user), db:
     if current_user["role"] == "asha":
         query = query.where(TriageRecord.user_id == current_user["id"])
     elif current_user["role"] == "tho" and current_user.get("district"):
-        query = query.where(TriageRecord.district == current_user["district"])
+        query = query.where(func.lower(TriageRecord.district) == func.lower(current_user["district"]))
         
     result = await db.execute(query)
     return result.scalars().all()

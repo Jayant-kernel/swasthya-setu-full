@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
@@ -16,7 +17,7 @@ async def get_patients(current_user: dict = Depends(get_current_user), db: Async
     if current_user["role"] == "asha":
         query = query.where(Patient.user_id == current_user["id"])
     elif current_user["role"] == "tho":
-        query = query.where(Patient.district == current_user.get("district"))
+        query = query.where(func.lower(Patient.district) == func.lower(current_user.get("district", "")))
         
     result = await db.execute(query)
     return result.scalars().all()
