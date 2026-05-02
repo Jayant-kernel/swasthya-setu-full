@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime, timezone
-from sqlalchemy import Column, String, Boolean, DateTime, Integer, JSON, ForeignKey, Float
+from sqlalchemy import Column, String, Text, Boolean, DateTime, Integer, JSON, ForeignKey, Float, text, func
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from database import Base
 
 def generate_uuid():
@@ -94,10 +95,10 @@ class Review(Base):
 class PatientProgress(Base):
     __tablename__ = "patient_progress"
 
-    id = Column(String, primary_key=True, default=generate_uuid)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     patient_id = Column(String, ForeignKey("patients.id", ondelete="CASCADE"), nullable=False, index=True)
     status = Column(String, nullable=False)
-    symptoms = Column(JSON, nullable=False, default=list)
-    notes = Column(String, nullable=True)
-    referred = Column(Boolean, nullable=False, default=False)
-    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc).replace(tzinfo=None), index=True)
+    symptoms = Column(JSONB, nullable=False, server_default=text("'[]'::jsonb"))
+    notes = Column(Text, nullable=True)
+    referred = Column(Boolean, nullable=False, server_default=text("false"))
+    created_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), index=True)

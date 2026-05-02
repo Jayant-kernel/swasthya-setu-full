@@ -1,6 +1,7 @@
-from pydantic import BaseModel, validator
-from typing import Optional, List
+from pydantic import BaseModel
+from typing import Optional, List, Literal
 from datetime import datetime
+from uuid import UUID
 
 class UserLogin(BaseModel):
     employee_id: str
@@ -67,26 +68,14 @@ class ReviewCreate(BaseModel):
 
 class PatientProgressCreate(BaseModel):
     patient_id: str
-    status: str
+    status: Literal["improving", "stable", "worsening"]
     symptoms: List[str]
     notes: Optional[str] = None
-    referred: Optional[bool] = False
-
-    @validator("status")
-    def validate_status(cls, value: str) -> str:
-        allowed = {"improving", "stable", "worsening"}
-        if value not in allowed:
-            raise ValueError("status must be one of improving|stable|worsening")
-        return value
+    referred: bool = False
 
 
-class PatientProgressOut(BaseModel):
-    id: str
-    patient_id: str
-    status: str
-    symptoms: List[str]
-    notes: Optional[str] = None
-    referred: bool
+class PatientProgressOut(PatientProgressCreate):
+    id: UUID
     created_at: datetime
 
     class Config:
