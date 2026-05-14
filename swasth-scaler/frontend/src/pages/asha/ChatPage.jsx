@@ -161,8 +161,12 @@ export default function ChatPage() {
     setMessages(updatedMessages)
     setLoading(true)
     try {
+      const client = openai()
+      if (!client) {
+        throw new Error('OpenAI not configured. Please set VITE_OPENAI_KEY environment variable.')
+      }
       const systemPrompt = getChatSystemPrompt(patientData, triageResult)
-      const response = await openai.chat.completions.create({
+      const response = await client.chat.completions.create({
         model: 'gpt-4o',
         messages: [{ role: 'system', content: systemPrompt }, ...updatedMessages.map(m => ({ role: m.role, content: m.content }))],
         temperature: 0.4,
@@ -193,6 +197,10 @@ export default function ChatPage() {
     setLoading(true)
 
     try {
+      const client = openai()
+      if (!client) {
+        throw new Error('OpenAI not configured. Please set VITE_OPENAI_KEY environment variable.')
+      }
       const systemPrompt = getChatSystemPrompt(patientData, triageResult)
 
       const apiMessages = [
@@ -200,7 +208,7 @@ export default function ChatPage() {
         ...updatedMessages.map((m) => ({ role: m.role, content: m.content })),
       ]
 
-      const response = await openai.chat.completions.create({
+      const response = await client.chat.completions.create({
         model: 'gpt-4o',
         messages: apiMessages,
         temperature: 0.4,

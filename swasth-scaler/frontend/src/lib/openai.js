@@ -1,9 +1,21 @@
 import OpenAI from 'openai'
 
-const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENAI_KEY,
-  dangerouslyAllowBrowser: true,
-})
+let openai = null
+
+function getOpenAIClient() {
+  if (!openai) {
+    const apiKey = import.meta.env.VITE_OPENAI_KEY
+    if (!apiKey) {
+      console.warn('VITE_OPENAI_KEY is not set. OpenAI features will not work.')
+      return null
+    }
+    openai = new OpenAI({
+      apiKey: apiKey,
+      dangerouslyAllowBrowser: true,
+    })
+  }
+  return openai
+}
 
 export const HIGH_RISK_DISTRICTS = [
   'Koraput',
@@ -64,7 +76,13 @@ Answer questions from the ASHA worker about this patient. Keep answers simple, p
 }
 
 export async function translateToEnglish(text) {
-  const response = await openai.chat.completions.create({
+  const client = getOpenAIClient()
+  if (!client) {
+    console.error('OpenAI client not initialized. API key missing.')
+    return text // Return original text if OpenAI is not available
+  }
+  
+  const response = await client.chat.completions.create({
     model: 'gpt-4o',
     temperature: 0.2,
     messages: [
@@ -80,4 +98,5 @@ export async function translateToEnglish(text) {
   return response.choices[0].message.content.trim()
 }
 
-export { openai }
+// Export getter function for lazy initialization
+export { getOpenAIClient as openai }

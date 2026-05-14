@@ -1,5 +1,5 @@
 // Centralized API base URL — set VITE_API_URL in .env to override
-export const API_BASE_URL = 'https://swasthya-setu-full.onrender.com/api/v1'
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://swasthya-setu-full.onrender.com/api/v1'
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms))
 

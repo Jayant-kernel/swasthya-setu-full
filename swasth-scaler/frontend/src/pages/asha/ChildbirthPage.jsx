@@ -94,7 +94,11 @@ export default function ChildbirthPage() {
     setLoading(true)
 
     try {
-      const response = await openai.chat.completions.create({
+      const client = openai()
+      if (!client) {
+        throw new Error('OpenAI not configured. Please set VITE_OPENAI_KEY environment variable.')
+      }
+      const response = await client.chat.completions.create({
         model: 'gpt-4o',
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },

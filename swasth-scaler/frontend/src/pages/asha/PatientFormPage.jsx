@@ -179,7 +179,11 @@ export default function PatientFormPage() {
   async function fetchPrecautions(triaged, district) {
     setPrecautionLoading(true)
     try {
-      const resp = await openai.chat.completions.create({
+      const client = openai()
+      if (!client) {
+        throw new Error('OpenAI not configured. Please set VITE_OPENAI_KEY environment variable.')
+      }
+      const resp = await client.chat.completions.create({
         model: 'gpt-4o',
         messages: [
           {

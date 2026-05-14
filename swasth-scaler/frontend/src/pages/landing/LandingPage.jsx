@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import LoginRoleModal from '../../components/landing/LoginRoleModal'
 import { apiFetch } from '../../lib/api'
+import { GUEST_REVIEWS } from '../../lib/guestDemoData'
 
 import logoSrc from '../../images/logo/logo.jpg'
 import img1 from '../../images/landing/hero1.jpg'
