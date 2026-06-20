@@ -151,7 +151,3 @@ This project is licensed under the [MIT License](LICENSE).
 
 ---
 
-## 🙏 Acknowledgements
-
-- Inspired by the need for accessible digital healthcare in India
-- Built with ❤️ by [Jayant Kumar](https://github.com/Jayant-kernel) and contributors
